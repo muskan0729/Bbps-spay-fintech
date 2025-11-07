@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWallet, faCaretDown } from "@fortawesome/free-solid-svg-icons";
-import avatarImg from "../images/3135715.png";
-import spayImg from "../images/Spaylogo.jpg";
+import avatarImg from "../images/placeholder.jpeg";
+import spayImg from "../images/placeholder.jpeg";
 
 import { NotificationBell } from "./NotificationBell";
 
