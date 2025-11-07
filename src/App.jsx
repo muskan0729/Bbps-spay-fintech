@@ -22,7 +22,7 @@ function App() {
 					</main>
 				</div>
 
-			</div>
+			</div>g
 			      {/* Render the AdminReport component */}
       <AdminReport />
 	   <ComplaintPage />
