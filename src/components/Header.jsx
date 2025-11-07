@@ -1,9 +1,44 @@
-import React from 'react'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWallet, faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import avatarImg from "../images/3135715.png";
+import spayImg from "../images/Spaylogo.jpg";
 
-const Header = () => {
-  return (
-    <div>Header</div>
-  )
-}
+export const Header = () => {
+	return (
+		<header className="sticky top-0 py-1 z-75 bg-white shadow-xl border-b border-blue-100">
+			<div className="mx-auto px-3">
+				<div className="flex justify-between items-center h-16">
+					<div className="relative h-15 flex items-center justify-center">
+						<img
+							src={spayImg}
+							alt="User avatar"
+							className="w-full h-full object-cover"
+						/>
+					</div>
 
-export default Header
+					{/* Right side - Avatar */}
+					<div className="flex items-center space-x-2">
+						<div className="text-amber-900">
+							<FontAwesomeIcon icon={faWallet} />
+						</div>
+						<span className="text-gray-700 font-bold">
+							₹ 5,000/-
+						</span>
+						<div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden">
+							<img
+								src={avatarImg}
+								alt="User avatar"
+								className="w-full h-full object-cover rounded-full"
+							/>
+						</div>
+						<div>
+							<button className="text-blue-500 hover:text-blue-700 font-bold">
+								<FontAwesomeIcon icon={faCaretDown} />
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</header>
+	);
+};
