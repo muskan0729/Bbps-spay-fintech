@@ -1,29 +1,29 @@
-import { useState } from "react";
-import { Header } from "./components/Header";
-import { Sidebar } from "./components/Sidebar";
-import AdminReport from './pages/AdminReport'; 
-import Dashboard from "./pages/Dashboard";
+import { Routes, Route } from "react-router-dom"; 
+import { Layout } from "./components/Layout";
+import { navItems } from "./components/Sidebar";
+import LoginPage from "./pages/LoginPage";
+
+const NotFound = () => (
+    <div className="text-center p-10">
+        <h1 className="text-3xl font-bold">404 - Page Not Found</h1>
+    </div>
+);
 
 function App() {
-	const [count, setCount] = useState(0);
-
-	return (
-		<>
-			<div className="flex flex-col h-screen">
-				<Header />
-
-				<div className="flex grow overflow-hidden">
-					<Sidebar />
-					<main className="flex-1 p-8 overflow-y-auto">
-            <Dashboard/>
-					</main>
-				</div>
-
-			</div>
-			      {/* Render the AdminReport component */}
-      <AdminReport />
-		</>
-	);
+    return (
+        <Routes>
+            <Route path="/" element={<LoginPage/>}/>
+            <Route element={<Layout />}>
+                {navItems.map((item) => (
+                    <Route
+                        element={<item.component />}
+                        path={item.path.substring(1)}
+                    />
+                ))}
+                <Route path="*" element={<NotFound />} />
+            </Route>
+        </Routes>
+    );
 }
 
 export default App;
