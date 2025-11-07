@@ -3,6 +3,9 @@ import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import AdminReport from './pages/AdminReport'; 
 import Dashboard from "./pages/Dashboard";
+import ComplaintPage from "./pages/ComplaintPage";
+import MerchantReport from "./pages/MerchantReport";
+import Support from "./pages/Support";
 
 function App() {
 	const [count, setCount] = useState(0);
@@ -22,6 +25,9 @@ function App() {
 			</div>
 			      {/* Render the AdminReport component */}
       <AdminReport />
+	   <ComplaintPage />
+	   <MerchantReport />
+	   <Support />
 		</>
 	);
 }

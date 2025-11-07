@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 
-const Table = ({ columns, data, currentPage, rowsPerPage, paginationHandler }) => {
+const Table = ({ columns, data, rowsPerPage ,isPaginationRequired}) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(data.length / rowsPerPage);
+
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
+
+  const paginationHandler = (action) => {
+    setCurrentPage((prevPage) => {
+      if (action === "prev") return Math.max(prevPage - 1, 1);
+      if (action === "next") return Math.min(prevPage + 1, totalPages);
+      return prevPage;
+    });
+  };
 
   return (
     <div className="overflow-x-auto bg-white rounded-lg shadow-lg">
@@ -27,8 +38,8 @@ const Table = ({ columns, data, currentPage, rowsPerPage, paginationHandler }) =
                 className="hover:bg-gray-50 cursor-pointer transition-all"
               >
                 {columns.map((col) => (
-                  <td key={col.key} className="px-6 py-4 text-sm text-gray-700">
-                    {col.render ? col.render(item, index) : item[col.key]}
+                  <td key={col} className="px-6 py-4 text-sm text-gray-700">
+                    {col.render ? col.render(item, index) : item[col]}
                   </td>
                 ))}
               </tr>
@@ -45,25 +56,28 @@ const Table = ({ columns, data, currentPage, rowsPerPage, paginationHandler }) =
           )}
         </tbody>
       </table>
-      {/* Pagination Controls */}
-      {paginationHandler && (
-        <div className="flex justify-between items-center mt-6">
-          <button
-            onClick={() => paginationHandler('prev')}
-            className="px-4 py-2 bg-gray-300 rounded text-sm"
-          >
-            Prev
-          </button>
-          <button
-            onClick={() => paginationHandler('next')}
-            className="px-4 py-2 bg-gray-300 rounded text-sm"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      {
+      /* Pagination Controls */}
+      {isPaginationRequired?<div className="flex justify-between items-center mt-6">
+        <button
+          onClick={() => paginationHandler("prev")}
+          className="px-4 py-2 bg-gray-300 rounded text-sm"
+        >
+          Prev
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => paginationHandler("next")}
+          className="px-4 py-2 bg-gray-300 rounded text-sm"
+        >
+          Next
+        </button>
+      </div>:<></>}
     </div>
   );
 };
 
 export default Table;
+
