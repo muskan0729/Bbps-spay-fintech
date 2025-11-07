@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import AdminReport from './pages/AdminReport'; 
-
+import Dashboard from "./pages/Dashboard";
 
 function App() {
 	const [count, setCount] = useState(0);
@@ -15,6 +15,7 @@ function App() {
 				<div className="flex grow overflow-hidden">
 					<Sidebar />
 					<main className="flex-1 p-8 overflow-y-auto">
+            <Dashboard/>
 					</main>
 				</div>
 
