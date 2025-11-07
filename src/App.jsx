@@ -1,17 +1,19 @@
-import { Routes, Route } from "react-router-dom"; 
-import { Layout } from "./components/Layout";
-import { navItems } from "./components/Sidebar";
+import { useState } from "react";
+import { Header } from "./components/Header";
+import { Sidebar } from "./components/Sidebar";
+import AdminReport from './pages/AdminReport'; 
+import Dashboard from "./pages/Dashboard";
+import ComplaintPage from "./pages/ComplaintPage";
+import MerchantReport from "./pages/MerchantReport";
+import Support from "./pages/Support";
 import LoginPage from "./pages/LoginPage";
 
-const NotFound = () => (
-    <div className="text-center p-10">
-        <h1 className="text-3xl font-bold">404 - Page Not Found</h1>
-    </div>
-);
-
 function App() {
-    return (
-        <Routes>
+	const [count, setCount] = useState(0);
+
+	return (
+		<>
+		        <Routes>
             <Route path="/" element={<LoginPage/>}/>
             <Route element={<Layout />}>
                 {navItems.map((item) => (
@@ -23,7 +25,13 @@ function App() {
                 <Route path="*" element={<NotFound />} />
             </Route>
         </Routes>
-    );
+			      {/* Render the AdminReport component */}
+      <AdminReport />
+      	   <ComplaintPage />
+	   <MerchantReport />
+	   <Support />
+		</>
+	);
 }
 
 export default App;
