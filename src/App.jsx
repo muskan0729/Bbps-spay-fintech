@@ -1,16 +1,24 @@
-import { useState } from 'react'
-
+import { useState } from "react";
+import { Header } from "./components/Header";
+import { Sidebar } from "./components/Sidebar";
 
 function App() {
-  const [count, setCount] = useState(0)
+	const [count, setCount] = useState(0);
 
-  return (
-    <>
-  <h1 class="text-3xl font-bold underline">
-    Hello world!
-  </h1>
-    </>
-  )
+	return (
+		<>
+			<div className="flex flex-col h-screen">
+				<Header />
+
+				<div className="flex grow overflow-hidden">
+					<Sidebar />
+					<main className="flex-1 p-8 overflow-y-auto">
+					</main>
+				</div>
+
+			</div>
+		</>
+	);
 }
 
-export default App
+export default App;
