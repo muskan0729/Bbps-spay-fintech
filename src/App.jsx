@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
+import AdminReport from './pages/AdminReport'; 
+
 
 function App() {
 	const [count, setCount] = useState(0);
@@ -17,6 +19,8 @@ function App() {
 				</div>
 
 			</div>
+			      {/* Render the AdminReport component */}
+      <AdminReport />
 		</>
 	);
 }
