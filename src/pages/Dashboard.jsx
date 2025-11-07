@@ -17,7 +17,7 @@ const Dashboard = () => {
     { id: 10, name: "Deepak Rao", email: "deepak.rao@techmail.io" },
   ];
 
-  const [isAdmin, setIsAdmin] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isPaginationRequired] = useState(true);
 
   const columns = [

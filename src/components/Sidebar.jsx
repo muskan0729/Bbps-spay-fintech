@@ -12,10 +12,13 @@ import {
 import { Link } from "react-router-dom";
 
 import Dashboard from "../pages/Dashboard";
-import AdminReport from "../pages/AdminReport";
+// import AdminReport from "../pages/AdminReport";
 import { ServicePage } from "../pages/ServicePage";
-const Support = () => <div>Support Page Content</div>;
-const Complaint = () => <div>Complaint Page Content</div>;
+import Report from "../pages/Report";
+import Support from "../pages/Support";
+import ComplaintPage from "../pages/ComplaintPage";
+import CheckTransactionComplaint from "../pages/CheckTransactionComplaint";
+// const Complaint = () => <div>Complaint Page Content</div>;
 const CheckComplaint = () => <div>Check Complaint Page Content</div>;
 
 export const navItems = [
@@ -35,7 +38,7 @@ export const navItems = [
         icon: faFileLines, 
         label: "Report", 
         path: "/report", 
-        component: AdminReport 
+        component: Report 
     },
     { 
         icon: faMagnifyingGlass, 
@@ -47,13 +50,13 @@ export const navItems = [
         icon: faTriangleExclamation, 
         label: "Complaint", 
         path: "/complaint", 
-        component: Complaint 
+        component: ComplaintPage 
     },
     { 
         icon: faCircleExclamation, 
         label: "Check Complaint", 
         path: "/checkcomplaint", 
-        component: CheckComplaint 
+        component: CheckTransactionComplaint 
     },
 ];
 
