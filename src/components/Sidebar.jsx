@@ -6,18 +6,55 @@ import {
     faTriangleExclamation,
     faCircleExclamation
 } from "@fortawesome/free-solid-svg-icons";
-
 import {
     faFileLines,
 } from "@fortawesome/free-regular-svg-icons";
+import { Link } from "react-router-dom";
 
-const navItems = [
-    { icon: faGauge, label: "Dashboard" },
-    { icon: faBuildingColumns, label: "Services" },
-    { icon: faFileLines, label: "Report" },
-    { icon: faMagnifyingGlass, label: "Support" },
-    { icon: faTriangleExclamation, label: "Complaint" },
-    { icon: faCircleExclamation, label: "Check Complaint" },
+import Dashboard from "../pages/Dashboard";
+import AdminReport from "../pages/AdminReport";
+import { ServicePage } from "../pages/ServicePage";
+const Support = () => <div>Support Page Content</div>;
+const Complaint = () => <div>Complaint Page Content</div>;
+const CheckComplaint = () => <div>Check Complaint Page Content</div>;
+
+export const navItems = [
+    { 
+        icon: faGauge, 
+        label: "Dashboard", 
+        path: "/dashboard",
+        component: Dashboard 
+    },
+    { 
+        icon: faBuildingColumns, 
+        label: "Services", 
+        path: "/services", 
+        component: ServicePage
+    },
+    { 
+        icon: faFileLines, 
+        label: "Report", 
+        path: "/report", 
+        component: AdminReport 
+    },
+    { 
+        icon: faMagnifyingGlass, 
+        label: "Support", 
+        path: "/support", 
+        component: Support 
+    },
+    { 
+        icon: faTriangleExclamation, 
+        label: "Complaint", 
+        path: "/complaint", 
+        component: Complaint 
+    },
+    { 
+        icon: faCircleExclamation, 
+        label: "Check Complaint", 
+        path: "/checkcomplaint", 
+        component: CheckComplaint 
+    },
 ];
 
 export const Sidebar = () => {
@@ -27,26 +64,22 @@ export const Sidebar = () => {
                 <ul className="space-y-6">
                     {navItems.map((item, index) => (
                         <li key={index}>
-                            <a
-                                href={`#${item.label.toLowerCase()}`}
+                            <Link
+                                to={item.path}
                                 className="group flex flex-col items-center space-y-1 p-2 text-sm hover:bg-white/20 rounded-lg transition duration-150 ease-in-out cursor-pointer"
                             >
-                                
                                 <FontAwesomeIcon 
                                     icon={item.icon} 
                                     className="w-25 h-25 md:w-15 md:h-15 transition duration-200 group-hover:scale-130" 
                                 />
                                 <span className="text-xs text-center">{item.label}</span>
-                            </a>
+                            </Link>
                         </li>
                     ))}
                 </ul>
             </nav>
-
-            {/* Sticky Footer */}
             <div className="mt-auto pt-4">
                 <hr className="border-white/50 mb-4" />
-
                 <div className="flex flex-col items-center text-center text-white/70 text-[8px] md:text-[10px]">
                     <p>&copy; Copyright BBPS {new Date().getFullYear()}</p>
                 </div>

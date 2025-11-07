@@ -6,26 +6,31 @@ import Dashboard from "./pages/Dashboard";
 import ComplaintPage from "./pages/ComplaintPage";
 import MerchantReport from "./pages/MerchantReport";
 import Support from "./pages/Support";
+import LoginPage from "./pages/LoginPage";
+import { Routes,Route } from "react-router-dom";
+import {Layout} from './components/Layout';
+import { navItems } from "./components/Sidebar";
 
 function App() {
 	const [count, setCount] = useState(0);
 
 	return (
 		<>
-			<div className="flex flex-col h-screen">
-				<Header />
-
-				<div className="flex grow overflow-hidden">
-					<Sidebar />
-					<main className="flex-1 p-8 overflow-y-auto">
-            <Dashboard/>
-					</main>
-				</div>
-
-			</div>
+		        <Routes>
+            <Route path="/" element={<LoginPage/>}/>
+            <Route element={<Layout />}>
+                {navItems.map((item) => (
+                    <Route
+                        element={<item.component />}
+                        path={item.path.substring(1)}
+                    />
+                ))}
+                {/* <Route path="*" element={<NotFound />} /> */}
+            </Route>
+        </Routes>
 			      {/* Render the AdminReport component */}
       <AdminReport />
-	   <ComplaintPage />
+      	   <ComplaintPage />
 	   <MerchantReport />
 	   <Support />
 		</>
