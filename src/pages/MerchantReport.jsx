@@ -20,10 +20,9 @@ const MerchantReport = () => {
 
   // Mock data
   const mockData = [
-    { service: "Electricity", category: "Basic", operator: "DISCOM1", number: "12345", amount: 100, totalAmount: 110, status: "Paid", date: "2023-10-01" },
-    { service: "Water", category: "Premium", operator: "WATERCO", number: "67890", amount: 150, totalAmount: 160, status: "Pending", date: "2023-10-02" },
-    { service: "Gas", category: "Standard", operator: "GASCO", number: "11223", amount: 200, totalAmount: 210, status: "Success", date: "2023-10-03" },
-    // Add more mock data if needed
+    { SrNo:"1",Service: "Electricity", Category: "Basic", Operator: "DISCOM1", Number: "12345", Amount: 100, TotalAmount: 110, Status: "Paid", Date: "2023-10-01" },
+    { SrNo:"2",Service: "Water", Category: "Premium", Operator: "WATERCO", Number: "67890", Amount: 150, TotalAmount: 160, Status: "Pending", Date: "2023-10-02" },
+    { SrNo:"3",Service: "Gas", Category: "Standard", Operator: "GASCO", Number: "11223", Amount: 200, TotalAmount: 210, Status: "Success", Date: "2023-10-03" },
   ];
 
   useEffect(() => {
@@ -83,18 +82,18 @@ const MerchantReport = () => {
   };
 
   const columns = [
-    { key: "sr", label: "Sr. No.", render: (_, i) => i + 1 },
-    { key: "service", label: "Service" },
-    { key: "category", label: "Category" },
-    { key: "operator", label: "Operator" },
-    { key: "number", label: "Number" },
-    { key: "amount", label: "Amount" },
-    { key: "totalAmount", label: "Total Amount" },
-    { key: "status", label: "Status" },
-    { key: "date", label: "Date" },
-    { 
-      key: "actions", 
-      label: "Actions", 
+    "SrNo",
+    "Service",
+    "Category",
+    "Operator",
+    "Number",
+    "Amount",
+    "TotalAmount",
+    "Status",
+    "Date",
+    {
+      key: "action",
+      label: "Action",
       render: (row) => (
         <button
           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
@@ -102,7 +101,7 @@ const MerchantReport = () => {
         >
           View
         </button>
-      ) 
+      ),
     },
   ];
 
@@ -119,11 +118,11 @@ const MerchantReport = () => {
         filterFields={[
           { name: "fromDate", label: "From Date", type: "date" },
           { name: "toDate", label: "To Date", type: "date" },
-          { 
-            name: "service", 
-            label: "Service", 
-            type: "select", 
-            options: ["Electricity", "Water", "Gas", "Mobile", "Dishtv"] 
+          {
+            name: "service",
+            label: "Service",
+            type: "select",
+            options: ["Electricity", "Water", "Gas", "Mobile", "Dishtv"],
           },
           { name: "operator", label: "Operator", type: "text" },
         ]}
