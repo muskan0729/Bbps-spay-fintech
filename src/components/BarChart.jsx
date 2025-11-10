@@ -5,6 +5,7 @@ function BarChart({ chartId, chartCategories, chartName, dataArray, chartType = 
   const options = {
     chart: { id: chartId || "defaultChart" },
     xaxis: { categories: chartCategories || [] },
+    colors:["#05f384ff"]
   };
 
   const series = [
