@@ -1,14 +1,12 @@
 import { ServiceGrid } from "../components/Service";
 import { BillerCategoryList } from "../components/BillerCategoryList";
 import { BillerSearchForm } from "../components/BillerSearchForm";
-
 export const ServicePage = () => {
     // In a real application, you would manage state here to pass the selected biller
     // from BillerCategoryList to BillerSearchForm.
 
     return (
         <div className="min-h-screen">
-            
             {/* 1. Service Icons Grid */}
             <div className="mb-8">
                 <ServiceGrid />
