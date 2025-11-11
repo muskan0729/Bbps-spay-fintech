@@ -21,9 +21,12 @@ const Table = ({ columns, data, rowsPerPage, isPaginationRequired }) => {
         {/* Table Headers */}
         <thead className="bg-gray-100 text-gray-600">
           <tr>
-            {columns.map((col, idx) => (
-              <th key={idx} className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                {typeof col === "string" ? col : col.label} {/* Render column name */}
+            {columns.map((col) => (
+              <th
+                key={col.key}
+                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+              >
+                {col.label}
               </th>
             ))}
           </tr>
@@ -62,13 +65,30 @@ const Table = ({ columns, data, rowsPerPage, isPaginationRequired }) => {
           ) : (
             <tr>
               <td colSpan={columns.length} className="text-center py-4 text-gray-500">
-                No data found
-              </td>
+                <td colSpan={columns.length} className="text-center py-4 text-gray-500">
+                  No data found
+                </td>
+                </td>
             </tr>
           )}
         </tbody>
 
       </table>
+
+      {/* Pagination Controls */}
+      {isPaginationRequired && (
+        <div className="flex justify-between items-center mt-6">
+          <button onClick={() => paginationHandler("prev")} className="px-4 py-2 bg-gray-300 rounded text-sm">
+            Prev
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button onClick={() => paginationHandler("next")} className="px-4 py-2 bg-gray-300 rounded text-sm">
+            Next
+          </button>
+        </div>
+      )}
 
       {/* Pagination Controls */}
       {isPaginationRequired && (

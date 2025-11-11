@@ -14,7 +14,7 @@ import { NotificationBell } from "./NotificationBell";
 
 export const Header = () => {
 	return (
-		<header className="sticky top-0 py-1 z-75 bg-white shadow-xl border-b border-blue-100">
+		<header className="sticky top-0 py-1 z-50 bg-white shadow-xl border-b border-blue-100">
 			<div className="mx-auto px-3">
 				<div className="flex justify-between items-center h-16">
 					<div className="relative h-15 flex items-center justify-center">
