@@ -15,7 +15,9 @@ import Report from "../pages/Report";
 import Support from "../pages/Support";
 import ComplaintPage from "../pages/ComplaintPage";
 import CheckTransactionComplaint from "../pages/CheckTransactionComplaint";
-const UsersComponent = () => <div>Users Page Content</div>;
+import { useAdmin } from "../contexts/AdminContext";
+// const UsersComponent = () => <div>Users Page Content</div>;
+import Users from "../pages/Users";
 
 export const navItems = [
     {
@@ -32,7 +34,7 @@ export const navItems = [
         path: "/users",
         isAdmin: true,
         isUser: false,
-        component: UsersComponent,
+        component: Users,
     },
     {
         icon: faBuildingColumns,
@@ -77,7 +79,7 @@ export const navItems = [
 ];
 
 export const Sidebar = () => {
-    const isAdmin = false;
+    const {isAdmin,setIsAdmin}=useAdmin();
     const filterFn = isAdmin ? (item) => item.isAdmin : (item) => item.isUser;
     return (
         <div className="flex flex-col w-20 md:w-24 bg-linear-to-b from-blue-900 to-blue-800 text-white shadow-2xl p-2 h-full">

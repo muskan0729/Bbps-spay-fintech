@@ -11,7 +11,6 @@ import { NotificationBell } from "./NotificationBell";
 // 	{ id: 3, message: "System maintenance scheduled for 2 AM." },
 // ];
 
-
 export const Header = () => {
 	return (
 		<header className="sticky top-0 py-1 z-50 bg-white shadow-xl border-b border-blue-100">
