@@ -3,14 +3,16 @@ import Table from "../components/Table";
 import SearchBar from "../components/SearchBar";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
+import TableSkeleton from "../components/TableSkeleton";
+import logo from "../images/logo.png";
 
 const MerchantReport = () => {
   const [filters, setFilters] = useState({
     fromDate: "",
     toDate: "",
     service: "",
-    operator: "",
+    billNumber: "",
   });
 
   const [data, setData] = useState([]);
@@ -20,9 +22,9 @@ const MerchantReport = () => {
 
   // Mock data
   const mockData = [
-    { SrNo:"1",Service: "Electricity", Category: "Basic", Operator: "DISCOM1", Number: "12345", Amount: 100, TotalAmount: 110, Status: "Paid", Date: "2023-10-01" },
-    { SrNo:"2",Service: "Water", Category: "Premium", Operator: "WATERCO", Number: "67890", Amount: 150, TotalAmount: 160, Status: "Pending", Date: "2023-10-02" },
-    { SrNo:"3",Service: "Gas", Category: "Standard", Operator: "GASCO", Number: "11223", Amount: 200, TotalAmount: 210, Status: "Success", Date: "2023-10-03" },
+    { SrNo: "1", Service: "Electricity", Category: "Basic", Operator: "DISCOM1", Number: "12345", Amount: 100, TotalAmount: 110, Status: "Paid", Date: "2023-10-01" },
+    { SrNo: "2", Service: "Water", Category: "Premium", Operator: "WATERCO", Number: "67890", Amount: 150, TotalAmount: 160, Status: "Pending", Date: "2023-10-02" },
+    { SrNo: "3", Service: "Gas", Category: "Standard", Operator: "GASCO", Number: "11223", Amount: 200, TotalAmount: 210, Status: "Success", Date: "2023-10-03" },
   ];
 
   useEffect(() => {
@@ -38,20 +40,40 @@ const MerchantReport = () => {
     setFilters({ ...filters, [name]: value });
   };
 
+  const tableStyles = {
+    tableClass: "table-auto w-full bg-white rounded-lg shadow-xl",
+    headerClass: "text-black font-bold text-lg",
+    rowClass: "hover:bg-blue-50",
+    paginationClass: "bg-blue-600 text-white hover:bg-blue-700",
+    prevNextClass: "text-white hover:text-blue-200",
+    customHeaderCellClass: "font-bold text-black", // Apply bold and black for headers
+  };
   const handleSearch = () => {
     setLoading(true);
     setTimeout(() => {
       const filteredData = mockData.filter((item) => {
         return (
-          (!filters.fromDate || item.date >= filters.fromDate) &&
-          (!filters.toDate || item.date <= filters.toDate) &&
-          (!filters.service || item.service === filters.service) &&
-          (!filters.operator || item.operator === filters.operator)
+          (!filters.fromDate || item.Date >= filters.fromDate) &&
+          (!filters.toDate || item.Date <= filters.toDate) &&
+          (!filters.service || item.Service === filters.service) &&
+          (!filters.operator || item.Operator === filters.operator)
         );
       });
       setData(filteredData);
       setLoading(false);
     }, 500);
+  };
+
+
+  const handleReset = () => {
+    setFilters({
+      fromDate: "",
+      toDate: "",
+      category: "",
+      status: "",
+      billNumber: "",
+    });
+    setData(mockData);
   };
 
   const exportExcel = () => {
@@ -63,23 +85,34 @@ const MerchantReport = () => {
   };
 
   const exportPDF = () => {
-    if (!data.length) return alert("No data to export.");
+    if (data.length === 0) {
+      alert("No data to export.");
+      return;
+    }
+
     const doc = new jsPDF();
-    const tableColumn = ["Sr. No.", "Service", "Category", "Operator", "Number", "Amount", "Total Amount", "Status", "Date"];
+    const tableColumn = ["Sr. No.", "Request Id", "Customer Name", "Category", "Bill Number", "Amount", "Plan", "Status", "Date"];
     const tableRows = data.map((item, index) => [
       index + 1,
-      item.service,
-      item.category,
-      item.operator,
-      item.number,
-      item.amount,
-      item.totalAmount,
-      item.status,
-      item.date,
+      item.RequestId,
+      item.CustomerName,
+      item.Category,
+      item.BillNumber,
+      item.Amount,
+      item.Plan,
+      item.Status,
+      item.Date,
     ]);
-    doc.autoTable({ head: [tableColumn], body: tableRows });
-    doc.save("Merchant_Report.pdf");
+
+    // ✅ Call the function directly
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+    });
+
+    doc.save("BBPS_Report.pdf");
   };
+
 
   const columns = [
     "SrNo",
@@ -91,53 +124,83 @@ const MerchantReport = () => {
     "TotalAmount",
     "Status",
     "Date",
-    {
-      key: "action",
-      label: "Action",
-      render: (row) => (
-        <button
-          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-          onClick={() => alert(`View details of ${row.service} (${row.operator})`)}
-        >
-          View
-        </button>
-      ),
-    },
+    
   ];
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-center">Merchant Report</h1>
+      {/* ✅ Header Section */}
+      <div className="flex justify-between items-center mb-6">
+        {/* Left - Title */}
+        <h1 className="text-2xl font-bold text-gray-800">Transaction History</h1>
 
+        {/* Right - Logo */}
+        <img
+          src={logo}
+          alt="Bharat Connect Logo"
+          className="w-32 h-auto object-contain"
+        />
+      </div>
+
+      {/* Filters/Search */}
       <SearchBar
         filters={filters}
         handleChange={handleChange}
         handleSearch={handleSearch}
+        handleReset={handleReset}  // 👈 new prop
         exportExcel={exportExcel}
         exportPDF={exportPDF}
         filterFields={[
-          { name: "fromDate", label: "From Date", type: "date" },
-          { name: "toDate", label: "To Date", type: "date" },
           {
-            name: "service",
-            label: "Service",
-            type: "select",
-            options: ["Electricity", "Water", "Gas", "Mobile", "Dishtv"],
+            name: "fromDate",
+            label: "From Date",
+            type: "date",
+            placeholder: "dd-mm-yyyy",
           },
-          { name: "operator", label: "Operator", type: "text" },
+          {
+            name: "toDate",
+            label: "To Date",
+            type: "date",
+            placeholder: "dd-mm-yyyy",
+          },
+          {
+            name: "category",
+            label: "Category",
+            type: "select",
+            placeholder: "Select Category",
+            options: ["Dishtv", "Gas", "Loan", "Mobile"],
+          },
+          {
+            name: "status",
+            label: "Status",
+            type: "select",
+            placeholder: "Select Status",
+            options: ["Failed", "Initiated", "Pending", "Success"],
+          },
+          {
+            name: "billNumber",
+            label: "Bill Number",
+            type: "text",
+            placeholder: "Enter Bill Number...",
+          },
         ]}
       />
 
-      {loading ? (
-        <div className="text-center text-lg text-gray-500">Loading...</div>
-      ) : (
-        <Table
-          columns={columns}
-          data={data}
-          rowsPerPage={rowsPerPage}
-          isPaginationRequired={isPaginationRequired}
-        />
-      )}
+      {/* Table Section */}
+      <div className="bg-white p-4 rounded-lg shadow-md mt-4">
+        <h2 className="text-lg font-semibold mb-4">Latest Transactions List</h2>
+        {loading ? (
+          <div className="text-center text-lg text-gray-500">Loading...</div>
+        ) : (
+          <Table
+            columns={columns}
+            data={data}
+            rowsPerPage={rowsPerPage}
+            isPaginationRequired={isPaginationRequired}
+            {...tableStyles}
+          />
+        )}
+      </div>
     </div>
   );
 };
