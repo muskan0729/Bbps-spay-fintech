@@ -38,20 +38,24 @@ const Table = ({ columns, data, rowsPerPage, isPaginationRequired }) => {
                   if (typeof col === "string") {
                     return (
                       <td key={colIdx} className="px-6 py-4 text-sm text-gray-700">
-                        {item[col] || "-"} {/* Render simple column data */}
+                        {item[col] || "-"}
                       </td>
                     );
                   }
 
-                  if (col.key === "action") {
+                  if (typeof col === "object" && col.render) {
                     return (
                       <td key={colIdx} className="px-6 py-4 text-sm text-gray-700">
-                        {col.render(item)} {/* Render custom action button */}
+                        {col.render(item)}
                       </td>
                     );
                   }
 
-                  return null;
+                  return (
+                    <td key={colIdx} className="px-6 py-4 text-sm text-gray-700">
+                      {item[col.key] || "-"}
+                    </td>
+                  );
                 })}
               </tr>
             ))
@@ -63,6 +67,7 @@ const Table = ({ columns, data, rowsPerPage, isPaginationRequired }) => {
             </tr>
           )}
         </tbody>
+
       </table>
 
       {/* Pagination Controls */}

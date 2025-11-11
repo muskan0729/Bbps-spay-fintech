@@ -4,7 +4,8 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import SearchBar from "../components/SearchBar";
-
+import logo from "../images/logo.png"
+//
 const AdminReport = () => {
   const [filters, setFilters] = useState({
     fromDate: "",
@@ -137,33 +138,41 @@ const AdminReport = () => {
   ];
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-center">Admin Report</h1>
-
-      <SearchBar
-        filters={filters}
-        handleChange={handleChange}
-        handleSearch={handleSearch}
-        exportExcel={exportExcel}
-        exportPDF={exportPDF}
-        filterFields={[
-          { name: "fromDate", label: "From Date", type: "date" },
-          { name: "toDate", label: "To Date", type: "date" },
-          {
-            name: "category",
-            label: "Category",
-            type: "select",
-            options: ["Dishtv", "Gas", "Loan", "Mobile"]
-          },
-          {
-            name: "status",
-            label: "Status",
-            type: "select",
-            options: ["Failed", "Initiated", "Pending", "Success"]
-          },
-          { name: "billNumber", label: "Bill Number", type: "text" },
-        ]}
+  <div className="p-6 bg-gray-100 min-h-screen">
+    {/* Header Section */}
+    <div className="flex justify-between items-center mb-6">
+      <h1 className="text-2xl font-bold text-gray-800">Transaction History</h1>
+      <img
+        src={logo}
+        alt="Bharat Connect Logo"
+        className="w-32 h-auto object-contain"
       />
+    </div>
+
+    <SearchBar
+      filters={filters}
+      handleChange={handleChange}
+      handleSearch={handleSearch}
+      exportExcel={exportExcel}
+      exportPDF={exportPDF}
+      filterFields={[
+        { name: "fromDate", label: "From Date", type: "date" },
+        { name: "toDate", label: "To Date", type: "date" },
+        {
+          name: "category",
+          label: "Category",
+          type: "select",
+          options: ["Dishtv", "Gas", "Loan", "Mobile"]
+        },
+        {
+          name: "status",
+          label: "Status",
+          type: "select",
+          options: ["Failed", "Initiated", "Pending", "Success"]
+        },
+        { name: "billNumber", label: "Bill Number", type: "text" },
+      ]}
+    />
 
       <div className="bg-white p-4 rounded-lg shadow-md mt-4">
         <h2 className="text-lg font-semibold mb-4">Latest Transactions List</h2>
