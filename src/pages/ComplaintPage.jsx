@@ -163,7 +163,7 @@ const ComplaintPage = ({ role = "merchant" }) => {
   {/* Right Form */}
   <div className="flex-1 bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm relative">
     <img
-      src="/src/images/bharat-connect-logo.png"
+      src="/src/images/logo.png"
       alt="Bharat Connect Logo"
       className="hidden md:block absolute top-4 right-4 h-10 w-auto"
     />
