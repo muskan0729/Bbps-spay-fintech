@@ -3,7 +3,7 @@ import MerchantReport from "./MerchantReport";
 import AdminReport from "./AdminReport";
 
 const Report=()=>{
-const [isAdmin,setIsAdmin]=useState(false);
+const [isAdmin,setIsAdmin]=useState(true);
 return(<>
     {isAdmin?<AdminReport/>:<MerchantReport/>}
     </>);
