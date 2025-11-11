@@ -25,7 +25,7 @@ const CheckTransactionComplaint = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center px-4 py-10">
+    <div className=" flex flex-col items-center">
       {/* ==== Card Container ==== */}
       <div className="relative bg-white shadow-md rounded-lg p-6 w-full max-w-7xl border border-gray-200">
         {/* Logo (Top Right) */}
@@ -105,6 +105,7 @@ const CheckTransactionComplaint = () => {
             columns={columns}
             rowsPerPage={2}
             data={data}
+            currentPage={1}
             isPaginationRequired={false}
           />
         </div>

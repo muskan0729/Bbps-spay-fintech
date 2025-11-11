@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import Admin from "../components/Admin";
 import Merchent from "../components/Merchent";
 import DashboaedSkeleton from "../components/DashboardSkeleton";
+import {useAdmin} from "../contexts/AdminContext"
+
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const data = [
@@ -16,11 +18,13 @@ const Dashboard = () => {
     { id: 9, name: "Anjali Gupta", email: "anjali.gupta@domain.org" },
     { id: 10, name: "Deepak Rao", email: "deepak.rao@techmail.io" },
   ];
+const {isAdmin ,setIsAdmin}=useAdmin();
 
-  const [isAdmin, setIsAdmin] = useState(true);
+  // const [isAdmin, setIsAdmin] = useState(true);
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
+      console.log(isAdmin);
     }, 2000);
   }, []);
   return (
