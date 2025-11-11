@@ -91,19 +91,7 @@ const Table = ({ columns, data, rowsPerPage, isPaginationRequired }) => {
       )}
 
       {/* Pagination Controls */}
-      {isPaginationRequired && (
-        <div className="flex justify-between items-center mt-6">
-          <button onClick={() => paginationHandler("prev")} className="px-4 py-2 bg-gray-300 rounded text-sm">
-            Prev
-          </button>
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button onClick={() => paginationHandler("next")} className="px-4 py-2 bg-gray-300 rounded text-sm">
-            Next
-          </button>
-        </div>
-      )}
+      
     </div>
   );
 };
