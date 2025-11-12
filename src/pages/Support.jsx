@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Table from "../components/Table";
-import logo from "../images/logo.png";
+import logo from "../images/placeholder.jpeg";
 import { FaSearch, FaExclamationCircle, FaCheckCircle } from "react-icons/fa";
 
 const Support = () => {

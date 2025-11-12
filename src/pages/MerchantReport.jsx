@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import TableSkeleton from "../components/TableSkeleton";
-import logo from "../images/logo.png";
+import logo from "../images/placeholder.jpeg";
 
 const MerchantReport = () => {
   const [filters, setFilters] = useState({
