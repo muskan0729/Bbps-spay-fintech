@@ -1,5 +1,5 @@
 import React from "react";
-import { FaFileExcel, FaFilePdf } from "react-icons/fa";
+import { FaFileExcel, FaFilePdf, FaSyncAlt } from "react-icons/fa";
 
 const SearchBar = ({
   filters,
@@ -7,88 +7,110 @@ const SearchBar = ({
   handleSearch,
   exportExcel,
   exportPDF,
+  handleReset,
   filterFields,
 }) => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md mb-6 flex flex-wrap gap-4 justify-between items-end">
-      {/* Dynamic Filters */}
-      <div className="flex flex-wrap gap-4">
-        {filterFields.map((field) => (
-          <div key={field.name} className="w-full sm:w-auto">
-            <label className="block text-sm font-medium mb-1">
-              {field.label}
-            </label>
+    <div className="bg-white/80 backdrop-blur-sm border border-gray-200 p-6 rounded-2xl shadow-md mb-6">
+      {/* Filter Inputs */}
+      <div className="flex flex-wrap gap-6 items-end justify-between">
+        <div className="flex flex-wrap gap-4">
+          {filterFields.map((field) => (
+            <div key={field.name} className="flex flex-col w-40 sm:w-48">
+              <label className="text-gray-700 font-medium text-sm mb-1">
+                {field.label}
+              </label>
 
-            {field.type === "date" ? (
-              <input
-                type="date"
-                name={field.name}
-                value={filters[field.name]}
-                onChange={handleChange}
-                className="border rounded px-3 py-2 w-full sm:w-48"
-              />
-            ) : field.type === "select" ? (
-              <select
-                name={field.name}
-                value={filters[field.name]}
-                onChange={handleChange}
-                className="border rounded px-3 py-2 w-full sm:w-48"
-              >
-                <option value="">Select {field.label}</option>
-                {field.options.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+              {field.type === "date" ? (
+                <input
+                  type="date"
+                  name={field.name}
+                  value={filters[field.name]}
+                  onChange={handleChange}
+                  className="border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent rounded-lg px-3 py-2 text-gray-700 text-sm shadow-sm transition-all duration-200"
+                />
+              ) : field.type === "select" ? (
+                <select
+                  name={field.name}
+                  value={filters[field.name]}
+                  onChange={handleChange}
+                  className="border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent rounded-lg px-3 py-2 text-gray-700 text-sm shadow-sm transition-all duration-200"
+                >
+                  <option value="">
+                    {field.placeholder || `Select ${field.label}`}
                   </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                name={field.name}
-                value={filters[field.name]}
-                onChange={handleChange}
-                placeholder={`Enter ${field.label}...`}
-                className="border rounded px-3 py-2 w-full sm:w-48"
-              />
-            )}
-          </div>
-        ))}
-      </div>
+                  {field.options.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  name={field.name}
+                  value={filters[field.name]}
+                  onChange={handleChange}
+                  placeholder={field.placeholder || `Enter ${field.label}...`}
+                  className="border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent rounded-lg px-3 py-2 text-gray-700 text-sm shadow-sm transition-all duration-200"
+                />
+              )}
+            </div>
+          ))}
+        </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-all"
-        >
-          Search
-        </button>
-
-        {/* Show export buttons only if provided */}
-        {exportExcel && (
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 mt-4 sm:mt-0">
+          {/* Search Button */}
           <button
-            onClick={exportExcel}
-            aria-label="Export to Excel"
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2 transition-all"
+            onClick={handleSearch}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-5 py-2.5 rounded-lg shadow hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:shadow-blue-300/40 transition-all duration-200 transform hover:scale-105"
           >
-            <FaFileExcel />
-            Export Excel
+            Search
           </button>
-        )}
 
-        {exportPDF && (
-          <button
-            onClick={exportPDF}
-            aria-label="Export to PDF"
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2 transition-all"
-          >
-            <FaFilePdf />
-            Export PDF
-          </button>
-        )}
+
+          {/* Reset Icon */}
+          {handleReset && (
+            <button
+              onClick={handleReset}
+              title="Reset Filters"
+              className="text-gray-500 hover:text-blue-600 text-xl transition-transform transform hover:rotate-180 duration-300"
+            >
+              <FaSyncAlt />
+            </button>
+          )}
+
+          {/* Excel Export */}
+          {exportExcel && (
+            <button
+              onClick={exportExcel}
+              aria-label="Export to Excel"
+              className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2.5 rounded-lg shadow hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105"
+            >
+              <FaFileExcel className="text-lg" />
+              <span className="hidden sm:inline">Excel</span>
+            </button>
+          )}
+
+          {/* PDF Export */}
+          {exportPDF && (
+            <button
+              onClick={exportPDF}
+              aria-label="Export to PDF"
+              className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2.5 rounded-lg shadow hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105"
+            >
+              <FaFilePdf className="text-lg" />
+              <span className="hidden sm:inline">PDF</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 export default SearchBar;
+
+
+

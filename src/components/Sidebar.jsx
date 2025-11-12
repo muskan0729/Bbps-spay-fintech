@@ -1,76 +1,99 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faGauge,
-    faMagnifyingGlass, 
+    faMagnifyingGlass,
     faBuildingColumns,
     faTriangleExclamation,
-    faCircleExclamation
+    faCircleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-    faFileLines,
-} from "@fortawesome/free-regular-svg-icons";
+import { faFileLines } from "@fortawesome/free-regular-svg-icons";
 import { Link } from "react-router-dom";
 
 import Dashboard from "../pages/Dashboard";
-import AdminReport from "../pages/AdminReport";
 import { ServicePage } from "../pages/ServicePage";
-const Support = () => <div>Support Page Content</div>;
-const Complaint = () => <div>Complaint Page Content</div>;
-const CheckComplaint = () => <div>Check Complaint Page Content</div>;
+import Report from "../pages/Report";
+import Support from "../pages/Support";
+import ComplaintPage from "../pages/ComplaintPage";
+import CheckTransactionComplaint from "../pages/CheckTransactionComplaint";
+import { useAdmin } from "../contexts/AdminContext";
+// const UsersComponent = () => <div>Users Page Content</div>;
+import Users from "../pages/Users";
 
 export const navItems = [
-    { 
-        icon: faGauge, 
-        label: "Dashboard", 
+    {
+        icon: faGauge,
+        label: "Dashboard",
         path: "/dashboard",
-        component: Dashboard 
+        isAdmin: true,
+        isUser: true,
+        component: Dashboard,
     },
-    { 
-        icon: faBuildingColumns, 
-        label: "Services", 
-        path: "/services", 
-        component: ServicePage
+    {
+        icon: faBuildingColumns,
+        label: "Users",
+        path: "/users",
+        isAdmin: true,
+        isUser: false,
+        component: Users,
     },
-    { 
-        icon: faFileLines, 
-        label: "Report", 
-        path: "/report", 
-        component: AdminReport 
+    {
+        icon: faBuildingColumns,
+        label: "Services",
+        path: "/services",
+        isAdmin: false,
+        isUser: true,
+        component: ServicePage,
     },
-    { 
-        icon: faMagnifyingGlass, 
-        label: "Support", 
-        path: "/support", 
-        component: Support 
+    {
+        icon: faFileLines,
+        label: "Report",
+        path: "/report",
+        isAdmin: true,
+        isUser: true,
+        component: Report,
     },
-    { 
-        icon: faTriangleExclamation, 
-        label: "Complaint", 
-        path: "/complaint", 
-        component: Complaint 
+    {
+        icon: faMagnifyingGlass,
+        label: "Support",
+        path: "/support",
+        isAdmin: false,
+        isUser: true,
+        component: Support,
     },
-    { 
-        icon: faCircleExclamation, 
-        label: "Check Complaint", 
-        path: "/checkcomplaint", 
-        component: CheckComplaint 
+    {
+        icon: faTriangleExclamation,
+        label: "Complaint",
+        path: "/complaint",
+        isAdmin: true,
+        isUser: true,
+        component: ComplaintPage,
+    },
+    {
+        icon: faCircleExclamation,
+        label: "Check Complaint",
+        path: "/checkcomplaint",
+        isAdmin: false,
+        isUser: true,
+        component: CheckTransactionComplaint,
     },
 ];
 
 export const Sidebar = () => {
+    const {isAdmin,setIsAdmin}=useAdmin();
+    const filterFn = isAdmin ? (item) => item.isAdmin : (item) => item.isUser;
     return (
         <div className="flex flex-col w-20 md:w-24 bg-linear-to-b from-blue-900 to-blue-800 text-white shadow-2xl p-2 h-full">
-            <nav className="grow overflow-y-auto py-8"> 
+            <nav className="grow overflow-y-auto py-8">
                 <ul className="space-y-6">
-                    {navItems.map((item, index) => (
+                    {navItems.filter(filterFn).map((item, index) => (
                         <li key={index}>
                             <Link
                                 to={item.path}
                                 className="group flex flex-col items-center space-y-1 p-2 text-sm hover:bg-white/20 rounded-lg transition duration-150 ease-in-out cursor-pointer"
                             >
-                                <FontAwesomeIcon 
-                                    icon={item.icon} 
-                                    className="w-25 h-25 md:w-15 md:h-15 transition duration-200 group-hover:scale-130" 
+                                <FontAwesomeIcon
+                                    icon={item.icon}
+                                    className="w-25 h-25 md:w-15 md:h-15 transition duration-200 group-hover:scale-130"
                                 />
                                 <span className="text-xs text-center">{item.label}</span>
                             </Link>
