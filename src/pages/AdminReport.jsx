@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import SearchBar from "../components/SearchBar";
-import logo from "../images/placeholder.jpeg";
+import logo from "../images/logo.png";
 
 const AdminReport = () => {
   const [filters, setFilters] = useState({

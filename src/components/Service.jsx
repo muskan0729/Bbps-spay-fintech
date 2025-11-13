@@ -11,7 +11,7 @@ import {
 
 import { ModalProvider,useModal } from "../contexts/ServicesModalContext";
 import { ServiceSelectionModal, DetailsModalComponent, TxnConfirmModal, TxnFormModal } from "./ServicesModal";
-import placeholderImg from '../images/placeholder.jpeg';
+import placeholderImg from "../images/logo.png";
 
 // --- Services List ---
 const servicesList = [

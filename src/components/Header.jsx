@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWallet, faCaretDown } from "@fortawesome/free-solid-svg-icons";
-import avatarImg from "../images/placeholder.jpeg";
-import logo from "../images/placeholder.jpeg";
-import profilePic from "../images/placeholder.jpeg";
+import avatarImg from "../images/avatars/1.png";
+import logo from "../images/Spaylogo.jpg";
+import profilePic from "../images/avatars/1.png";
 // import spayImg from "../images/placeholder.jpeg";
 // import logo from  "../images/placeholder.jpeg"
 // import profilePic from  "../images/placeholder.jpeg";

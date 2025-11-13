@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoginIllustration from '../images/placeholder.jpeg'; 
+import LoginIllustration from '../images/loginbg.jpg'; 
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
