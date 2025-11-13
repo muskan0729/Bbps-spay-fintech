@@ -8,7 +8,7 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
-import logo from "../images/logo.png"; 
+import logo from "../images/placeholder.jpeg"; 
 
 const Support = () => {
   const [filters, setFilters] = useState({

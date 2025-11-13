@@ -4,7 +4,8 @@ import SearchBar from "../components/SearchBar";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import logo from "../images/logo.png";
+import logo from "../images/placeholder.jpeg"
+import TableSkeleton from "../components/TableSkeleton";
 
 const MerchantReport = () => {
   const [filters, setFilters] = useState({

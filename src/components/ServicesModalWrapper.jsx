@@ -2,15 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
-export const ModalWrapper = ({
-  title,
+export const ServicesModalWrapper = ({
   isOpen,
   onClose,
-  maxWidth = "md",
-  children,
   renderFooter,
-  renderHeader,    // <-- new prop for custom header
+  renderMiddle,
+  renderHeader,
   resetOnClose,
+  headerBg = "bg-linear-to-r from-blue-900 to-cyan-500",
+  headerTextColor = "text-white",
 }) => {
   const modalRef = useRef();
   const [isClosing, setIsClosing] = useState(false);
@@ -24,47 +24,73 @@ export const ModalWrapper = ({
     }, 250);
   };
 
+  // useEffect(() => {
+  //   const handleClickOutside = (e) => {
+  //     if (modalRef.current && !modalRef.current.contains(e.target)) {
+  //       handleClose();
+  //     }
+  //   };
+  //   if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, [isOpen]);
+
+  const [isCentered, setIsCentered] = useState(false);
+
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target)) {
-        handleClose();
+    const checkHeight = () => {
+      if (modalRef.current) {
+        const modalHeight = modalRef.current.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        setIsCentered(modalHeight < viewportHeight * 0.8);
       }
     };
-    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
+
+    checkHeight();
+    window.addEventListener("resize", checkHeight);
+
+    return () => window.removeEventListener("resize", checkHeight);
+  }, [isOpen, renderMiddle]);
+
+  const outerClasses = isCentered
+    ? "flex flex-col items-center justify-center" // Centered when short
+    : "flex flex-col items-center py-10"; // Padded top when tall
 
   if (!isOpen && !isClosing) return null;
 
   return (
     <div
-      className={`fixed inset-0 flex items-center justify-center z-50 ${
+      className={`absolute inset-0 z-50 overflow-y-auto bg-black/40 ${
         isClosing ? "animate-fade-out" : "animate-fade-in"
-      } bg-black/40`}
+      } ${outerClasses}`}
     >
       <div
         ref={modalRef}
-        className={`bg-white rounded-lg shadow-2xl w-full max-w-${maxWidth} mx-4 transform ${
+        className={`bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 transform ${
           isClosing ? "animate-fly-out" : "animate-fly-in"
         }`}
       >
         {/* Header */}
-        {renderHeader ? (
-          renderHeader({ close: handleClose })
-        ) : (
-          <div className="flex justify-between items-center p-4 bg-linear-to-r from-blue-900 to-cyan-500 text-white rounded-t-lg">
-            <span className="font-semibold">{title}</span>
-            <button onClick={handleClose} className="p-1 rounded-full hover:bg-white/20">
-              <FontAwesomeIcon icon={faTimes} />
-            </button>
-          </div>
-        )}
+
+        <div className={`flex justify-between items-center px-4 py-8 ${headerBg} ${headerTextColor} rounded-t-lg`}>
+          {/* <span className="font-semibold text-4xl">{title}</span> */}
+          {renderHeader}
+          <button
+            onClick={handleClose}
+            className="p-1 rounded-full hover:bg-white/20"
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+        </div>
 
         {/* Body */}
-        <div className="p-6">{children({ close: handleClose })}</div>
+        <div className="p-6">{renderMiddle}</div>
 
         {/* Footer */}
-        {renderFooter && <div className="p-4 border-t-2 border-gray-100">{renderFooter({ close: handleClose })}</div>}
+        <div className="py-3 px-4 border-t-2 border-gray-100">
+          <div className="flex justify-end gap-2">
+            {renderFooter && renderFooter(handleClose)}
+          </div>
+        </div>
       </div>
     </div>
   );
