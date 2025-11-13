@@ -21,7 +21,7 @@ const Merchent = () => {
 		{ "Req ID": 11, "Customer name": "HIJ", "Category": "mobile", "Bill No": 12303, "Amount": 250, "Plan": "ACTIVE", "Date": "23-09-2025 06:02:14" }
 	];
 	const tColumns = ["Req ID", "Customer name", "Category", "Bill No", "Amount", "Plan", "Date"];
-
+	
 	return (
 		<span>
 			{/* ================= User Section ================= */}
