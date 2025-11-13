@@ -6,6 +6,16 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import SearchBar from "../components/SearchBar";
 import logo from "../images/logo.png";
+import {
+  FaEye,
+  FaRupeeSign,
+  FaUserAlt,
+  FaClipboardList,
+  FaCheckCircle,
+} from "react-icons/fa";
+import { MdCategory } from "react-icons/md";
+import { BsCalendarDate } from "react-icons/bs";
+import { FaClockRotateLeft } from "react-icons/fa6";
 
 const AdminReport = () => {
   const [filters, setFilters] = useState({
@@ -19,67 +29,149 @@ const AdminReport = () => {
   const [loading, setLoading] = useState(false);
   const rowsPerPage = 5;
 
+  const handlePlanToggle = (index) => {
+    setData((prev) =>
+      prev.map((item, i) =>
+        i === index
+          ? { ...item, Plan: item.Plan === "Active" ? "Inactive" : "Active" }
+          : item
+      )
+    );
+  };
 
-
-// Toggle plan handler
-const handlePlanToggle = (index) => {
-  setData(prev =>
-    prev.map((item, i) =>
-      i === index
-        ? { ...item, Plan: item.Plan === "Active" ? "Inactive" : "Active" }
-        : item
-    )
-  );
-};
-
-
-const renderPlanLabel = (plan, index) => {
-  return (
+  const renderPlanLabel = (plan, index) => (
     <div
-      className={`relative inline-flex items-center w-16 h-6 sm:w-20 sm:h-8 rounded-full cursor-pointer transition-colors duration-300
-        ${plan === "Active" ? "bg-green-500" : "bg-gray-300"}`}
+      className={`relative inline-flex items-center w-12 h-6 rounded-full cursor-pointer transition-all duration-300 ${plan === "Active" ? "bg-emerald-400" : "bg-gray-300"
+        } hover:shadow-md`}
       onClick={() => handlePlanToggle(index)}
     >
-      {/* Sliding Circle */}
       <div
-        className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 sm:w-7 sm:h-7 rounded-full shadow-md transform transition-transform duration-300
-          ${plan === "Active" ? "translate-x-10 sm:translate-x-12" : "translate-x-0"}`}
-      ></div>
-
-      {/* Labels inside switch */}
-      <div className="flex justify-between w-full px-1 sm:px-2 text-[0.55rem] sm:text-xs font-semibold text-white select-none pointer-events-none">
-        <span className={`${plan === "Active" ? "opacity-100" : "opacity-50"}`}>Active</span>
-        <span className={`${plan === "Active" ? "opacity-50" : "opacity-100"}`}>Inactive</span>
-      </div>
+        className={`absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-300 ${plan === "Active" ? "translate-x-6" : "translate-x-0"
+          }`}
+      />
     </div>
   );
-};
 
+  const renderStatusLabel = (status, index) => {
+    const base =
+      "px-2 py-1 text-xs font-semibold rounded-full flex items-center gap-2 transition-all duration-300";
+    const styles = {
+      Success: { bg: "bg-green-100", text: "text-green-800", color: "#10B981" },
+      Failed: { bg: "bg-red-100", text: "text-red-800", color: "#EF4444" },
+      Pending: { bg: "bg-yellow-100", text: "text-yellow-800", color: "#F59E0B" },
+      Initiated: { bg: "bg-cyan-100", text: "text-cyan-800", color: "#06B6D4" },
+    };
 
+    const style = styles[status] || { bg: "bg-gray-100", text: "text-gray-600", color: "#9CA3AF" };
+    const [width, setWidth] = useState(0);
 
+    useEffect(() => {
+      const targetWidth = Math.floor(Math.random() * 30) + 20;
+      const timeout = setTimeout(() => setWidth(targetWidth), 100);
+      return () => clearTimeout(timeout);
+    }, [status, index]);
 
-// Update columns to pass index
-const columns = [
-  "SrNo",
-  "RequestId",
-  "CustomerName",
-  "Category",
-  "BillNumber",
-  { label: "Amount", render: (row) => <span className="font-semibold text-gray-800">{formatCurrency(row.Amount)}</span> },
-  { label: "Plan", render: (row, rowIndex) => renderPlanLabel(row.Plan, rowIndex) },
-  { label: "Status", render: (row) => renderStatusLabel(row.Status) },
-  "Date",
-  { key: "action", label: "Action", render: (row) => (
-    <button
-      className="bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-600 shadow-md transition"
-      onClick={() => alert(`View details of ${row.CustomerName}`)}
+    return (
+      <span className={`${base} ${style.bg} ${style.text}`}>
+        {status}
+        <span
+          className="inline-block h-1 rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${width}px`, backgroundColor: style.color }}
+        />
+      </span>
+    );
+  };
+
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+    }).format(amount);
+
+  const columns = [
+    {
+      label: (
+        <div className="flex items-center gap-1">
+          <FaClipboardList className="text-gray-700 text-base" />
+          <span>Sr No</span>
+        </div>
+      ),
+      key: "SrNo",
+    },
+    {
+      label: (
+        <div className="flex items-center gap-1">
+          <FaCheckCircle className="text-gray-700 text-base" />
+          <span>Request ID</span>
+        </div>
+      ),
+      key: "RequestId",
+    },
+    {
+      label: (
+        <div className="flex items-center gap-1">
+          <FaUserAlt className="text-gray-700 text-base" />
+          <span>Customer</span>
+        </div>
+      ),
+      key: "CustomerName",
+    },
+    {
+      label: (
+        <div className="flex items-center gap-1">
+          <MdCategory className="text-gray-700 text-base" />
+          <span>Category</span>
+        </div>
+      ),
+      key: "Category",
+    },
+    "BillNumber",
+    {
+  label: (
+    <div className="flex items-center gap-1">
+      <FaRupeeSign className="text-gray-700 text-base" />
+      <span>Amount</span>
+    </div>
+  ),
+  render: (row) => (
+    <span
+      className="font-semibold text-white bg-blue-800 px-2 py-1 rounded-lg inline-block"
+      title={formatCurrency(row.Amount)}
     >
-      View
-    </button>
-  ) },
-];
+      {formatCurrency(row.Amount)}
+    </span>
+  ),
+},
 
-  // Mock Data
+
+    { label: "Plan", render: (row, i) => renderPlanLabel(row.Plan, i) },
+    { label: "Status", render: (row, i) => renderStatusLabel(row.Status, i) },
+    {
+      label: (
+        <div className="flex items-center gap-1">
+          <BsCalendarDate className="text-gray-700 text-base" />
+          <span>Date</span>
+        </div>
+      ),
+      key: "Date",
+    },
+    {
+      label: "Action",
+      render: (row) => (
+        <button
+          className="group flex items-center gap-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-3 py-1.5 rounded-xl
+                    hover:from-teal-600 hover:to-teal-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+          onClick={() => alert(`Viewing details of ${row.CustomerName}`)}
+        >
+          <FaEye className="text-white group-hover:scale-110 transition-transform" /> View
+        </button>
+      ),
+    },
+  ];
+
+
+
   const mockData = Array.from({ length: 15 }, (_, i) => ({
     SrNo: i + 1,
     RequestId: `R00${i + 1}`,
@@ -108,32 +200,24 @@ const columns = [
   const handleSearch = () => {
     setLoading(true);
     setTimeout(() => {
-      const filteredData = mockData.filter(item => {
-        return (
+      const filteredData = mockData.filter(
+        (item) =>
           (!filters.fromDate || item.Date >= filters.fromDate) &&
           (!filters.toDate || item.Date <= filters.toDate) &&
           (!filters.category || item.Category === filters.category) &&
           (!filters.status || item.Status === filters.status) &&
           (!filters.billNumber || item.BillNumber.includes(filters.billNumber))
-        );
-      });
+      );
       setData(filteredData);
       setLoading(false);
     }, 500);
   };
 
   const handleReset = () => {
-    setFilters({
-      fromDate: "",
-      toDate: "",
-      category: "",
-      status: "",
-      billNumber: "",
-    });
+    setFilters({ fromDate: "", toDate: "", category: "", status: "", billNumber: "" });
     setData(mockData);
   };
 
-  // Export Excel
   const exportExcel = () => {
     if (!data.length) return alert("No data to export.");
     const ws = XLSX.utils.json_to_sheet(data);
@@ -142,11 +226,20 @@ const columns = [
     XLSX.writeFile(wb, "Admin_Report.xlsx");
   };
 
-  // Export PDF
   const exportPDF = () => {
     if (!data.length) return alert("No data to export.");
     const doc = new jsPDF();
-    const tableColumn = ["Sr. No.", "Request Id", "Customer Name", "Category", "Bill Number", "Amount", "Plan", "Status", "Date"];
+    const tableColumn = [
+      "Sr. No.",
+      "Request Id",
+      "Customer Name",
+      "Category",
+      "Bill Number",
+      "Amount",
+      "Plan",
+      "Status",
+      "Date",
+    ];
     const tableRows = data.map((item, index) => [
       index + 1,
       item.RequestId,
@@ -158,56 +251,40 @@ const columns = [
       item.Status,
       item.Date,
     ]);
-
     autoTable(doc, { head: [tableColumn], body: tableRows });
     doc.save("Admin_Report.pdf");
   };
 
-  // Styled Status Labels
-  const renderStatusLabel = (status) => {
-    const base = "px-3 py-1.5 text-sm font-semibold rounded-full shadow-sm transition-all duration-300";
-    const styles = {
-      Success: "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-300/40 hover:shadow-green-400/60",
-      Failed: "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-300/40 hover:shadow-red-400/60",
-      Pending: "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-yellow-300/40 hover:shadow-yellow-400/60",
-      Initiated: "bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-sky-300/40 hover:shadow-sky-400/60",
-    };
-    return <span className={`${base} ${styles[status] || ""}`}>{status}</span>;
-  };
-
- 
-
-  // Currency Formatter
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 2,
-    }).format(amount);
-
-  
-  // Table Styles
   const tableStyles = {
     tableWrapperClass:
-      "overflow-x-auto rounded-2xl shadow-lg border border-gray-200 bg-white/90 backdrop-blur-sm transition-all duration-300 hover:shadow-xl",
-    tableClass: "min-w-full divide-y divide-gray-200",
+      "overflow-x-auto rounded-2xl border border-gray-300 bg-white/95 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-2xl",
+    tableClass: "min-w-full text-base divide-y divide-gray-300 border border-gray-300",
     headerClass:
-      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white font-semibold text-sm uppercase tracking-wider sticky top-0 shadow-inner",
-    rowClass: "bg-white even:bg-gray-50 hover:bg-sky-50 transition-all duration-300 cursor-pointer",
-    paginationClass: "flex justify-center items-center flex-wrap gap-3 py-4 border-t border-gray-200",
-    paginationBtnClass: "px-3 py-1 rounded-lg text-gray-700 hover:bg-blue-100 transition-all duration-200",
-    paginationActiveClass: "px-3 py-1 rounded-lg bg-blue-600 text-white shadow-md transition-all duration-200",
+      "bg-gray-200 text-gray-800 font-semibold text-sm uppercase tracking-wider sticky top-0 shadow-sm border-b border-gray-300",
+    rowClass:
+      "bg-gray-50 even:bg-gray-100 hover:bg-teal-50 hover:shadow-md transform hover:scale-[1.01] transition-all duration-300 border-b border-gray-200",
+    paginationClass: "flex justify-center items-center gap-2 py-3 border-t border-gray-200 mt-4 flex-wrap",
+    paginationBtnClass:
+      "flex items-center gap-1 bg-teal-500 text-white px-2.5 py-1.5 rounded-lg shadow-md hover:bg-teal-600 disabled:opacity-40 text-sm",
+    paginationActiveClass:
+      "px-3 py-1 rounded-full bg-teal-600 text-white shadow-lg text-sm transition-all",
   };
 
   return (
-    <div className="p-8 bg-gradient-to-br from-blue-50 via-gray-100 to-blue-100 min-h-screen transition-all">
+    <div className="p-8 min-h-screen bg-gradient-to-br from-teal-50 via-white to-orange-50 transition-all">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-extrabold text-gray-800">Transaction History</h1>
-        <img src={logo} alt="Bharat Connect Logo" className="w-36 h-auto object-contain drop-shadow-lg" />
+      <div className="flex flex-wrap justify-between items-center mb-8">
+        <h1 className="text-4xl font-extrabold text-gray-800 drop-shadow-md">
+          Transaction History
+        </h1>
+        <img
+          src={logo}
+          alt="Logo"
+          className="w-40 h-auto object-contain drop-shadow-xl mt-4 sm:mt-0"
+        />
       </div>
 
-      {/* Filters */}
+      {/* Search Bar */}
       <SearchBar
         filters={filters}
         handleChange={handleChange}
@@ -218,26 +295,34 @@ const columns = [
         filterFields={[
           { name: "fromDate", label: "From Date", type: "date" },
           { name: "toDate", label: "To Date", type: "date" },
-          { name: "category", label: "Category", type: "select", options: ["Electricity", "Gas", "Loan", "Water", "Mobile"] },
-          { name: "status", label: "Status", type: "select", options: ["Failed", "Initiated", "Pending", "Success"] },
+          {
+            name: "category",
+            label: "Category",
+            type: "select",
+            options: ["Electricity", "Gas", "Loan", "Water", "Mobile"],
+          },
+          {
+            name: "status",
+            label: "Status",
+            type: "select",
+            options: ["Failed", "Initiated", "Pending", "Success"],
+          },
           { name: "billNumber", label: "Bill Number", type: "text" },
         ]}
       />
 
-      {/* Table */}
-      <div className="mt-6">
-        <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Latest Transactions</h2>
+      {/* Table Card */}
+      <div className="mt-8">
+        <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-300 p-6 transition-all duration-300 hover:shadow-3xl">
+          <div className="flex items-center gap-3 mb-6">
+            <FaClockRotateLeft className="text-teal-500 text-2xl animate-pulse" />
+            <h2 className="text-2xl font-semibold text-gray-800">Latest Transactions</h2>
+          </div>
+
           {loading ? (
             <TableSkeleton rows={rowsPerPage} columns={columns.length} />
           ) : (
-            <Table
-              columns={columns}
-              data={data}
-              rowsPerPage={rowsPerPage}
-              isPaginationRequired={true}
-              {...tableStyles}
-            />
+            <Table columns={columns} data={data} rowsPerPage={rowsPerPage} isPaginationRequired={true} {...tableStyles} />
           )}
         </div>
       </div>

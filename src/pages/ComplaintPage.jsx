@@ -51,34 +51,59 @@ const ComplaintPage = () => {
   const handleViewDetails = (row) => setSelectedComplaint(row);
   const handleCloseModal = () => setSelectedComplaint(null);
 
-  // Badge renderers
+  /// ✅ Complaint Status (keep slightly bold for importance)
   const renderStatusLabel = (status) => {
-    const base = "px-3 py-1.5 text-sm font-semibold rounded-full shadow-sm transition-all duration-300";
+    const base =
+      "px-3 py-1 text-xs font-semibold rounded-full shadow-sm border transition-all duration-300";
     const styles = {
-      ASSIGNED: "bg-gradient-to-r from-green-700 to-green-800 text-white shadow-green-600/40 hover:shadow-green-700/60",
-      Pending: "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-yellow-400/40 hover:shadow-yellow-500/60",
-      Resolved: "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-300/40 hover:shadow-blue-400/60",
+      ASSIGNED:
+        "bg-green-100 text-green-800 border-green-300 hover:bg-green-200",
+      Pending:
+        "bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200",
+      Resolved:
+        "bg-sky-100 text-sky-800 border-sky-300 hover:bg-sky-200",
     };
-    return <span className={`${base} ${styles[status] || "bg-gray-200 text-gray-800"}`}>{status}</span>;
+    return (
+      <span className={`${base} ${styles[status] || "bg-gray-100 text-gray-700 border-gray-300"}`}>
+        {status}
+      </span>
+    );
   };
 
+  // ✅ Participation Type — soft pastel tones for readability
   const renderParticipationType = (type) => {
-    const base = "px-2 py-1 text-sm font-semibold rounded-full shadow-sm transition-all duration-300";
+    const base =
+      "px-2 py-1 text-xs font-semibold rounded-full border shadow-sm transition-all duration-300";
     const styles = {
-      BILLER: "bg-purple-600 text-white shadow-purple-400/40 hover:shadow-purple-500/60",
-      AGENT: "bg-orange-600 text-white shadow-orange-400/40 hover:shadow-orange-500/60",
+      BILLER:
+        "bg-violet-100 text-violet-800 border-violet-300 hover:bg-violet-200",
+      AGENT:
+        "bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200",
     };
-    return <span className={`${base} ${styles[type] || "bg-gray-200 text-gray-800"}`}>{type}</span>;
+    return (
+      <span className={`${base} ${styles[type] || "bg-gray-100 text-gray-700 border-gray-300"}`}>
+        {type}
+      </span>
+    );
   };
 
+  // ✅ Complaint Type — softer blue/green pastel tones
   const renderComplaintType = (type) => {
-    const base = "px-2 py-1 text-sm font-semibold rounded-full shadow-sm transition-all duration-300";
+    const base =
+      "px-2 py-1 text-xs font-semibold rounded-full border shadow-sm transition-all duration-300";
     const styles = {
-      Transaction: "bg-blue-600 text-white shadow-blue-400/40 hover:shadow-blue-500/60",
-      Service: "bg-green-700 text-white shadow-green-500/40 hover:shadow-green-600/60",
+      Transaction:
+        "bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200",
+      Service:
+        "bg-green-100 text-green-800 border-green-300 hover:bg-green-200",
     };
-    return <span className={`${base} ${styles[type] || "bg-gray-200 text-gray-800"}`}>{type}</span>;
+    return (
+      <span className={`${base} ${styles[type] || "bg-gray-100 text-gray-700 border-gray-300"}`}>
+        {type}
+      </span>
+    );
   };
+
 
   const columns = [
     { label: "Complaint ID", key: "ComplaintID" },

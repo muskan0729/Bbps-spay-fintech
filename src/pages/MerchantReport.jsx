@@ -129,30 +129,21 @@ const MerchantReport = () => {
   };
 
   // 💎 Read-only Plan Toggle-Bar with text inside
-const renderPlanLabel = (plan) => {
-  return (
-    <div
-      className={`w-20 h-8 flex items-center rounded-full p-1 relative transition-all duration-300 ${
-        plan === "Active" ? "bg-green-500" : "bg-gray-300"
-      }`}
-    >
-      {/* Knob */}
+  // 💎 Read-only Plan Toggle-Bar (no text inside)
+  const renderPlanLabel = (plan) => {
+    return (
       <div
-        className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
-          plan === "Active" ? "translate-x-12" : "translate-x-0"
-        }`}
-      ></div>
-
-      {/* Text */}
-      <span
-        className={`absolute w-full text-center text-xs font-semibold text-white pointer-events-none select-none`}
+        className={`w-14 h-7 flex items-center rounded-full p-1 relative transition-all duration-300 ${plan === "Active" ? "bg-green-500" : "bg-gray-300"
+          }`}
       >
-        {plan}
-      </span>
-    </div>
-  );
-};
-
+        {/* Knob */}
+        <div
+          className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${plan === "Active" ? "translate-x-7" : "translate-x-0"
+            }`}
+        ></div>
+      </div>
+    );
+  };
 
 
   // 💰 Format Amount to currency
@@ -164,29 +155,31 @@ const renderPlanLabel = (plan) => {
     }).format(amount);
 
   const columns = [
-  "SrNo",
-  "RequestId",
-  "CustomerName",
-  "Category",
-  "BillNumber",
-  {
-    label: "Amount",
-    render: (item) => (
-      <span className="font-semibold text-gray-800">
-        {formatCurrency(item.Amount)}
-      </span>
-    ),
-  },
-  {
-    label: "Plan",
-    render: (item) => renderPlanLabel(item.Plan),
-  },
-  {
-    label: "Status",
-    render: (item) => renderStatusLabel(item.Status),
-  },
-  "Date",
-];
+    "SrNo",
+    "RequestId",
+    "CustomerName",
+    "Category",
+    "BillNumber",
+    {
+      label: "Amount",
+      render: (item) => (
+        <span className="font-semibold text-gray-800">
+          {formatCurrency(item.Amount)}
+        </span>
+      ),
+    },
+    {
+      label: "Plan",
+      render: (item) => renderPlanLabel(item.Plan),
+    },
+    {
+      label: "Status",
+      render: (item) => renderStatusLabel(item.Status),
+    },
+    "Date",
+  ];
+
+  
 
 
   return (
@@ -241,23 +234,23 @@ const renderPlanLabel = (plan) => {
             Loading transaction data...
           </div>
         ) : (
-         
+
           <Table
-  columns={columns}
-  data={data}
-  rowsPerPage={rowsPerPage}
-  isPaginationRequired={true}
-  // Wrapper rounded + shadow
-  tableWrapperClass="overflow-hidden rounded-2xl shadow-md"
-  // Table itself minimal
-  tableClass="min-w-full"
-  // Header: bluish background, white text
-  headerClass="bg-blue-600 text-white font-semibold text-sm uppercase"
-  // Rows: normal white, hover: very light sky blue
-  rowClass="bg-white hover:bg-sky-50 transition-colors duration-200"
-  // Pagination font & spacing
-  paginationClass="text-sm mt-2"
-/>
+            columns={columns}
+            data={data}
+            rowsPerPage={rowsPerPage}
+            isPaginationRequired={true}
+            // Wrapper rounded + shadow
+            tableWrapperClass="overflow-hidden rounded-2xl shadow-md"
+            // Table itself minimal
+            tableClass="min-w-full"
+            // Header: bluish background, white text
+            headerClass="bg-blue-200 text-white font-semibold text-sm uppercase"
+            // Rows: normal white, hover: very light sky blue
+            rowClass="bg-white hover:bg-sky-50 transition-colors duration-200"
+            // Pagination font & spacing
+            paginationClass="text-sm mt-2"
+          />
 
         )}
       </div>
