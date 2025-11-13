@@ -10,8 +10,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { ModalProvider,useModal } from "../contexts/ServicesModalContext";
-import { BillerSelectionModal,DetailsModalComponent, TxnConfirmModal } from "./ServicesModal";
-import placeholderImg from '../images/placeholder.jpeg';
+import { ServiceSelectionModal, DetailsModalComponent, TxnConfirmModal, TxnFormModal } from "./ServicesModal";
+import placeholderImg from "../images/logo.png";
 
 // --- Services List ---
 const servicesList = [
@@ -52,7 +52,7 @@ const ServiceIcon = ({ item }) => {
 
   const handleClick = () => {
     // Open the Biller modal dynamically with the service data
-    openModal("biller", { service: item });
+    openModal("serviceSelecter", { service: item });
   };
 
   return (
@@ -86,9 +86,10 @@ const ServiceGridContent = () => {
       </ul>
 
       {/* Dynamic Modals */}
-      {isModalOpen("biller") && <BillerSelectionModal />}
+      {isModalOpen("serviceSelecter") && <ServiceSelectionModal/>}
       {isModalOpen("details") && <DetailsModalComponent />}
       {isModalOpen("txnConfirm") && <TxnConfirmModal/>}
+      {isModalOpen("txnForm") && <TxnFormModal/>}
     </div>
   );
 };

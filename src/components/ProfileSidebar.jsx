@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import profilePic from "../images/avatars/1.png";
+// import profilePic from "../images/placeholder.jpeg";
+
 
 export const ProfileSidebar = ({ isOpen, onClose }) => {
   const sidebarRef = useRef(null);
