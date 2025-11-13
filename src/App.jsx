@@ -4,6 +4,7 @@ import ContactUs from "./pages/ContactUs"; // <-- import your ContactUs page
 import { Layout } from './components/Layout';
 import { navItems } from "./components/Sidebar";
 import { AdminContextProvider } from "./contexts/AdminContext";
+import { AddUserPage } from "./pages/AddUserPage";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
 
         {/* Add ContactUs route manually */}
         <Route path="contact-us" element={<ContactUs />} />
+        <Route path="addUser" element={<AddUserPage/>} />
       </Route>
     </Routes>
   );
