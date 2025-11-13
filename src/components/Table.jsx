@@ -30,10 +30,10 @@ const Table = ({
 
   const getColumnLabel = (col) => (typeof col === "string" ? col : col.label || col.key);
 
-  // Updated: Pass rowIndex to render function
+  
   const getCellValue = (col, row, rowIndex) => {
     if (typeof col === "string") return row[col] ?? "-";
-    if (col.render) return col.render(row, rowIndex); // Pass rowIndex here
+    if (col.render) return col.render(row, rowIndex); 
     return row[col.key] ?? "-";
   };
 

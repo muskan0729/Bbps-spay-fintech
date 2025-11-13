@@ -11,7 +11,7 @@ import {
 import { MdMiscellaneousServices } from "react-icons/md";
 import { BsCheck2Circle } from "react-icons/bs";
 import { useAdmin } from "../contexts/AdminContext";
-import BharatConnectLogo from "../images/placeholder.jpeg"
+import BharatConnectLogo from "../images/logo.png"
 
 const ComplaintPage = () => {
   const { isAdmin } = useAdmin();

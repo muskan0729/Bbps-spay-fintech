@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {ServicesModalWrapper} from "./ServicesModalWrapper";
 import { useModal } from "../contexts/ServicesModalContext";
-import placeholderImg from "../images/placeholder.jpeg";
+import placeholderImg from "../images/Spaylogo.jpg";
 
 export const ServiceSelectionModal = () => {
   const { isModalOpen, getModalData, openModal, closeModal } = useModal();
