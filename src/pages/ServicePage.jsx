@@ -18,13 +18,13 @@ export const ServicePage = () => {
                 {/* Left Panel: Categories/Biller List */}
                 {/* Takes 2/5 columns on medium screens and up */}
                 <div className="md:col-span-2">
-                    <BillerCategoryList />
+                    {/* <BillerCategoryList /> */}
                 </div>
                 
                 {/* Right Panel: Request Form */}
                 {/* Takes 3/5 columns on medium screens and up */}
                 <div className="md:col-span-3">
-                    <BillerSearchForm selectedBiller={'Sikkim Power - Urban'} /> 
+                    {/* <BillerSearchForm selectedBiller={'Sikkim Power - Urban'} />  */}
                 </div>
             </div>
             

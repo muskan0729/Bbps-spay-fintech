@@ -199,7 +199,7 @@ const renderPlanLabel = (plan) => {
         <img
           src={logo}
           alt="Bharat Connect Logo"
-          className="w-36 h-auto object-contain drop-shadow-lg"
+          className="w-36 h-14 object-contain drop-shadow-lg"
         />
       </div>
 
