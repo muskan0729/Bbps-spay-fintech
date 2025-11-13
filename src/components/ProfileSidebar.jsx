@@ -91,15 +91,7 @@ export const ProfileSidebar = ({ isOpen, onClose }) => {
 
         {/* Menu items */}
         <div className="flex flex-col space-y-3 px-6">
-          <SidebarItem
-            icon="fas fa-question"
-            text="About Us"
-            gradient="from-green-300 via-green-400 to-green-500"
-            // onClick={() => {
-            //   navigate("/about-us");
-            //   onClose();
-            // }}
-          />
+          
           <SidebarItem
             icon="fas fa-phone-alt"
             text="Contact Us"

@@ -2,6 +2,12 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Table from "./Table";
 
+import Service1 from "../images/primary_logo1.png";
+import Service2 from "../images/2.png";
+import Service3 from "../images/1.png";
+import Service4 from "../images/3.png";
+
+
 const Merchent = () => {
 	const navigate = useNavigate();
 	const handelServiceClick = () => {
@@ -64,7 +70,7 @@ hover:shadow-md hover:-translate-y-1 transform transition-all duration-300">
 							onClick={() => handelServiceClick()}
 						>
 							<img
-								src="https://cdn-icons-png.flaticon.com/512/1651/1651965.png"
+								src={Service1}
 								alt="Bill Payment"
 								className="w-10 h-10 mb-2 transition-transform hover:scale-110"
 							/>
@@ -79,7 +85,7 @@ hover:shadow-md hover:-translate-y-1 transform transition-all duration-300">
 							onClick={() => handelServiceClick()}
 						>
 							<img
-								src="https://cdn-icons-png.flaticon.com/512/15251/15251069.png"
+								src={Service2}
 								alt="Post Paid"
 								className="w-10 h-10 mb-2 transition-transform hover:scale-110"
 							/>
@@ -94,7 +100,7 @@ hover:shadow-md hover:-translate-y-1 transform transition-all duration-300">
 							onClick={() => handelServiceClick()}
 						>
 							<img
-								src="https://cdn-icons-png.flaticon.com/512/1813/1813217.png"
+								src={Service3}
 								alt="Recharge"
 								className="w-10 h-10 mb-2 transition-transform hover:scale-110"
 							/>
@@ -106,7 +112,7 @@ hover:shadow-md hover:-translate-y-1 transform transition-all duration-300">
 						{/* Service 4 */}
 						<div className="flex flex-col items-center p-4 bg-gray-200 rounded-lg cursor-not-allowed opacity-70">
 							<img
-								src="https://cdn-icons-png.flaticon.com/512/6581/6581218.png"
+								src={Service4}
 								alt="Coming Soon"
 								className="w-10 h-10 mb-2"
 							/>

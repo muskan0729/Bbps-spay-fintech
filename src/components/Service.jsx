@@ -76,7 +76,7 @@ const ServiceGridContent = () => {
   return (
     <div>
       <div className="flex justify-end px-6">
-        <img src={placeholderImg} className="h-20"/>
+        <img src={placeholderImg} className="h-14"/>
       </div>
 
       <ul className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-y-2 gap-x-2 w-full">
