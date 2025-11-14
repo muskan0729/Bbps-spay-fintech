@@ -1,3 +1,5 @@
+
+
 import React from "react";
 import { FaFileExcel, FaFilePdf, FaSyncAlt, FaSearch } from "react-icons/fa";
 
@@ -106,3 +108,4 @@ const SearchBar = ({
 };
 
 export default SearchBar;
+
