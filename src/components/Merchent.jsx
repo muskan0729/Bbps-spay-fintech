@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom";
 import Table from "./Table";
 import { FaRegCopy } from "react-icons/fa";
 
-import Service1 from "../images/primary_logo1.png";
-import Service2 from "../images/2.png";
-import Service3 from "../images/1.png";
-import Service4 from "../images/3.png";
-
+import Service1 from "../images/logo.png";
+import Service2 from "../images/placeholder.jpeg";
+import Service3 from "../images/placeholder.jpeg";
+import Service4 from "../images/placeholder.jpeg";
 
 const Merchent = () => {
   const navigate = useNavigate();
@@ -19,7 +18,7 @@ const Merchent = () => {
     navigator.clipboard.writeText(text);
     alert(`Copied: ${text}`);
   };
-  //dummy data for transaction table
+
   const tData = [
     {
       "Req ID": 33,
@@ -49,6 +48,7 @@ const Merchent = () => {
       Date: "23-09-2025 06:02:14",
     },
   ];
+
   const tColumns = [
     "Req ID",
     "Customer name",
@@ -61,42 +61,14 @@ const Merchent = () => {
 
   return (
     <span>
-      {/* ================= User Section ================= */}
       <section className="flex flex-col md:flex-row bg-gray-50 p-6 rounded-lg shadow-md gap-6">
+        
         {/* Account Details */}
-        <div
-          className="flex flex-col items-center justify-center text-center w-full md:w-1/3 bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-xl shadow-sm border border-blue-200 
-hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300"
-        >
+        <div className="flex flex-col items-center justify-center text-center w-full md:w-1/3 bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-xl shadow-sm border border-blue-200 
+        hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
           <h3 className="text-lg font-semibold text-gray-700 mb-2">
             Virtual Account
           </h3>
-	//dummy data for transaction table
-	const tData = [
-		{ "Req ID": 33, "Customer name": "ABC", "Category": "Mobile", "Bill No": 12303, "Amount": 1000, "Plan": "ACTIVE", "Date": "03-09-2025 05:57:40" },
-		{ "Req ID": 22, "Customer name": "EFG", "Category": "DTH", "Bill No": 12303, "Amount": 500, "Plan": "ACTIVE", "Date": "23-09-2025 05:57:40" },
-		{ "Req ID": 11, "Customer name": "HIJ", "Category": "mobile", "Bill No": 12303, "Amount": 250, "Plan": "ACTIVE", "Date": "23-09-2025 06:02:14" }
-	];
-	const tColumns = ["Req ID", "Customer name", "Category", "Bill No", "Amount", "Plan", "Date"];
-	
-	return (
-		<span>
-			{/* ================= User Section ================= */}
-			<section className="flex flex-col md:flex-row bg-gray-50 p-6 rounded-lg shadow-md gap-6">
-				{/* Account Details */}
-				<div className="flex-shrink-0 w-full md:w-1/3 bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-lg shadow-sm border border-blue-200 
-hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
-					<h3 className="text-lg font-semibold text-gray-700 mb-2">
-						Virtual  Account
-					</h3>
-					<h2 className="text-2xl font-bold text-blue-700 mb-2">
-						₹78,79,743.56
-					</h2>
-					<span className="block text-sm text-gray-600">
-						Account No: 54654XFDERRDSR
-					</span>
-					<span className="block text-sm text-gray-600">IFSC: HJFHH86868</span>
-				</div>
 
           <h2 className="text-2xl font-bold text-blue-700 mb-4">
             ₹78,79,743.56
@@ -127,14 +99,13 @@ hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
 
         {/* User Info */}
         <div className="flex-shrink-0 w-full md:w-1/3 bg-white rounded-2xl shadow-md overflow-hidden border border-blue-200 hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
-          {/* Header */}
           <div className="text-white text-center py-5 px-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-b-[35%]">
             <h2 className="text-lg font-semibold mb-1">
               Welcome, ak@gmail.com
             </h2>
             <p className="text-sm opacity-90">Your personalized dashboard</p>
           </div>
-          {/* User Info */}
+
           <div className="p-6 bg-gray-50 flex flex-col justify-center">
             <p className="mb-2">
               <span className="font-semibold text-gray-800">User Name:</span>{" "}
@@ -156,125 +127,44 @@ hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
         </div>
 
         {/* Services */}
-        <div
-          className="flex-1 bg-white p-6 rounded-lg shadow-md border border-blue-200 
-hover:shadow-md hover:-translate-y-1 transform transition-all duration-300"
-        >
+        <div className="flex-1 bg-white p-6 rounded-lg shadow-md border border-blue-200 
+        hover:shadow-md hover:-translate-y-1 transform transition-all duration-300">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Services</h2>
+
           <div className="grid grid-cols-2 gap-4">
-            {/* Service 1 */}
+
             <div
               className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-green-200 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1 transform duration-300 cursor-pointer"
-              onClick={() => handelServiceClick()}
+              onClick={handelServiceClick}
             >
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/1651/1651965.png"
-                alt="Bill Payment"
-                className="w-10 h-10 mb-2 transition-transform hover:scale-110"
-              />
-              <span className="text-gray-700 text-sm font-medium hover:text-blue-700">
-                Bill Payment
-              </span>
+              <img src={Service1} className="w-10 h-10 mb-2" />
+              <span className="text-gray-700 text-sm font-medium">Bill Payment</span>
             </div>
 
-            {/* Service 2 */}
             <div
               className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-yellow-200 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1 transform duration-300 cursor-pointer"
-              onClick={() => handelServiceClick()}
+              onClick={handelServiceClick}
             >
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/15251/15251069.png"
-                alt="Post Paid"
-                className="w-10 h-10 mb-2 transition-transform hover:scale-110"
-              />
-              <span className="text-gray-700 text-sm font-medium hover:text-blue-700">
-                Post Paid
-              </span>
+              <img src={Service2} className="w-10 h-10 mb-2" />
+              <span className="text-gray-700 text-sm font-medium">Post Paid</span>
             </div>
-						{/* Service 1 */}
-						<div
-							className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-green-200 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1 transform duration-300 cursor-pointer"
-							onClick={() => handelServiceClick()}
-						>
-							<img
-								src={Service1}
-								alt="Bill Payment"
-								className="w-10 h-10 mb-2 transition-transform hover:scale-110"
-							/>
-							<span className="text-gray-700 text-sm font-medium hover:text-blue-700">
-								Bill Payment
-							</span>
-						</div>
 
-						{/* Service 2 */}
-						<div
-							className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-yellow-200 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1 transform duration-300 cursor-pointer"
-							onClick={() => handelServiceClick()}
-						>
-							<img
-								src={Service2}
-								alt="Post Paid"
-								className="w-10 h-10 mb-2 transition-transform hover:scale-110"
-							/>
-							<span className="text-gray-700 text-sm font-medium hover:text-blue-700">
-								Post Paid
-							</span>
-						</div>
-
-						{/* Service 3 */}
-						<div
-							className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-200 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1 transform duration-300 cursor-pointer"
-							onClick={() => handelServiceClick()}
-						>
-							<img
-								src={Service3}
-								alt="Recharge"
-								className="w-10 h-10 mb-2 transition-transform hover:scale-110"
-							/>
-							<span className="text-gray-700 text-sm font-medium hover:text-blue-700">
-								Recharge
-							</span>
-						</div>
-
-						{/* Service 4 */}
-						<div className="flex flex-col items-center p-4 bg-gray-200 rounded-lg cursor-not-allowed opacity-70">
-							<img
-								src={Service4}
-								alt="Coming Soon"
-								className="w-10 h-10 mb-2"
-							/>
-							<span className="text-gray-500 text-sm">Coming Soon</span>
-						</div>
-					</div>
-				</div>
-			</section>
-
-            {/* Service 3 */}
             <div
               className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-200 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1 transform duration-300 cursor-pointer"
-              onClick={() => handelServiceClick()}
+              onClick={handelServiceClick}
             >
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/1813/1813217.png"
-                alt="Recharge"
-                className="w-10 h-10 mb-2 transition-transform hover:scale-110"
-              />
-              <span className="text-gray-700 text-sm font-medium hover:text-blue-700">
-                Recharge
-              </span>
+              <img src={Service3} className="w-10 h-10 mb-2" />
+              <span className="text-gray-700 text-sm font-medium">Recharge</span>
             </div>
 
-            {/* Service 4 */}
             <div className="flex flex-col items-center p-4 bg-gray-200 rounded-lg cursor-not-allowed opacity-70">
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/6581/6581218.png"
-                alt="Coming Soon"
-                className="w-10 h-10 mb-2"
-              />
+              <img src={Service4} className="w-10 h-10 mb-2" />
               <span className="text-gray-500 text-sm">Coming Soon</span>
             </div>
+
           </div>
         </div>
+
       </section>
 
       {/* Latest Transactions */}
@@ -290,6 +180,7 @@ hover:shadow-md hover:-translate-y-1 transform transition-all duration-300"
           currentPage={1}
         />
       </section>
+
     </span>
   );
 };

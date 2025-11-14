@@ -24,7 +24,6 @@ const {isAdmin ,setIsAdmin}=useAdmin();
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
-      console.log(isAdmin);
     }, 2000);
   }, []);
   return (
