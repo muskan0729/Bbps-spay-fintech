@@ -10,11 +10,12 @@ import {
 } from "react-icons/fa";
 import { MdMiscellaneousServices } from "react-icons/md";
 import { BsCheck2Circle } from "react-icons/bs";
-import { useAdmin } from "../contexts/AdminContext";
+import { useAuth } from "../contexts/AuthContext";
 import BharatConnectLogo from "../images/logo.png"
 
 const ComplaintPage = () => {
-  const { isAdmin } = useAdmin();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const role = isAdmin ? "admin" : "merchant";
 
   const [formData, setFormData] = useState({

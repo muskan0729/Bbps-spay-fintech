@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAdmin } from "../contexts/AdminContext";
+import { useAdmin } from "../contexts/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 
@@ -177,7 +177,7 @@ const initialFormState = {
 
 export const AddUserPage = () => {
     const navigate = useNavigate();
-    const { setData } = useAdmin();
+    const { setData } = useAuth();
     const [formData, setFormData] = useState(initialFormState);
     const [directorErrors, setDirectorErrors] = useState({});
     const [directorTouched, setDirectorTouched] = useState({});
