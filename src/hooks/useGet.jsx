@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const useGet = (endpoint) => {
+const useGet = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!endpoint) return;
 
-    const fetchData = async () => {
+    const fetchData = async (endpoint) => {
       try {
+        console.log("ENDPOINT IS ",endpoint);
+        
         const response = await axios.get(endpoint);
+        console.log(response);
         setData(response.data);
       } catch (err) {
         setError(err);
@@ -20,10 +21,8 @@ const useGet = (endpoint) => {
       }
     };
 
-    fetchData();
-  }, [endpoint]);
 
-  return { data, loading, error };
+  return { data, loading, error ,fetchData};
 };
 
 export default useGet;

@@ -4,8 +4,7 @@ import SearchBar from "../components/SearchBar";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import logo from "../images/logo.png"
-import TableSkeleton from "../components/TableSkeleton";
+import logo from "../images/logo.png";
 
 const MerchantReport = () => {
   const [filters, setFilters] = useState({
@@ -112,48 +111,42 @@ const MerchantReport = () => {
     doc.save("Merchant_Report.pdf");
   };
 
-  // 💠 Styled Status Labels
+  // 💠 Styled Status Labels (uniform width + lighter colors)
   const renderStatusLabel = (status) => {
-    const base = "px-3 py-1.5 text-sm font-semibold rounded-full shadow-sm transition-all duration-300";
+    const base =
+      "inline-block px-3 py-1 text-sm font-semibold rounded-full shadow-sm transition-all duration-300 text-center w-20";
     const styles = {
       Success:
-        "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-300/40 hover:shadow-green-400/60",
+        "bg-green-50 text-green-800 shadow-green-100/30 hover:bg-green-100",
       Failed:
-        "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-300/40 hover:shadow-red-400/60",
+        "bg-red-50 text-red-800 shadow-red-100/30 hover:bg-red-100",
       Pending:
-        "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-yellow-300/40 hover:shadow-yellow-400/60",
+        "bg-yellow-50 text-yellow-800 shadow-yellow-100/30 hover:bg-yellow-100",
       Initiated:
-        "bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-sky-300/40 hover:shadow-sky-400/60",
+        "bg-sky-50 text-sky-800 shadow-sky-100/30 hover:bg-sky-100",
     };
+
     return <span className={`${base} ${styles[status] || ""}`}>{status}</span>;
   };
 
-  // 💎 Read-only Plan Toggle-Bar with text inside
-const renderPlanLabel = (plan) => {
-  return (
-    <div
-      className={`w-20 h-8 flex items-center rounded-full p-1 relative transition-all duration-300 ${
-        plan === "Active" ? "bg-green-500" : "bg-gray-300"
-      }`}
-    >
-      {/* Knob */}
+  // 💎 Appian-style compact toggle for Plan
+  const renderPlanLabel = (plan) => {
+    return (
       <div
-        className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
-          plan === "Active" ? "translate-x-12" : "translate-x-0"
+        className={`w-10 h-5 flex items-center rounded-full p-0.5 relative transition-all duration-300 ${
+          plan === "Active" ? "bg-green-500" : "bg-gray-300"
         }`}
-      ></div>
-
-      {/* Text */}
-      <span
-        className={`absolute w-full text-center text-xs font-semibold text-white pointer-events-none select-none`}
       >
-        {plan}
-      </span>
-    </div>
-  );
-};
-
-
+        {/* Knob */}
+        <div
+          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
+            plan === "Active" ? "translate-x-5" : "translate-x-0"
+          }`}
+        ></div>
+      </div>
+    );
+  };
+  
 
   // 💰 Format Amount to currency
   const formatCurrency = (amount) =>
@@ -164,29 +157,29 @@ const renderPlanLabel = (plan) => {
     }).format(amount);
 
   const columns = [
-  "SrNo",
-  "RequestId",
-  "CustomerName",
-  "Category",
-  "BillNumber",
-  {
-    label: "Amount",
-    render: (item) => (
-      <span className="font-semibold text-gray-800">
-        {formatCurrency(item.Amount)}
-      </span>
-    ),
-  },
-  {
-    label: "Plan",
-    render: (item) => renderPlanLabel(item.Plan),
-  },
-  {
-    label: "Status",
-    render: (item) => renderStatusLabel(item.Status),
-  },
-  "Date",
-];
+    "SrNo",
+    "RequestId",
+    "CustomerName",
+    "Category",
+    "BillNumber",
+    {
+      label: "Amount",
+      render: (item) => (
+        <span className="font-semibold text-gray-800">
+          {formatCurrency(item.Amount)}
+        </span>
+      ),
+    },
+    {
+      label: "Plan",
+      render: (item) => renderPlanLabel(item.Plan),
+    },
+    {
+      label: "Status",
+      render: (item) => renderStatusLabel(item.Status),
+    },
+    "Date",
+  ];
 
 
   return (
@@ -199,7 +192,7 @@ const renderPlanLabel = (plan) => {
         <img
           src={logo}
           alt="Bharat Connect Logo"
-          className="w-36 h-auto object-contain drop-shadow-lg"
+          className="w-36 h-14 object-contain drop-shadow-lg"
         />
       </div>
 
@@ -241,24 +234,22 @@ const renderPlanLabel = (plan) => {
             Loading transaction data...
           </div>
         ) : (
-         
-          <Table
-  columns={columns}
-  data={data}
-  rowsPerPage={rowsPerPage}
-  isPaginationRequired={true}
-  // Wrapper rounded + shadow
-  tableWrapperClass="overflow-hidden rounded-2xl shadow-md"
-  // Table itself minimal
-  tableClass="min-w-full"
-  // Header: bluish background, white text
-  headerClass="bg-blue-600 text-white font-semibold text-sm uppercase"
-  // Rows: normal white, hover: very light sky blue
-  rowClass="bg-white hover:bg-sky-50 transition-colors duration-200"
-  // Pagination font & spacing
-  paginationClass="text-sm mt-2"
-/>
 
+          <Table
+            columns={columns}
+            data={data}
+            rowsPerPage={rowsPerPage}
+            isPaginationRequired={true}
+
+            tableWrapperClass="overflow-hidden rounded-2xl shadow-md"
+
+            tableClass="min-w-full"
+            headerClass="bg-blue-500 text-white font-semibold text-sm uppercase"
+            rowClass="bg-white hover:bg-sky-50 transition-colors duration-200"
+
+            paginationClass="text-sm mt-2"
+          />
+          
         )}
       </div>
     </div>
@@ -266,3 +257,4 @@ const renderPlanLabel = (plan) => {
 };
 
 export default MerchantReport;
+
