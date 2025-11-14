@@ -13,7 +13,7 @@ import profilePic from "../images/avatars/1.png";
 import { NotificationBell } from "./NotificationBell";
 import { ProfileSidebar } from "./ProfileSidebar";
 
-export const Header = () => {
+export const Header = ({isMobile=false,setIsMobileSidebarOpen}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -24,8 +24,8 @@ export const Header = () => {
           {/* Left - Logo */}
           <div className="relative h-15 flex items-center justify-center cursor-pointer"
 			onClick={() => {
-				navigate("/dashboard"); // navigate to dashboard
-				window.location.reload(); // then refresh
+				if(isMobile) setIsMobileSidebarOpen(true)
+				else navigate("/dashboard"); // navigate to dashboard
 			}}>
             <img
             //   src={spayImg}
@@ -37,10 +37,10 @@ export const Header = () => {
 
           {/* Right side - Wallet, Notifications, Avatar, Button */}
           <div className="flex items-center space-x-3">
-            <div className="text-amber-900">
+            {/* <div className="text-amber-900">
               <FontAwesomeIcon icon={faWallet} />
             </div>
-            <span className="text-gray-700 font-bold">₹ 5,000/-</span>
+            <span className="text-gray-700 font-bold">₹ 5,000/-</span> */}
             <NotificationBell />
 
 			<button

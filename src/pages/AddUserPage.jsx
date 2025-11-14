@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAdmin } from "../contexts/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 
@@ -97,7 +96,7 @@ export const validateField = (id, value, required) => {
 };
 
 // Helper function to check if the date is in the future
-export const isFutureDate = (dateString) => {
+const isFutureDate = (dateString) => {
     if (!dateString) return false;
     const inputDate = new Date(dateString);
     // Set time component to start of day (midnight) to compare only dates
@@ -112,7 +111,7 @@ export const isFutureDate = (dateString) => {
 
 const TODAY_DATE = new Date().toISOString().split("T")[0];
 
-export const INDIA_STATES = [
+const INDIA_STATES = [
     { code: "AP", name: "Andhra Pradesh" },
     { code: "AR", name: "Arunachal Pradesh" },
     // ... (India States list remains the same)
@@ -294,7 +293,8 @@ export const AddUserPage = () => {
         userId: Date.now(),
         name: formData.businessName || "New Business",
         email: formData.businessEmail,
-        amount: Math.floor(Math.random() * 1000) + 100, // mock amount
+        amount: 0
+        // amount: Math.floor(Math.random() * 1000) + 100, // mock amount
     };
 
     const handleSubmit = (e) => {
@@ -591,7 +591,7 @@ export const AddUserPage = () => {
                             onChange={handleChange}
                             onBlur={handleValidation}
                             placeholder="Enter PAN (E.g. ABCDE1234F)"
-                            className={`p-2 border rounded-md uppercase ${getValidationClass(
+                            className={`p-2 border rounded-md ${getValidationClass(
                                 "companyPan"
                             )}`}
                             required
@@ -621,7 +621,7 @@ export const AddUserPage = () => {
                             onChange={handleChange}
                             onBlur={handleValidation}
                             placeholder="Enter 15-Character GSTIN (E.g. 22ABCDE1234F1Z5)"
-                            className={`p-2 border rounded-md uppercase ${getValidationClass(
+                            className={`p-2 border rounded-md ${getValidationClass(
                                 "gstNumber"
                             )}`}
                             required
@@ -650,8 +650,8 @@ export const AddUserPage = () => {
                             value={formData.cinLlp}
                             onChange={handleChange}
                             onBlur={handleValidation}
-                            placeholder="ENTER CIN OR LLPIN"
-                            className={`p-2 border rounded-md uppercase ${getValidationClass(
+                            placeholder="Enter CIN or LLPIN"
+                            className={`p-2 border rounded-md ${getValidationClass(
                                 "cinLlp"
                             )}`}
                             maxLength="21" // CIN is 21 alphanumeric characters
@@ -774,7 +774,7 @@ export const AddUserPage = () => {
                             onChange={handleChange}
                             onBlur={handleValidation}
                             placeholder="Enter Value (e.g. KKBK0000000)"
-                            className={`p-2 border rounded-md uppercase ${getValidationClass(
+                            className={`p-2 border rounded-md ${getValidationClass(
                                 "ifsc"
                             )}`}
                             required
@@ -991,13 +991,12 @@ const DirectorForm = ({
     };
 
     const handleBlur = (field, value) => {
-    setTouched((prev) => ({
-        ...prev,
-        [index]: { ...(prev[index] || {}), [field]: true },
-    }));
-    onChange(index, field, value); // triggers validateDirector
-};
-
+        setTouched((prev) => ({
+            ...prev,
+            [index]: { ...(prev[index] || {}), [field]: true },
+        }));
+        onChange(index, field, value); // triggers validateDirector
+    };
 
     const getValidationClass = (field) => {
         if (touched[index]?.[field] && errors[index]?.[field]) {
@@ -1070,7 +1069,7 @@ const DirectorForm = ({
                     htmlFor={`director-dob-${index}`}
                     className="text-sm font-semibold text-gray-700 mb-1"
                 >
-                    DOB
+                    DOB  <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="date"
@@ -1105,13 +1104,13 @@ const DirectorForm = ({
                         handleDirectorChange("pan", e.target.value.toUpperCase())
                     }
                     onBlur={(e) => handleBlur("pan", e.target.value)}
-                    className={`p-2 border rounded-md uppercase ${getValidationClass(
+                    className={`p-2 border rounded-md ${getValidationClass(
                         "pan"
                     )}`}
                     maxLength="10"
                 />
                 {touched[index]?.pan && errors[index]?.pan && (
-                    <p className="text-xs text-red-600">Invalid PAN format</p>
+                    <p className="text-xs text-red-600">PAN must be 5 letters, 4 digits, 1 letter (e.g., ABCDE1234F)</p>
                 )}
             </div>
 
@@ -1120,18 +1119,21 @@ const DirectorForm = ({
                     htmlFor={`director-aadhar-${index}`}
                     className="text-sm font-semibold text-gray-700 mb-1"
                 >
-                    Aadhaar Number
+                    Aadhaar Number  <span className="text-red-500">*</span>
                 </label>
                 <input
-                    type="number"
-                    id={`director-aadhar-${index}`}
+                    type="text"
+                    id={`director-aadhaar-${index}`}
                     placeholder="Enter 12-digit Aadhaar number"
                     value={director.aadhaar || ""}
-                    onChange={(e) => handleDirectorChange("aadhaar", e.target.value)}
-                    onBlur={(e) => handleBlur("aadhar", e.target.value)}
-                    className={`p-2 border rounded-md uppercase ${getValidationClass(
-                        "aadhar"
-                    )}`}
+                    onChange={(e) =>
+                        handleDirectorChange(
+                            "aadhaar",
+                            e.target.value.replace(/[^0-9]/g, "").slice(0, 12)
+                        )
+                    }
+                    onBlur={(e) => handleBlur("aadhaar", e.target.value)}
+                    className={`p-2 border rounded-md ${getValidationClass("aadhaar")}`}
                 />
                 {touched[index]?.aadhaar && errors[index]?.aadhaar && (
                     <p className="text-xs text-red-600">Aadhaar must be 12 digits</p>
