@@ -41,13 +41,17 @@ const AdminReport = () => {
 
   const renderPlanLabel = (plan, index) => (
     <div
-      className={`relative inline-flex items-center w-12 h-6 rounded-full cursor-pointer transition-all duration-300 ${plan === "Active" ? "bg-emerald-400" : "bg-gray-300"
-        } hover:shadow-md`}
+      className={`relative inline-flex items-center w-14 h-6 rounded-full cursor-pointer transition-all duration-300 ${
+        plan === "Active"
+          ? "bg-gradient-to-r from-green-400 to-green-600"
+          : "bg-gray-300"
+      } hover:shadow-lg`}
       onClick={() => handlePlanToggle(index)}
     >
       <div
-        className={`absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-300 ${plan === "Active" ? "translate-x-6" : "translate-x-0"
-          }`}
+        className={`absolute top-[2px] left-[2px] w-5 h-5 rounded-full bg-white shadow transform transition-transform duration-300 ${
+          plan === "Active" ? "translate-x-7" : "translate-x-0"
+        }`}
       />
     </div>
   );
@@ -72,10 +76,10 @@ const AdminReport = () => {
     }, [status, index]);
 
     return (
-      <span className={`${base} ${style.bg} ${style.text}`}>
+      <span className={`${base} ${style.bg} ${style.text} relative group`}>
         {status}
         <span
-          className="inline-block h-1 rounded-full transition-all duration-700 ease-out"
+          className="absolute bottom-0 left-0 h-1 rounded-full transition-all duration-700 ease-out group-hover:opacity-100 opacity-80"
           style={{ width: `${width}px`, backgroundColor: style.color }}
         />
       </span>
@@ -128,23 +132,21 @@ const AdminReport = () => {
     },
     "BillNumber",
     {
-  label: (
-    <div className="flex items-center gap-1">
-      <FaRupeeSign className="text-gray-700 text-base" />
-      <span>Amount</span>
-    </div>
-  ),
-  render: (row) => (
-    <span
-      className="font-semibold text-white bg-blue-800 px-2 py-1 rounded-lg inline-block"
-      title={formatCurrency(row.Amount)}
-    >
-      {formatCurrency(row.Amount)}
-    </span>
-  ),
-},
-
-
+      label: (
+        <div className="flex items-center gap-1">
+          <FaRupeeSign className="text-gray-700 text-base" />
+          <span>Amount</span>
+        </div>
+      ),
+      render: (row) => (
+        <span
+          className="font-semibold text-white bg-gradient-to-r from-blue-700 to-blue-900 px-3 py-1 rounded-lg inline-block shadow-md"
+          title={formatCurrency(row.Amount)}
+        >
+          {formatCurrency(row.Amount)}
+        </span>
+      ),
+    },
     { label: "Plan", render: (row, i) => renderPlanLabel(row.Plan, i) },
     { label: "Status", render: (row, i) => renderStatusLabel(row.Status, i) },
     {
@@ -161,7 +163,7 @@ const AdminReport = () => {
       render: (row) => (
         <button
           className="group flex items-center gap-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-3 py-1.5 rounded-xl
-                    hover:from-teal-600 hover:to-teal-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+          hover:from-teal-600 hover:to-teal-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
           onClick={() => alert(`Viewing details of ${row.CustomerName}`)}
         >
           <FaEye className="text-white group-hover:scale-110 transition-transform" /> View
@@ -169,8 +171,6 @@ const AdminReport = () => {
       ),
     },
   ];
-
-
 
   const mockData = Array.from({ length: 15 }, (_, i) => ({
     SrNo: i + 1,
@@ -257,24 +257,27 @@ const AdminReport = () => {
 
   const tableStyles = {
     tableWrapperClass:
-      "overflow-x-auto rounded-2xl border border-gray-300 bg-white/95 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-2xl",
+      "overflow-x-auto rounded-3xl border border-gray-300 bg-white/95 shadow-xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl",
     tableClass: "min-w-full text-base divide-y divide-gray-300 border border-gray-300",
     headerClass:
-      "bg-gray-200 text-gray-800 font-semibold text-sm uppercase tracking-wider sticky top-0 shadow-sm border-b border-gray-300",
+      "bg-gradient-to-r from-blue-500 to-teal-500 text-white font-semibold text-sm uppercase tracking-wider sticky top-0 shadow-md border-b border-gray-300",
     rowClass:
-      "bg-gray-50 even:bg-gray-100 hover:bg-teal-50 hover:shadow-md transform hover:scale-[1.01] transition-all duration-300 border-b border-gray-200",
+      "bg-gray-50 even:bg-gray-100 hover:bg-gradient-to-r hover:from-teal-50 hover:to-teal-100 hover:shadow-md transform hover:scale-[1.01] transition-all duration-300 border-b border-gray-200",
     paginationClass: "flex justify-center items-center gap-2 py-3 border-t border-gray-200 mt-4 flex-wrap",
     paginationBtnClass:
-      "flex items-center gap-1 bg-teal-500 text-white px-2.5 py-1.5 rounded-lg shadow-md hover:bg-teal-600 disabled:opacity-40 text-sm",
+      "flex items-center gap-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-2.5 py-1.5 rounded-lg shadow-md hover:from-teal-600 hover:to-teal-700 disabled:opacity-40 text-sm",
     paginationActiveClass:
-      "px-3 py-1 rounded-full bg-teal-600 text-white shadow-lg text-sm transition-all",
+      "px-3 py-1 rounded-full bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg text-sm transition-all",
   };
+
+
+  
 
   return (
     <div className="p-8 min-h-screen bg-gradient-to-br from-teal-50 via-white to-orange-50 transition-all">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-8">
-        <h1 className="text-4xl font-extrabold text-gray-800 drop-shadow-md">
+        <h1 className="text-4xl font-extrabold text-gray-800 drop-shadow-lg">
           Transaction History
         </h1>
         <img
@@ -322,7 +325,13 @@ const AdminReport = () => {
           {loading ? (
             <TableSkeleton rows={rowsPerPage} columns={columns.length} />
           ) : (
-            <Table columns={columns} data={data} rowsPerPage={rowsPerPage} isPaginationRequired={true} {...tableStyles} />
+            <Table
+              columns={columns}
+              data={data}
+              rowsPerPage={rowsPerPage}
+              isPaginationRequired={true}
+              {...tableStyles}
+            />
           )}
         </div>
       </div>
