@@ -59,7 +59,7 @@ const ServiceIcon = ({ item }) => {
     <li className="flex flex-col items-center p-2">
       <button
         onClick={handleClick}
-        className="bg-linear-to-br from-blue-900 to-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+        className="bg-linear-to-br from-blue-900 to-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
         aria-label={item.label}
       >
         <FontAwesomeIcon icon={item.icon} className="text-lg" />
@@ -76,7 +76,7 @@ const ServiceGridContent = () => {
   return (
     <div>
       <div className="flex justify-end px-6">
-        <img src={placeholderImg} className="h-20"/>
+        <img src={placeholderImg} className="h-14"/>
       </div>
 
       <ul className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-y-2 gap-x-2 w-full">

@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import Table from "./Table";
 import { FaRegCopy } from "react-icons/fa";
 
+import Service1 from "../images/primary_logo1.png";
+import Service2 from "../images/2.png";
+import Service3 from "../images/1.png";
+import Service4 from "../images/3.png";
+
+
 const Merchent = () => {
   const navigate = useNavigate();
   const handelServiceClick = () => {
@@ -65,6 +71,32 @@ hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300"
           <h3 className="text-lg font-semibold text-gray-700 mb-2">
             Virtual Account
           </h3>
+	//dummy data for transaction table
+	const tData = [
+		{ "Req ID": 33, "Customer name": "ABC", "Category": "Mobile", "Bill No": 12303, "Amount": 1000, "Plan": "ACTIVE", "Date": "03-09-2025 05:57:40" },
+		{ "Req ID": 22, "Customer name": "EFG", "Category": "DTH", "Bill No": 12303, "Amount": 500, "Plan": "ACTIVE", "Date": "23-09-2025 05:57:40" },
+		{ "Req ID": 11, "Customer name": "HIJ", "Category": "mobile", "Bill No": 12303, "Amount": 250, "Plan": "ACTIVE", "Date": "23-09-2025 06:02:14" }
+	];
+	const tColumns = ["Req ID", "Customer name", "Category", "Bill No", "Amount", "Plan", "Date"];
+	
+	return (
+		<span>
+			{/* ================= User Section ================= */}
+			<section className="flex flex-col md:flex-row bg-gray-50 p-6 rounded-lg shadow-md gap-6">
+				{/* Account Details */}
+				<div className="flex-shrink-0 w-full md:w-1/3 bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-lg shadow-sm border border-blue-200 
+hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
+					<h3 className="text-lg font-semibold text-gray-700 mb-2">
+						Virtual  Account
+					</h3>
+					<h2 className="text-2xl font-bold text-blue-700 mb-2">
+						₹78,79,743.56
+					</h2>
+					<span className="block text-sm text-gray-600">
+						Account No: 54654XFDERRDSR
+					</span>
+					<span className="block text-sm text-gray-600">IFSC: HJFHH86868</span>
+				</div>
 
           <h2 className="text-2xl font-bold text-blue-700 mb-4">
             ₹78,79,743.56
@@ -159,6 +191,63 @@ hover:shadow-md hover:-translate-y-1 transform transition-all duration-300"
                 Post Paid
               </span>
             </div>
+						{/* Service 1 */}
+						<div
+							className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-green-200 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1 transform duration-300 cursor-pointer"
+							onClick={() => handelServiceClick()}
+						>
+							<img
+								src={Service1}
+								alt="Bill Payment"
+								className="w-10 h-10 mb-2 transition-transform hover:scale-110"
+							/>
+							<span className="text-gray-700 text-sm font-medium hover:text-blue-700">
+								Bill Payment
+							</span>
+						</div>
+
+						{/* Service 2 */}
+						<div
+							className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-yellow-200 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1 transform duration-300 cursor-pointer"
+							onClick={() => handelServiceClick()}
+						>
+							<img
+								src={Service2}
+								alt="Post Paid"
+								className="w-10 h-10 mb-2 transition-transform hover:scale-110"
+							/>
+							<span className="text-gray-700 text-sm font-medium hover:text-blue-700">
+								Post Paid
+							</span>
+						</div>
+
+						{/* Service 3 */}
+						<div
+							className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-200 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1 transform duration-300 cursor-pointer"
+							onClick={() => handelServiceClick()}
+						>
+							<img
+								src={Service3}
+								alt="Recharge"
+								className="w-10 h-10 mb-2 transition-transform hover:scale-110"
+							/>
+							<span className="text-gray-700 text-sm font-medium hover:text-blue-700">
+								Recharge
+							</span>
+						</div>
+
+						{/* Service 4 */}
+						<div className="flex flex-col items-center p-4 bg-gray-200 rounded-lg cursor-not-allowed opacity-70">
+							<img
+								src={Service4}
+								alt="Coming Soon"
+								className="w-10 h-10 mb-2"
+							/>
+							<span className="text-gray-500 text-sm">Coming Soon</span>
+						</div>
+					</div>
+				</div>
+			</section>
 
             {/* Service 3 */}
             <div
