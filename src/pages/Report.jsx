@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import MerchantReport from "./MerchantReport";
 import AdminReport from "./AdminReport";
-import { useAdmin } from "../contexts/AdminContext";
+import { useAuth } from "../contexts/AuthContext";
 
-const Report=()=>{
-const {isAdmin,setIsAdmin}=useAdmin();
-return(<>
-    {isAdmin?<AdminReport/>:<MerchantReport/>}
-    </>);
-}
+const Report = () => {
+  const { user } = useAuth();
+
+  const isAdmin = user?.role === "admin"; // check role from AuthContext
+
+  return (
+    <>
+      {isAdmin ? <AdminReport /> : <MerchantReport />}
+    </>
+  );
+};
 
 export default Report;

@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import Table from "../components/Table";
 import { TopUpModal } from "../components/TopUpModal";
 import { useNavigate } from "react-router-dom";
-import { useAdmin } from "../contexts/AdminContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const Users = () => {
 	const navigate = useNavigate();
-	const { getData, deleteData } = useAdmin();
+	const { getData, deleteData } = useAuth();
 
 	const [openTopUpModal, setOpenTopUpModal] = useState(false);
 	const [topUpModalData, setTopUpModalData] = useState(null);

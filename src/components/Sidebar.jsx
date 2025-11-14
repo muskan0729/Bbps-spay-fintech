@@ -15,80 +15,80 @@ import Report from "../pages/Report";
 import Support from "../pages/Support";
 import ComplaintPage from "../pages/ComplaintPage";
 import CheckTransactionComplaint from "../pages/CheckTransactionComplaint";
-import { useAdmin } from "../contexts/AdminContext";
 
 import Users from "../pages/Users";
 
+import { useAuth } from "../contexts/AuthContext";   // ✅ NEW
+
+// -------------------- NAV ITEMS --------------------
 export const navItems = [
     {
         icon: faGauge,
         label: "Dashboard",
         path: "/dashboard",
-        isAdmin: true,
-        isUser: true,
+        roles: ["admin", "user"],   // ✅ Replaced isAdmin/isUser
         component: Dashboard,
     },
     {
         icon: faBuildingColumns,
         label: "Users",
         path: "/users",
-        isAdmin: true,
-        isUser: false,
+        roles: ["admin"],           // Only admin
         component: Users,
     },
     {
         icon: faBuildingColumns,
         label: "Services",
         path: "/services",
-        isAdmin: false,
-        isUser: true,
+        roles: ["user"],            // Only normal user
         component: ServicePage,
     },
     {
         icon: faFileLines,
         label: "Report",
         path: "/report",
-        isAdmin: true,
-        isUser: true,
+        roles: ["admin", "user"],
         component: Report,
     },
     {
         icon: faMagnifyingGlass,
         label: "Support",
         path: "/support",
-        isAdmin: false,
-        isUser: true,
+        roles: ["user"],
         component: Support,
     },
     {
         icon: faTriangleExclamation,
         label: "Complaint",
         path: "/complaint",
-        isAdmin: true,
-        isUser: true,
+        roles: ["admin", "user"],
         component: ComplaintPage,
     },
     {
         icon: faCircleExclamation,
         label: "Check Complaint",
         path: "/checkcomplaint",
-        isAdmin: false,
-        isUser: true,
+        roles: ["user"],
         component: CheckTransactionComplaint,
     },
 ];
 
+// -------------------- SIDEBAR --------------------
 export const Sidebar = () => {
-    const { isAdmin } = useAdmin();
+    const { user } = useAuth();       // ✅ Get logged-in user
     const location = useLocation();
 
-    const filterFn = isAdmin ? (item) => item.isAdmin : (item) => item.isUser;
+    const role = user?.role || "user";    // default
+
+    const visibleItems = navItems.filter(item =>
+        item.roles.includes(role)          // role check
+    );
 
     return (
         <div className="flex flex-col w-20 md:w-24 bg-linear-to-b from-blue-900 to-blue-800 text-white shadow-2xl p-2 h-full">
             <nav className="grow overflow-y-auto py-8">
                 <ul className="space-y-6">
-                    {navItems.filter(filterFn).map((item, index) => {
+                    {visibleItems.map((item, index) => {
                         const isActive = location.pathname === item.path;
                         return (
                             <li key={index}>
@@ -108,6 +108,7 @@ export const Sidebar = () => {
                     })}
                 </ul>
             </nav>
+            
             <div className="mt-auto pt-4">
                 <hr className="border-white/50 mb-4" />
                 <div className="flex flex-col items-center text-center text-white/70 text-[8px] md:text-[10px]">

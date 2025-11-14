@@ -1,10 +1,10 @@
 import { Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
-import ContactUs from "./pages/ContactUs"; // <-- import your ContactUs page
+import ContactUs from "./pages/ContactUs";
 import { Layout } from './components/Layout';
 import { navItems } from "./components/Sidebar";
-import { AdminContextProvider } from "./contexts/AdminContext";
 import { AddUserPage } from "./pages/AddUserPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -12,26 +12,25 @@ function App() {
       {/* Public route */}
       <Route path="/" element={<LoginPage />} />
 
-      {/* Protected routes inside Layout */}
+      {/* Protected page wrapper */}
       <Route
         element={
-          <AdminContextProvider>
+          <ProtectedRoute>
             <Layout />
-          </AdminContextProvider>
+          </ProtectedRoute>
         }
       >
-        {/* Map dynamic navItems */}
         {navItems.map((item) => (
           <Route
             key={item.path}
-            path={item.path.substring(1)} // remove leading "/"
+            path={item.path.substring(1)}
             element={<item.component />}
           />
         ))}
 
-        {/* Add ContactUs route manually */}
+        {/* Manual routes */}
         <Route path="contact-us" element={<ContactUs />} />
-        <Route path="addUser" element={<AddUserPage/>} />
+        <Route path="addUser" element={<AddUserPage />} />
       </Route>
     </Routes>
   );
