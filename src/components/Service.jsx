@@ -52,6 +52,7 @@ const ServiceIcon = ({ item }) => {
 
   const handleClick = () => {
     // Open the Biller modal dynamically with the service data
+    
     openModal("serviceSelecter", { service: item });
   };
 
