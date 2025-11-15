@@ -1,55 +1,41 @@
-// import { useState, useEffect } from "react";
-// import axios from "axios";
-
-// const useGet = () => {
-//   const [data, setData] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-
-
-//     const fetchData = async (endpoint) => {
-//       try {
-//         console.log("ENDPOINT IS ",endpoint);
-        
-//         const response = await axios.get(endpoint);
-//         console.log(response);
-//         setData(response.data);
-//       } catch (err) {
-//         setError(err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-
-//   return { data, loading, error ,fetchData};
-// };
-
-// export default useGet;
-
-
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
-const useGet = () => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-  const fetchData = async (endpoint, options = {}) => {
+export function useGet(endpoint) {
+  const [data, setData] = useState(null); // Stores the response data
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
+
+  // Function to fetch data from the backend
+  const fetchData = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await axios.get(endpoint, options);
+      const response = await axios.get(`${BASE_URL}${endpoint}`, {
+        withCredentials: true, // ✅ Sends HTTP-only cookies automatically
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + localStorage.getItem("token")
+        },
+      });
       setData(response.data);
     } catch (err) {
-      setError(err);
+      // Capture backend errors or network errors
+      setError(
+        err.response?.data?.message || err.message || "Something went wrong"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  return { data, loading, error, fetchData };
-};
+  // Auto-fetch on mount and whenever the endpoint changes
+  useEffect(() => {
+    fetchData();
+  }, [endpoint]);
 
-export default useGet;
+  // Return state and refetch function for manual reload
+  return { data, loading, error, refetch: fetchData };
+}

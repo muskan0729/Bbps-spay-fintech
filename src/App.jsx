@@ -5,9 +5,11 @@ import { Layout } from './components/Layout';
 import { navItems } from "./components/Sidebar";
 import { AddUserPage } from "./pages/AddUserPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { CookiesProvider } from "react-cookie";
 
 function App() {
   return (
+    <CookiesProvider>
     <Routes>
       {/* Public route */}
       <Route path="/" element={<LoginPage />} />
@@ -33,6 +35,7 @@ function App() {
         <Route path="addUser" element={<AddUserPage />} />
       </Route>
     </Routes>
+    </CookiesProvider>
   );
 }
 

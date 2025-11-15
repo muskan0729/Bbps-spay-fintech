@@ -1,37 +1,52 @@
 import { useState } from "react";
 import axios from "axios";
 
-const BASEURL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const usePost = (endpoint) => {
+export function usePost(endpoint) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const post = async ({  body, token }) => {
+  const execute = async (body) => {
     setLoading(true);
     setError(null);
-    setData(null); // optional reset
+
     try {
-      const headers = { "Content-Type": "application/json", Accept: "application/json" };
-      if (token) headers.Authorization = "Bearer " + token;
+      let response;
+      if (endpoint === "/login") {
+        console.log(`${BASE_URL}${endpoint}`);
+        console.log(body);
+        
+        console.log(body.email,body.password);
+        
+        response = await axios.post(`${BASE_URL}${endpoint}`, {
+          email:body.email,
+          password:body.password
+        }, {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" },
+        });
+      } else {
+        response = await axios.post(`${BASE_URL}${endpoint}`, body, {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+        });
+      }
 
-      const url = `${BASEURL}${endpoint}`;
-      console.log("Request URL:", url);
-
-      const response = await axios.post(url, body, { headers });
-      setData(response.data);
-      return response.data;
+      setData(response.data); // store in state for UI if needed
+      return response.data;   // ✅ return actual response immediately
     } catch (err) {
-      console.log(err.response?.data || err.message);
-      setError(err.response?.data || err.message);
-      throw err;
+      const errData = err.response?.data || "Something went wrong";
+      setError(errData);
+      console.log(errData);
     } finally {
       setLoading(false);
     }
   };
 
-  return { data, loading, error, post };
-};
-
-export default usePost;
+  return { data, loading, error, execute, setError };
+}

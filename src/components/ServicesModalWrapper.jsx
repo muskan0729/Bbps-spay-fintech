@@ -15,26 +15,15 @@ export const ServicesModalWrapper = ({
   const modalRef = useRef();
   const [isClosing, setIsClosing] = useState(false);
 
-  const handleClose = () => {
-    if (resetOnClose) resetOnClose();
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsClosing(false);
-      onClose();
-    }, 250);
-  };
-
-  // useEffect(() => {
-  //   const handleClickOutside = (e) => {
-  //     if (modalRef.current && !modalRef.current.contains(e.target)) {
-  //       handleClose();
-  //     }
-  //   };
-  //   if (isOpen) document.addEventListener("mousedown", handleClickOutside);
-  //   return () => document.removeEventListener("mousedown", handleClickOutside);
-  // }, [isOpen]);
+  const handleClose = () => { if (resetOnClose) resetOnClose(); setIsClosing(true); setTimeout(() => { setIsClosing(false); onClose(); }, 250); };
 
   const [isCentered, setIsCentered] = useState(false);
+  useEffect(() => {
+    if (!isOpen || !isCentered) return; // Only attach if modal is open and centered
+    const handleClickOutside = (e) => { if (modalRef.current && !modalRef.current.contains(e.target)) { handleClose(); } };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => { document.removeEventListener("mousedown", handleClickOutside); };
+  }, [isOpen, isCentered]);
 
   useEffect(() => {
     const checkHeight = () => {
@@ -59,15 +48,13 @@ export const ServicesModalWrapper = ({
 
   return (
     <div
-      className={`absolute inset-0 z-50 overflow-y-auto bg-black/40 ${
-        isClosing ? "animate-fade-out" : "animate-fade-in"
-      } ${outerClasses}`}
+      className={`absolute inset-0 z-50 overflow-y-auto bg-black/40 ${isClosing ? "animate-fade-out" : "animate-fade-in"
+        } ${outerClasses}`}
     >
       <div
         ref={modalRef}
-        className={`bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 transform ${
-          isClosing ? "animate-fly-out" : "animate-fly-in"
-        }`}
+        className={`bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 transform ${isClosing ? "animate-fly-out" : "animate-fly-in"
+          }`}
       >
         {/* Header */}
 
