@@ -10,7 +10,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { ModalProvider,useModal } from "../contexts/ServicesModalContext";
-import { ServiceSelectionModal, DetailsModalComponent, TxnConfirmModal, TxnFormModal } from "./ServicesModal";
+// import { ServiceSelectionModal, DetailsModalComponent, TxnConfirmModal, TxnFormModal } from "./ServicesModal";
+import SelectServiceBiller from "./service/selectServiceBiller";
+import PaymentConfirmation from "./service/PaymentConfirmation";
+import DetailConfirmation from "./service/DetailConfirmation";
+import DetailInput from "./service/DetailInput";
+
 import placeholderImg from "../images/logo.png";
 
 // --- Services List ---
@@ -87,10 +92,10 @@ const ServiceGridContent = () => {
       </ul>
 
       {/* Dynamic Modals */}
-      {isModalOpen("serviceSelecter") && <ServiceSelectionModal/>}
-      {isModalOpen("details") && <DetailsModalComponent />}
-      {isModalOpen("txnConfirm") && <TxnConfirmModal/>}
-      {isModalOpen("txnForm") && <TxnFormModal/>}
+      {isModalOpen("serviceSelecter") && <SelectServiceBiller/>}
+      {isModalOpen("details") && <DetailInput />}
+      {isModalOpen("txnConfirm") && <DetailConfirmation/>}
+      {isModalOpen("txnForm") && <PaymentConfirmation/>}
     </div>
   );
 };
