@@ -1,41 +1,52 @@
-import { useState, useEffect } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import { useCookies } from "react-cookie";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export function useGet(endpoint) {
-  const [data, setData] = useState(null); // Stores the response data
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [cookie] = useCookies(["token"]);
 
-  // Function to fetch data from the backend
   const fetchData = async () => {
     setLoading(true);
     setError(null);
+    // console.log(" fetchData here");
+
     try {
+      // console.log();
+
+      // console.log({
+      //   headers: {
+      //     Authorization: `Bearer ${cookie.token.slice(3)}`,
+      //   },
+      // });
+      
       const response = await axios.get(`${BASE_URL}${endpoint}`, {
-        withCredentials: true, // ✅ Sends HTTP-only cookies automatically
+        // withCredentials: true,
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + localStorage.getItem("token")
+          "Authorization": `Bearer ${(cookie.token).slice(3)}`,
         },
       });
+      // console.log(`Bearer ${cookie.token}`);
       setData(response.data);
+      
     } catch (err) {
-      // Capture backend errors or network errors
-      setError(
-        err.response?.data?.message || err.message || "Something went wrong"
-      );
+      console.log("Error",err);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-fetch on mount and whenever the endpoint changes
   useEffect(() => {
-    fetchData();
-  }, [endpoint]);
+    if (cookie.token) {
+      fetchData();
+      // console.log(data);
+    }
+  }, [endpoint, cookie.token]);
 
-  // Return state and refetch function for manual reload
   return { data, loading, error, refetch: fetchData };
 }

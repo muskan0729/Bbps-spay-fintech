@@ -16,9 +16,9 @@ export function usePost(endpoint) {
       let response;
       if (endpoint === "/login") {
         console.log(`${BASE_URL}${endpoint}`);
-        console.log(body);
+        // console.log(body);
         
-        console.log(body.email,body.password);
+        // console.log(body.email,body.password);
         
         response = await axios.post(`${BASE_URL}${endpoint}`, {
           email:body.email,
