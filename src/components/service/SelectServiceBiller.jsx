@@ -3,6 +3,7 @@ import { ServicesModalWrapper } from "../ServicesModalWrapper";
 import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
 import { useGet } from "../../hooks/useGet";
+import { usePost } from "../../hooks/usePost";
 
 const SelectServiceBiller = () => {
   const { isModalOpen, getModalData, openModal, closeModal } = useModal();
@@ -14,18 +15,23 @@ const SelectServiceBiller = () => {
   const isOpen = isModalOpen("serviceSelecter");
   const { service } = getModalData("serviceSelecter") || {};
 
-  // ❗ FIX 1 — useMemo ensures endpoint does not change on every re-render
+  // Build endpoint dynamically
   const endpoint = useMemo(() => {
     return service?.label ? `/get-billers/${service.label}` : null;
   }, [service?.label]);
 
-  // Call API (runs automatically when endpoint changes)
+  // Fetch list of billers
   const { data, loading: apiLoading } = useGet(endpoint);
 
-  console.log("Service:", service?.label);
-  console.log("API Data:", data);
+  // Fetch selected biller info
+  const {
+    data: billerResponse,
+    loading: billerLoading,
+    error: billerError,
+    execute: fetchBillerInfo,
+  } = usePost("/bbps/biller-info/json");
 
-  // ❗ FIX 2 — Update dropdown only when API returns data
+  // Handle biller list loading
   useEffect(() => {
     if (apiLoading) {
       setLoading(true);
@@ -38,18 +44,38 @@ const SelectServiceBiller = () => {
     }
   }, [data, apiLoading]);
 
+  // Watch for biller info changes
+  useEffect(() => {
+    if (billerResponse) {
+      console.log("Updated Bill Info:", billerResponse);
+    }
+  }, [billerResponse]);
+
+  // Reset modal state when closing
   const resetForm = () => {
     setSelectedBiller("");
     setLoading(true);
   };
 
+  // Move to next modal
   const handleNext = (close) => {
     if (!selectedBiller) return alert("Select a biller!");
 
-    close(); // animation fly-out
+    close();
     setTimeout(() => {
-      openModal("details", { selectedBiller });
+      openModal("details", { selectedBiller, billerResponse });
     }, 260);
+  };
+
+  // When user selects biller
+  const onChangeHandler = async (id) => {
+    setSelectedBiller(id);
+    console.log("Selected biller:", id);
+
+   const d =await fetchBillerInfo({ blr_id: id }); // Call API
+   console.log(d);
+    setSelectedBiller(d)
+   
   };
 
   return (
@@ -68,7 +94,7 @@ const SelectServiceBiller = () => {
       renderMiddle={
         <select
           value={selectedBiller}
-          onChange={(e) => setSelectedBiller(e.target.value)}
+          onChange={(e) => onChangeHandler(e.target.value)}
           disabled={loading}
           className="w-full p-3 border border-gray-200 rounded mb-4"
         >

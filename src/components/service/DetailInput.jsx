@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {ServicesModalWrapper} from "../ServicesModalWrapper";
+import { ServicesModalWrapper } from "../ServicesModalWrapper";
 import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
 // images/Spaylogo.jpg
@@ -16,9 +16,14 @@ const DetailInput = () => {
     setMobile("");
   };
 
+  useState(() => {
+    console.log(selectedBiller.id);
+  }, []);
+
   const handleSubmit = (close) => {
+    const id = selectedBiller.billerId
     if (!account || !mobile) return alert("Fill all fields");
-    const data = { selectedBiller, account, mobile };
+    const data = { id, account, mobile };
     close(); // fly-out animation
     setTimeout(() => openModal("txnConfirm", { data }), 260);
   };
@@ -62,11 +67,10 @@ const DetailInput = () => {
           <button
             onClick={() => handleSubmit(close)}
             disabled={!account || !mobile}
-            className={`px-4 py-2 rounded text-white ${
-              !account || !mobile
+            className={`px-4 py-2 rounded text-white ${!account || !mobile
                 ? "bg-blue-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
-            }`}
+              }`}
           >
             Submit
           </button>
