@@ -8,7 +8,8 @@ import { usePost } from "../../hooks/usePost";
 const SelectServiceBiller = () => {
   const { isModalOpen, getModalData, openModal, closeModal } = useModal();
 
-  const [selectedBiller, setSelectedBiller] = useState("");
+  const [selectedBillerId, setSelectedBillerId] = useState(""); // <-- dropdown controlled ID
+  const [selectedBillerData, setSelectedBillerData] = useState(null); // <-- API biller object
   const [serviceList, setServiceList] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,18 +21,15 @@ const SelectServiceBiller = () => {
     return service?.label ? `/get-billers/${service.label}` : null;
   }, [service?.label]);
 
-  // Fetch list of billers
+  // Fetch biller list
   const { data, loading: apiLoading } = useGet(endpoint);
 
   // Fetch selected biller info
   const {
     data: billerResponse,
-    loading: billerLoading,
-    error: billerError,
     execute: fetchBillerInfo,
   } = usePost("/bbps/biller-info/json");
 
-  // Handle biller list loading
   useEffect(() => {
     if (apiLoading) {
       setLoading(true);
@@ -44,38 +42,44 @@ const SelectServiceBiller = () => {
     }
   }, [data, apiLoading]);
 
-  // Watch for biller info changes
-  useEffect(() => {
-    if (billerResponse) {
-      console.log("Updated Bill Info:", billerResponse);
-    }
-  }, [billerResponse]);
-
-  // Reset modal state when closing
+  // Reset modal state on close
   const resetForm = () => {
-    setSelectedBiller("");
+    setSelectedBillerId("");
+    setSelectedBillerData(null);
     setLoading(true);
   };
 
   // Move to next modal
   const handleNext = (close) => {
-    if (!selectedBiller) return alert("Select a biller!");
+    if (!selectedBillerId) {
+      alert("Select a biller!");
+      return;
+    }
 
     close();
     setTimeout(() => {
-      openModal("details", { selectedBiller, billerResponse });
+      openModal("details", {
+        selectedBiller: selectedBillerData,
+        billerResponse,
+      });
     }, 260);
   };
 
-  // When user selects biller
+  // When user selects a biller
   const onChangeHandler = async (id) => {
-    setSelectedBiller(id);
-    console.log("Selected biller:", id);
+    setSelectedBillerId(id); // store selected ID for dropdown to stay selected
 
-   const d =await fetchBillerInfo({ blr_id: id }); // Call API
-   console.log(d);
-    setSelectedBiller(d)
-   
+    const result = await fetchBillerInfo({ blr_id: id });
+
+    if (Array.isArray(result) && result[0]) {
+      // console.log("Selected biller object:", result[0]);
+      // console.log(
+      //   result[0].billerId,
+      //   result[0].billerInputParams?.[0]?.paramsList?.[0]
+      // );
+
+      setSelectedBillerData(result[0]); // store full biller details
+    }
   };
 
   return (
@@ -93,7 +97,7 @@ const SelectServiceBiller = () => {
       }
       renderMiddle={
         <select
-          value={selectedBiller}
+          value={selectedBillerId}
           onChange={(e) => onChangeHandler(e.target.value)}
           disabled={loading}
           className="w-full p-3 border border-gray-200 rounded mb-4"
@@ -113,12 +117,11 @@ const SelectServiceBiller = () => {
         <>
           <button
             onClick={() => handleNext(close)}
-            disabled={loading || !selectedBiller}
-            className={`px-4 py-2 rounded text-white ${
-              !selectedBiller
+            disabled={loading || !selectedBillerId}
+            className={`px-4 py-2 rounded text-white ${!selectedBillerId
                 ? "bg-blue-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
-            }`}
+              }`}
           >
             Next
           </button>
