@@ -11,17 +11,29 @@ const DetailInput = () => {
   const isOpen = isModalOpen("details");
 
   const [params, setParams] = useState([]);
-  const [formValues, setFormValues] = useState({}); // store dynamic fields
-  const [custMob, setCustMob] = useState("9284210056");
-  const [custEmail, setCustEmail] = useState("khanamaanak1@gmail.com");
-  const [custAdd, setCustAdd] = useState("548550008000");
-  const [custPan, setCustPan] = useState("AAAPZ1234C");
-  const [check, setCheck] = useState();
-  const { data, error, execute: fetchResponse } = usePost("/bbps/bill-process/json");
+  const [formValues, setFormValues] = useState({});
+
+  // MANDATORY USER FIELDS — now editable
+  const [custMob, setCustMob] = useState("");
+  const [custEmail, setCustEmail] = useState("");
+  const [custAdd, setCustAdd] = useState("");
+  const [custPan, setCustPan] = useState("");
+  const [remitterName, setRemitterName] = useState(""); // ✅ NEW FIELD
+
+  const [billerFetchRequiremet, setBillerFetchRequiremet] = useState(false);
+
+  const { execute: fetchResponse } = usePost("/bbps/bill-process/json");
 
   useEffect(() => {
     if (selectedBiller?.billerInputParams?.[0]?.paramsList) {
       setParams(selectedBiller.billerInputParams[0].paramsList);
+    }
+
+    if (
+      selectedBiller?.billerFetchRequiremet === "MANDATORY" ||
+      selectedBiller?.billerFetchRequiremet === "OPTIONAL"
+    ) {
+      setBillerFetchRequiremet(true);
     }
   }, [selectedBiller]);
 
@@ -33,33 +45,37 @@ const DetailInput = () => {
   };
 
   const handleSubmit = async (close) => {
+    const mandatoryData = {
+      customerAdhaar: custAdd,
+      customerMobile: custMob,
+      customerPan: custPan,
+      customerEmail: custEmail,
+      remitterName: remitterName, // ✅ ADDED HERE
+    };
 
-    // 🔥 All values under ONE object called "data"
     const requestBody = {
       data: {
         billerId: selectedBiller.billerId,
-        ...formValues, // merge all input fields here
+        ...formValues,
+        ...(billerFetchRequiremet ? mandatoryData : {}),
       },
     };
-    if (selectedBiller.billerFetchRequiremet === "MANDATORY") {
-      requestBody.data.customerAdhaar = custAdd;
-      requestBody.data.customerMobile = custMob;
-      requestBody.data.customerPan = custPan;
-      requestBody.data.customerEmail = custEmail;
-    }
-    // console.log("Sending to API:", requestBody.data);
-
+    console.log(mandatoryData);
     const response = await fetchResponse(requestBody.data);
 
-    // console.log(response);
-    setCheck(response);
-
     close();
-    setTimeout(() => openModal("finalData", { data: response ,service:selectedBiller}), 260);
+
+    setTimeout(() => {
+      openModal("finalData", {
+        data: response,
+        custData: mandatoryData,
+        serviceId: selectedBiller.billerId,
+      });
+    }, 260);
   };
 
-  const inputMapper = () => {
-    return params.map((item, index) => (
+  const inputMapper = () =>
+    params.map((item, index) => (
       <div key={index} className="mb-3 flex flex-col">
         <label className="font-semibold mb-1" htmlFor={item.paramName}>
           {item.paramName}
@@ -74,8 +90,62 @@ const DetailInput = () => {
         />
       </div>
     ));
-  };
 
+  const mandatoryInputs = () => (
+    <div className="mt-3">
+      <h3 className="font-semibold mb-2">Customer Details</h3>
+
+      <div className="flex flex-col mb-3">
+        <label className="font-semibold mb-1">Remitter Name</label>
+        <input
+          type="text"
+          className="border p-2 rounded"
+          value={remitterName}
+          onChange={(e) => setRemitterName(e.target.value)}
+        />
+      </div>
+
+      <div className="flex flex-col mb-3">
+        <label className="font-semibold mb-1">Customer Aadhaar</label>
+        <input
+          type="text"
+          className="border p-2 rounded"
+          value={custAdd}
+          onChange={(e) => setCustAdd(e.target.value)}
+        />
+      </div>
+
+      <div className="flex flex-col mb-3">
+        <label className="font-semibold mb-1">Customer Mobile</label>
+        <input
+          type="text"
+          className="border p-2 rounded"
+          value={custMob}
+          onChange={(e) => setCustMob(e.target.value)}
+        />
+      </div>
+
+      <div className="flex flex-col mb-3">
+        <label className="font-semibold mb-1">Customer PAN</label>
+        <input
+          type="text"
+          className="border p-2 rounded"
+          value={custPan}
+          onChange={(e) => setCustPan(e.target.value)}
+        />
+      </div>
+
+      <div className="flex flex-col mb-3">
+        <label className="font-semibold mb-1">Customer Email</label>
+        <input
+          type="email"
+          className="border p-2 rounded"
+          value={custEmail}
+          onChange={(e) => setCustEmail(e.target.value)}
+        />
+      </div>
+    </div>
+  );
 
   return (
     <ServicesModalWrapper
@@ -91,7 +161,14 @@ const DetailInput = () => {
       }
       renderMiddle={
         <>
-          {selectedBiller ? <div>{inputMapper()}</div> : <p>Loading details...</p>}
+          {selectedBiller ? (
+            <>
+              {inputMapper()}
+              {billerFetchRequiremet && mandatoryInputs()}
+            </>
+          ) : (
+            <p>Loading...</p>
+          )}
         </>
       }
       renderFooter={(close) => (
