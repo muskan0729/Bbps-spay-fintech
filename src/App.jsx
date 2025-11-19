@@ -6,6 +6,7 @@ import { navItems } from "./components/Sidebar";
 import { AddUserPage } from "./pages/AddUserPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { CookiesProvider } from "react-cookie";
+import Demo from "./pages/demo";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
     <Routes>
       {/* Public route */}
       <Route path="/" element={<LoginPage />} />
+    {/* <Route path="/demo" element={<Demo />} /> */}
 
       {/* Protected page wrapper */}
       <Route

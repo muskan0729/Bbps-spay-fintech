@@ -11,7 +11,7 @@ import {
 
 import { ModalProvider,useModal } from "../contexts/ServicesModalContext";
 // import { ServiceSelectionModal, DetailsModalComponent, TxnConfirmModal, TxnFormModal } from "./ServicesModal";
-import SelectServiceBiller from "./service/selectServiceBiller";
+import SelectServiceBiller from "./service/SelectServiceBiller";
 import PaymentConfirmation from "./service/PaymentConfirmation";
 import DetailConfirmation from "./service/DetailConfirmation";
 import DetailInput from "./service/DetailInput";
@@ -94,7 +94,7 @@ const ServiceGridContent = () => {
       {/* Dynamic Modals */}
       {isModalOpen("serviceSelecter") && <SelectServiceBiller/>}
       {isModalOpen("details") && <DetailInput />}
-      {isModalOpen("txnConfirm") && <DetailConfirmation/>}
+      {isModalOpen("finalData") && <DetailConfirmation/>}
       {isModalOpen("txnForm") && <PaymentConfirmation/>}
     </div>
   );

@@ -23,14 +23,15 @@ export function useGet(endpoint) {
       //     Authorization: `Bearer ${cookie.token.slice(3)}`,
       //   },
       // });
+      console.log(`get base url  : ${BASE_URL}${endpoint} and token = ${(cookie.token).slice(4)}`);
       
       const response = await axios.get(`${BASE_URL}${endpoint}`, {
         // withCredentials: true,
         headers: {
-          "Authorization": `Bearer ${(cookie.token).slice(3)}`,
+          "Authorization": `Bearer ${(cookie.token).slice(4)}`,
         },
       });
-      // console.log(`Bearer ${cookie.token}`);
+      console.log("response GET",response.data);
       setData(response.data);
       
     } catch (err) {

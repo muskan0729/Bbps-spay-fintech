@@ -19,14 +19,14 @@ const LoginPage = () => {
       return;
     }
     try {
-      const body = { email, password };
+      const body = { email:email, password:password };
     //   const endpoint = "/login";
 
-      const data = await login( body ); // Call post here
-      // console.log("Login success:", data);
-      setCookie("token",data.token,{
+      const res=await login( body ); // Call post here
+      console.log("Login success:", res);
+      setCookie("token",res.token,{
         path:"/"
-      })
+      });
       navigate("/dashboard");
 
       // Example: navigate to dashboard

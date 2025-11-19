@@ -1,157 +1,109 @@
-import React, { useState, useEffect, useRef } from "react";
-import {ServicesModalWrapper} from "../ServicesModalWrapper";
+import React, { useState, useEffect } from "react";
+import { ServicesModalWrapper } from "../ServicesModalWrapper";
 import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
+// import bharatImg from "../../images/bharatConnectLogo.png"; // add if needed
 
 const DetailConfirmation = () => {
   const { isModalOpen, getModalData, closeModal, openModal } = useModal();
-  const { data } = getModalData("txnConfirm") || {};
-  const isOpen = isModalOpen("txnConfirm");
+  const { data } = getModalData("finalData") || {};
 
-  const tableData = [
-    { key: "Biller ID:", value: "DUMMY0000DIG08" },
-    { key: "Customer Email:", value: "khanamaanak1@gmail.com" },
-    { key: "Customer Name:", value: "N/A" },
-    { key: "Bill Date:", value: "N/A" },
-    { key: "Bill Amount:", value: "₹N/A" },
-    { key: "Total Amount:", value: "₹N/A" },
-    { key: "Customer Mobile:", value: "9284210056" },
-    { key: "Customer Pan:", value: "AAAPZ1234C" },
-    { key: "Bill Number:", value: "N/A" },
-    { key: "Bill Period:", value: "N/A" },
-    { key: "Due Date:", value: "N/A" },
-  ];
+  const [input, setInput] = useState([]);
+  const [addInfo, setAddInfo] = useState([]);
+  const [billerRes, setBillerRes] = useState({});
 
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const isOpen = isModalOpen("finalData");
 
   useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    if (!data?.result?.decryptedResponse) return;
 
-  const processedData = (() => {
-    let list = [...tableData];
+    const resp = data.result.decryptedResponse;
 
-    if (list.length % 2 !== 0) list.push({ key: "", value: "" });
+    setInput(resp.inputParams?.input || []);
+    setAddInfo(resp.additionalInfo?.info || []);
+    setBillerRes(resp.billerResponse || {});
+  }, [data]);
 
-    if (isDesktop) {
-      const mid = list.length / 2;
-      const merged = [];
-      for (let i = 0; i < mid; i++) merged.push([list[i], list[i + mid]]);
-      return merged;
-    }
-
-    return list.map((item) => [item]);
-  })();
+  // ➤ Convert dynamic objects into rows (AND auto remove empty values)
+  const dynamicRows = [
+    ...input.map((i) => ({
+      key: i.paramName,
+      value: i.paramValue,
+    })),
+    ...addInfo.map((i) => ({
+      key: i.infoName,
+      value: i.infoValue,
+    })),
+    ...Object.entries(billerRes).map(([key, value]) => ({
+      key: key,
+      value: value,
+    })),
+  ].filter((row) => row.value !== null && row.value !== "" && row.value !== undefined);
 
   const handlePay = () => {
-    closeModal("txnConfirm"); // close current modal
+    closeModal("details");
     setTimeout(() => {
-      openModal("txnForm", { txnData: data }); // open new form modal
-    }, 250); // allow fly-out animation
+      openModal("txnForm", { txnData: data });
+    }, 250);
   };
-
-  const resetForm = () => {};
 
   return (
     <ServicesModalWrapper
       isOpen={isOpen}
-      onClose={() => closeModal("txnConfirm")}
-      resetOnClose={resetForm}
+      onClose={() => closeModal("finalData")}
       renderHeader={
         <>
-          <img src={placeholderImg} alt="Logo" className="h-7" />
-          <span className="font-semibold ml-2">
-            Are you sure you want to proceed?
-          </span>
+          <div className="flex justify-between w-full">
+            <img src={placeholderImg} alt="logo" className="h-7" />
+            {/* <img src={bharatImg} alt="logo" className="h-7" /> */}
+          </div>
+
+          <p className="text-center text-lg mt-1 font-semibold">
+            Are you want to proceed?
+          </p>
         </>
       }
       renderMiddle={
-        <>
-          <div className="pb-3">
-            <div className="p-3 shadow-md border-2 border-gray-50 shadow-gray-400">
-              <div className="pb-3 font-semibold">Your Bill Details:</div>
-              <table className="w-full text-[15px] border border-gray-200 border-collapse">
-                <tbody>
-                  {processedData.map((pair, index) => (
-                    <tr key={index} className="border border-gray-200">
-                      {pair.map((item, i) => (
-                        <React.Fragment key={i}>
-                          <td className="border border-gray-200 p-1 w-1/4">
-                            {item.key}
-                          </td>
-                          <td className="border border-gray-200 p-1 w-1/4">
-                            {item.value}
-                          </td>
-                        </React.Fragment>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        <div className="w-full mt-3">
+          <table className="w-full border-collapse">
+            <tbody>
+              {dynamicRows.map((row, i) => (
+                <tr key={i} className="border-b">
+                  <td className="py-2 px-2 font-semibold text-gray-700 w-1/2">
+                    {row.key}
+                  </td>
+                  <td className="py-2 px-2 text-gray-800 w-1/2">
+                    {row.value}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-            <div className="mt-10 p-3 shadow-md border-2 border-gray-50 shadow-gray-400">
-              <div className="pb-3 font-semibold text-orange-400">
-                Enter Payment Details
-              </div>
-              <div className="flex mb-4">
-                <div className="flex flex-col space-y-1 w-full p-1">
-                  <label>Remitter Name</label>
-                  <input
-                    type="text"
-                    placeholder="Enter Your Name"
-                    className="border border-gray-300 rounded-md px-3 py-2 h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
-                </div>
-                <div className="flex flex-col space-y-1 w-full p-1">
-                  <label>Payment Mode</label>
-                  <select className="border border-gray-300 rounded-md px-3 py-2 h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                    <option>Cash</option>
-                    <option>Debit Card</option>
-                    <option>Credit Card</option>
-                    <option>Net Banking</option>
-                    <option>UPI</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex mb-4">
-                <div className="flex flex-col space-y-1 w-full p-1">
-                  <label>Quick Pay</label>
-                  <select className="border border-gray-300 rounded-md px-3 py-2 h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                    <option>No</option>
-                    <option>Yes</option>
-                  </select>
-                </div>
-                <div className="flex flex-col space-y-1 w-full p-1">
-                  <label>Split Pay</label>
-                  <select className="border border-gray-300 rounded-md px-3 py-2 h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                    <option>No</option>
-                    <option>Yes</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+          {/* checkboxes (optional) */}
+          <div className="flex gap-4 mt-3 text-sm text-gray-700">
+            <label>
+              <input type="checkbox" /> Late Payment Fee (45)
+            </label>
+            <label>
+              <input type="checkbox" /> Fixed Charges (50)
+            </label>
+            <label>
+              <input type="checkbox" /> Additional Charges (60)
+            </label>
           </div>
-        </>
+        </div>
       }
       renderFooter={(close) => (
-        <>
-          <button
-            onClick={handlePay}
-            className="px-4 py-2 rounded text-white bg-green-700"
-          >
+        <div className="flex justify-center gap-3 mt-4">
+          <button onClick={handlePay} className="px-6 py-2 bg-green-600 text-white rounded">
             Pay
           </button>
-          <button
-            onClick={close}
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-          >
-            Cancel
+
+          <button onClick={close} className="px-6 py-2 bg-gray-400 text-white rounded">
+            Close
           </button>
-        </>
+        </div>
       )}
     />
   );
