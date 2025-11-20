@@ -1,55 +1,53 @@
-// import { useState, useEffect } from "react";
-// import axios from "axios";
-
-// const useGet = () => {
-//   const [data, setData] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-
-
-//     const fetchData = async (endpoint) => {
-//       try {
-//         console.log("ENDPOINT IS ",endpoint);
-        
-//         const response = await axios.get(endpoint);
-//         console.log(response);
-//         setData(response.data);
-//       } catch (err) {
-//         setError(err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-
-//   return { data, loading, error ,fetchData};
-// };
-
-// export default useGet;
-
-
-
-import { useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import { useCookies } from "react-cookie";
 
-const useGet = () => {
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+export function useGet(endpoint) {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cookie] = useCookies(["token"]);
 
-  const fetchData = async (endpoint, options = {}) => {
+  const fetchData = async () => {
     setLoading(true);
+    setError(null);
+    // console.log(" fetchData here");
+
     try {
-      const response = await axios.get(endpoint, options);
+      // console.log();
+
+      // console.log({
+      //   headers: {
+      //     Authorization: `Bearer ${cookie.token.slice(3)}`,
+      //   },
+      // });
+      console.log(`get base url  : ${BASE_URL}${endpoint} and token = ${(cookie.token).slice(4)}`);
+      
+      const response = await axios.get(`${BASE_URL}${endpoint}`, {
+        // withCredentials: true,
+        headers: {
+          "Authorization": `Bearer ${(cookie.token).slice(4)}`,
+        },
+      });
+      console.log("response GET",response.data);
       setData(response.data);
+      
     } catch (err) {
-      setError(err);
+      console.log("Error",err);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  return { data, loading, error, fetchData };
-};
+  useEffect(() => {
+    if (cookie.token) {
+      fetchData();
+      // console.log(data);
+    }
+  }, [endpoint, cookie.token]);
 
-export default useGet;
+  return { data, loading, error, refetch: fetchData };
+}

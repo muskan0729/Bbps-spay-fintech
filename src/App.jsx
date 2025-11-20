@@ -5,12 +5,16 @@ import { Layout } from './components/Layout';
 import { navItems } from "./components/Sidebar";
 import { AddUserPage } from "./pages/AddUserPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { CookiesProvider } from "react-cookie";
+import Demo from "./pages/demo";
 
 function App() {
   return (
+    <CookiesProvider>
     <Routes>
       {/* Public route */}
       <Route path="/" element={<LoginPage />} />
+    {/* <Route path="/demo" element={<Demo />} /> */}
 
       {/* Protected page wrapper */}
       <Route
@@ -33,6 +37,7 @@ function App() {
         <Route path="addUser" element={<AddUserPage />} />
       </Route>
     </Routes>
+    </CookiesProvider>
   );
 }
 
