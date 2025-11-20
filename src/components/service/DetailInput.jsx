@@ -18,7 +18,7 @@ const DetailInput = () => {
   const [custEmail, setCustEmail] = useState("");
   const [custAdd, setCustAdd] = useState("");
   const [custPan, setCustPan] = useState("");
-  const [remitterName, setRemitterName] = useState(""); // ✅ NEW FIELD
+  // const [remitterName, setRemitterName] = useState(""); // ✅ NEW FIELD
 
   const [billerFetchRequiremet, setBillerFetchRequiremet] = useState(false);
 
@@ -50,7 +50,7 @@ const DetailInput = () => {
       customerMobile: custMob,
       customerPan: custPan,
       customerEmail: custEmail,
-      remitterName: remitterName, // ✅ ADDED HERE
+      // remitterName: remitterName, // ✅ ADDED HERE
     };
 
     const requestBody = {
@@ -95,7 +95,7 @@ const DetailInput = () => {
     <div className="mt-3">
       <h3 className="font-semibold mb-2">Customer Details</h3>
 
-      <div className="flex flex-col mb-3">
+      {/* <div className="flex flex-col mb-3">
         <label className="font-semibold mb-1">Remitter Name</label>
         <input
           type="text"
@@ -103,7 +103,7 @@ const DetailInput = () => {
           value={remitterName}
           onChange={(e) => setRemitterName(e.target.value)}
         />
-      </div>
+      </div> */}
 
       <div className="flex flex-col mb-3">
         <label className="font-semibold mb-1">Customer Aadhaar</label>
