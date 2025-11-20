@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-import {ServicesModalWrapper} from "../ServicesModalWrapper";
+import { ServicesModalWrapper } from "../ServicesModalWrapper";
 import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
 const PaymentConfirmation = () => {
   const { isModalOpen, getModalData, closeModal } = useModal();
-  const { lastModal ,serviceId} = getModalData("lastModal") || {};
+  const { lastModal, serviceId } = getModalData("lastModal") || {};
   const isOpen = isModalOpen("lastModal");
 
   // Sample random data for demonstration
   const tableData = lastModal
     ? Object.entries(lastModal).map(([key, value]) => ({ key, value }))
     : [
-        { key: "Transaction ID", value: "TXN123456" },
-        { key: "Amount", value: "₹5000" },
-        { key: "Date", value: "12-Nov-2025" },
-        { key: "Status", value: "Successful" },
-      ];
+      { key: "Transaction ID", value: "TXN123456" },
+      { key: "Amount", value: "₹5000" },
+      { key: "Date", value: "12-Nov-2025" },
+      { key: "Status", value: "Successful" },
+    ];
 
   // Split into max 2 columns per row
   const rows = [];
@@ -99,4 +99,4 @@ const PaymentConfirmation = () => {
   );
 };
 
- export default PaymentConfirmation;
+export default PaymentConfirmation;

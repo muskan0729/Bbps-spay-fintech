@@ -62,7 +62,7 @@ export function usePost(endpoint) {
               "Authorization": `Bearer ${cookie.token.slice(4)}`,
             },
           });
-          // console.log(response.data);
+          console.log(response.data);
           // return response;
 
         }
