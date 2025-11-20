@@ -4,12 +4,12 @@ import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
 const PaymentConfirmation = () => {
   const { isModalOpen, getModalData, closeModal } = useModal();
-  const { txnData } = getModalData("txnForm") || {};
-  const isOpen = isModalOpen("txnForm");
+  const { lastModal ,serviceId} = getModalData("lastModal") || {};
+  const isOpen = isModalOpen("lastModal");
 
   // Sample random data for demonstration
-  const tableData = txnData
-    ? Object.entries(txnData).map(([key, value]) => ({ key, value }))
+  const tableData = lastModal
+    ? Object.entries(lastModal).map(([key, value]) => ({ key, value }))
     : [
         { key: "Transaction ID", value: "TXN123456" },
         { key: "Amount", value: "₹5000" },
@@ -52,7 +52,7 @@ const PaymentConfirmation = () => {
   return (
     <ServicesModalWrapper
       isOpen={isOpen}
-      onClose={() => closeModal("txnForm")}
+      onClose={() => closeModal("lastModal")}
       headerBg="bg-white"
       headerTextColor="text-green-600"
       renderHeader={<span className="font-semibold text-lg">Transaction Successful</span>}

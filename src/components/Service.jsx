@@ -5,11 +5,11 @@ import {
   faCarCrash, faGraduationCap, faBolt, faChargingStation, faRoad, faFire,
   faBuilding, faShieldHalved, faPhone, faMoneyBillWave, faGasPump,
   faMobileScreenButton, faLandmark, faFileInvoice, faUser, faTrain,
-  faPlug, faDroplet, faIndianRupeeSign, faHouse, faRotate, 
+  faPlug, faDroplet, faIndianRupeeSign, faHouse, faRotate,
   faHandHoldingDollar, faReceipt,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { ModalProvider,useModal } from "../contexts/ServicesModalContext";
+import { ModalProvider, useModal } from "../contexts/ServicesModalContext";
 // import { ServiceSelectionModal, DetailsModalComponent, TxnConfirmModal, TxnFormModal } from "./ServicesModal";
 import SelectServiceBiller from "./service/SelectServiceBiller";
 import PaymentConfirmation from "./service/PaymentConfirmation";
@@ -57,7 +57,7 @@ const ServiceIcon = ({ item }) => {
 
   const handleClick = () => {
     // Open the Biller modal dynamically with the service data
-    
+
     openModal("serviceSelecter", { service: item });
   };
 
@@ -82,7 +82,7 @@ const ServiceGridContent = () => {
   return (
     <div>
       <div className="flex justify-end px-6">
-        <img src={placeholderImg} className="h-14"/>
+        <img src={placeholderImg} className="h-14" />
       </div>
 
       <ul className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-y-2 gap-x-2 w-full">
@@ -90,12 +90,11 @@ const ServiceGridContent = () => {
           <ServiceIcon key={index} item={item} />
         ))}
       </ul>
-
       {/* Dynamic Modals */}
-      {isModalOpen("serviceSelecter") && <SelectServiceBiller/>}
+      {isModalOpen("serviceSelecter") && <SelectServiceBiller />}
       {isModalOpen("details") && <DetailInput />}
-      {isModalOpen("finalData") && <DetailConfirmation/>}
-      {isModalOpen("txnForm") && <PaymentConfirmation/>}
+      {isModalOpen("finalData") && <DetailConfirmation />}
+      {isModalOpen("lastModal") && <PaymentConfirmation />}
     </div>
   );
 };
