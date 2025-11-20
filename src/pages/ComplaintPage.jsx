@@ -12,11 +12,13 @@ import { MdMiscellaneousServices } from "react-icons/md";
 import { BsCheck2Circle } from "react-icons/bs";
 import { useAuth } from "../contexts/AuthContext";
 import BharatConnectLogo from "../images/logo.png"
-
+import { usePost } from "../hooks/usePost";
 const ComplaintPage = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const role = isAdmin ? "admin" : "merchant";
+
+const { execute: fetchPayment } = usePost("/bbps/complaint-register/json");
 
   const [formData, setFormData] = useState({
     complaintType: "",
@@ -44,10 +46,35 @@ const ComplaintPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert("Complaint submitted successfully!");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    complaintType: formData.complaintType === "transaction" ? "Transaction" : "Service",
+    participationType: formData.participationType.toUpperCase(),
+    agentId: formData.participationType === "agent" ? user?.id || "" : "",
+    billerId: formData.participationType === "biller" ? user?.id || "" : "",
+    servReason: formData.serviceComplaint || "",
+    complainDesc: formData.complaintDescription,
+    txnRefId: formData.transactionId || "",
+    complaintDisposition: formData.complaintDisposition,
   };
+
+  try {
+    console.log("Sending payload:", payload);
+
+    const response = await fetchPayment(payload);  // ✅ using your hook
+
+    console.log("Complaint API Response:", response); // log API output
+
+    alert("Complaint submitted successfully!");
+  } catch (error) {
+    console.error("API Error:", error);
+    alert("Failed to submit complaint! Check console.");
+  }
+};
+
+
 
   const handleViewDetails = (row) => setSelectedComplaint(row);
   const handleCloseModal = () => setSelectedComplaint(null);
@@ -235,7 +262,7 @@ const ComplaintPage = () => {
                   className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-700 transition"
                 >
                   <option value="">Select Disposition</option>
-                  <option value="pending">Pending</option>
+                  <option value="Bill Paid but Amount not adjusted or still showing due amount">Bill Paid but Amount not adjusted or still showing due amount</option>
                   <option value="in_review">In Review</option>
                   <option value="resolved">Resolved</option>
                 </select>
