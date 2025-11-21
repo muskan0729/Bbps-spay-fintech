@@ -15,7 +15,7 @@ import SelectServiceBiller from "./service/SelectServiceBiller";
 import PaymentConfirmation from "./service/PaymentConfirmation";
 import DetailConfirmation from "./service/DetailConfirmation";
 import DetailInput from "./service/DetailInput";
-
+import PlanDisplay from "./service/PlanDisplay";
 import placeholderImg from "../images/logo.png";
 
 // --- Services List ---
@@ -95,6 +95,7 @@ const ServiceGridContent = () => {
       {isModalOpen("details") && <DetailInput />}
       {isModalOpen("finalData") && <DetailConfirmation />}
       {isModalOpen("lastModal") && <PaymentConfirmation />}
+      {isModalOpen("plandisplay")&& <PlanDisplay/>}
     </div>
   );
 };

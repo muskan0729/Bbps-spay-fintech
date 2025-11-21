@@ -35,6 +35,7 @@ const DetailInput = () => {
     ) {
       setBillerFetchRequiremet(true);
     }
+    console.log("DetailInput");
   }, [selectedBiller]);
 
   const handleChange = (key, value) => {
@@ -52,7 +53,6 @@ const DetailInput = () => {
       customerEmail: custEmail,
       // remitterName: remitterName, // ✅ ADDED HERE
     };
-
     const requestBody = {
       data: {
         billerId: selectedBiller.billerId,
@@ -64,13 +64,15 @@ const DetailInput = () => {
     const response = await fetchResponse(requestBody.data);
 
     close();
+    console.log(selectedBiller);
 
     setTimeout(() => {
-      openModal("finalData", {
-        data: response,
-        custData: mandatoryData,
-        serviceId: selectedBiller.billerId,
-      });
+
+        openModal("finalData", {
+          data: response,
+          custData: mandatoryData,
+          serviceId: selectedBiller.billerId,
+        });
     }, 260);
   };
 

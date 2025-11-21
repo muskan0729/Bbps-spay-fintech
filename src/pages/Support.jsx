@@ -16,7 +16,7 @@ const Support = () => {
   const [tableData, setTableData] = useState([]);
   const [searchMessage, setSearchMessage] = useState("Enter Transaction ID or Filters");
   const { data, loading, execute } = usePost("/bbps/get-txn-status");
-
+  // const [isSingle,setIsSingle]=useState(null);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
@@ -33,6 +33,7 @@ const Support = () => {
       } else {
         body.txnRefID = idInput.trim();
       }
+
     } else {
       // Use mobile + date filters
       body.mobile_no = filters.mobileNumber.trim();
@@ -66,13 +67,13 @@ const Support = () => {
     { key: "amount", label: "Amount", render: (row) => `₹${row.amount}` },
     {
       key: "txnStatus",
-      label: "Status",
+      label: "Status", // <FaCheckCircle className="text-green-400 text-2xl" />
       render: (row) => {
         if (row.txnStatus === "SUCCESS")
-          return <FaCheckCircle className="text-green-400 text-2xl" />;
-        if (row.txnStatus === "FAILED")
-          return <FaExclamationCircle className="text-red-400 text-2xl" />;
-        return <FaInfoCircle className="text-yellow-400 text-2xl" />;
+          return <span className="text-green-600">SUCCESS</span>;
+        if (row.txnStatus === "FAILURE")
+          return <span className="text-red-600">FAILURE</span>;
+        return <span className="text-yellow-600">{row.txnStatus}..</span>;
       },
     },
     { key: "txnDate", label: "Date" },
@@ -141,9 +142,8 @@ const Support = () => {
             whileTap={{ scale: 0.95 }}
             onClick={handleSearch}
             disabled={loading}
-            className={`${
-              loading ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-gradient-to-r from-indigo-500 to-teal-400 hover:from-teal-400 hover:to-indigo-500"
-            } text-white font-medium px-6 py-2 rounded-lg shadow-md transition-all duration-300 flex items-center justify-center`}
+            className={`${loading ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-gradient-to-r from-indigo-500 to-teal-400 hover:from-teal-400 hover:to-indigo-500"
+              } text-white font-medium px-6 py-2 rounded-lg shadow-md transition-all duration-300 flex items-center justify-center`}
           >
             <FaSearch className="mr-2" /> {loading ? "Searching..." : "Check Status"}
           </motion.button>

@@ -4,7 +4,7 @@ import ContactUs from "./pages/ContactUs";
 import { Layout } from './components/Layout';
 import { navItems } from "./components/Sidebar";
 import { AddUserPage } from "./pages/AddUserPage";
-import ProtectedRoute from "./components/ProtectedRoute";
+//import ProtectedRoute from "./components/ProtectedRoute";
 import { CookiesProvider } from "react-cookie";
 import Demo from "./pages/demo";
 
@@ -19,9 +19,9 @@ function App() {
       {/* Protected page wrapper */}
       <Route
         element={
-          <ProtectedRoute>
+//          <ProtectedRoute>
             <Layout />
-          </ProtectedRoute>
+  //        </ProtectedRoute>
         }
       >
         {navItems.map((item) => (

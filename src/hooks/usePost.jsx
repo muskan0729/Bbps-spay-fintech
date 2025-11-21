@@ -34,12 +34,12 @@ export function usePost(endpoint) {
         );
         return response.data;
       } else {
-        if (endpoint === "/bbps/biller-info/json") {
+        if (endpoint === "/bbps/biller-info/json" || endpoint==="/bbps/plan-pull/json") {
           // console.log(body);
           // console.log(`url of bbps ${BASE_URL}${endpoint}`);
-          const rawText = `${body.blr_id}`;
+          const rawText = `${body}`;
           // console.log("RAW TEXT to backend:", rawText);
-          // console.log(`${cookie.token.slice(4)}`);
+          console.log(rawText);
 
           response = await axios.post(`${BASE_URL}${endpoint}`, rawText, {
             headers: {
@@ -47,8 +47,8 @@ export function usePost(endpoint) {
               Authorization: `Bearer ${cookie.token.slice(4)}`,
             },
           });
-          // console.log("response : ",response);
-          return(response.data.biller)
+          console.log("response : ",response);
+          return(response)
 
         } else {
           // console.log(`${BASE_URL}${endpoint}`);

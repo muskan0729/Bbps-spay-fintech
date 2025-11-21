@@ -27,6 +27,9 @@ const LoginPage = () => {
       setCookie("token",res.token,{
         path:"/"
       });
+      setCookie("role",res.user.role_id,{
+        path:"/"
+      });
       navigate("/dashboard");
 
       // Example: navigate to dashboard
