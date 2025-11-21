@@ -15,79 +15,38 @@ import Report from "../pages/Report";
 import Support from "../pages/Support";
 import ComplaintPage from "../pages/ComplaintPage";
 import CheckTransactionComplaint from "../pages/CheckTransactionComplaint";
-
 import Users from "../pages/Users";
 
-import { useAuth } from "../contexts/AuthContext"; 
+import { useAuth } from "../contexts/AuthContext";
 
 export const navItems = [
-    {
-        icon: faGauge,
-        label: "Dashboard",
-        path: "/dashboard",
-        roles: ["admin", "user"],   // ✅ Replaced isAdmin/isUser
-        component: Dashboard,
-    },
-    {
-        icon: faBuildingColumns,
-        label: "Users",
-        path: "/users",
-        roles: ["admin"],           // Only admin
-        component: Users,
-    },
-    {
-        icon: faBuildingColumns,
-        label: "Services",
-        path: "/services",
-        roles: ["user"],            // Only normal user
-        component: ServicePage,
-    },
-    {
-        icon: faFileLines,
-        label: "Report",
-        path: "/report",
-        roles: ["admin", "user"],
-        component: Report,
-    },
-    {
-        icon: faMagnifyingGlass,
-        label: "Support",
-        path: "/support",
-        roles: ["user"],
-        component: Support,
-    },
-    {
-        icon: faTriangleExclamation,
-        label: "Complaint",
-        path: "/complaint",
-        roles: ["admin", "user"],
-        component: ComplaintPage,
-    },
-    {
-        icon: faCircleExclamation,
-        label: "Check Complaint",
-        path: "/checkcomplaint",
-        roles: ["user"],
-        component: CheckTransactionComplaint,
-    },
+    { icon: faGauge, label: "Dashboard", path: "/dashboard", roles: ["admin", "user"], component: Dashboard },
+    { icon: faBuildingColumns, label: "Users", path: "/users", roles: ["admin"], component: Users },
+    { icon: faBuildingColumns, label: "Services", path: "/services", roles: ["user"], component: ServicePage },
+    { icon: faFileLines, label: "Report", path: "/report", roles: ["admin", "user"], component: Report },
+    { icon: faMagnifyingGlass, label: "Support", path: "/support", roles: ["user"], component: Support },
+    { icon: faTriangleExclamation, label: "Complaint", path: "/complaint", roles: ["admin", "user"], component: ComplaintPage },
+    { icon: faCircleExclamation, label: "Check Complaint", path: "/checkcomplaint", roles: ["user"], component: CheckTransactionComplaint },
 ];
 
-export const Sidebar = ({ isMobile = false, isMobileSidebarOpen = false, sidebarRef = null,  setIsMobileSidebarOpen }) => {
-    const { user } = useAuth(); 
+export const Sidebar = ({
+    isMobile = false,
+    isMobileSidebarOpen = false,
+    sidebarRef = null,
+    setIsMobileSidebarOpen
+}) => {
+
+    const { user } = useAuth();
     const location = useLocation();
 
-    const role = user?.role || "user";    // default
-
-    const filteredNavItems = navItems.filter(item =>
-        item.roles.includes(role)          // role check
-    );
+    const role = user?.role || "user";
+    const filteredNavItems = navItems.filter(item => item.roles.includes(role));
 
     return (
         <div
             className={
                 isMobile
-                    ? `fixed inset-0 z-50 bg-black/40 
-                       transition-opacity duration-300 
+                    ? `fixed inset-0 z-50 bg-black/40 transition-opacity duration-300
                        ${isMobileSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`
                     : ""
             }
@@ -95,39 +54,37 @@ export const Sidebar = ({ isMobile = false, isMobileSidebarOpen = false, sidebar
             <div
                 ref={sidebarRef}
                 className={`
-                    flex flex-col  bg-linear-to-b from-blue-900 to-blue-800 text-white shadow-2xl p-2 h-full
-
+                    flex flex-col bg-gradient-to-b from-blue-900 to-blue-800 text-white shadow-xl p-2 h-full
                     transform transition-transform duration-300 ease-in-out
 
                     ${isMobile
-                        ?`w-40 ${isMobileSidebarOpen
-                            ? "translate-x-0"
-                            : "-translate-x-full"}`
-                        : "w-20 md:w-24"
+                        ? `w-40 ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`
+                        : "w-16 md:w-20 lg:w-24 xl:w-28"
                     }
                 `}
             >
-                <nav className="grow overflow-y-auto py-8">
-                    <ul className="space-y-6">
+                {/* NAVIGATION (No scroll bar) */}
+                <nav className="grow overflow-y-hidden py-6">
+                    <ul className="space-y-5">
                         {filteredNavItems.map((item, index) => {
                             const isActive = location.pathname === item.path;
+
                             return (
                                 <li key={index}>
                                     <Link
-                                        
                                         to={item.path}
-                                        className={`group flex flex-col items-center space-y-1 p-2 text-sm rounded-lg transition duration-150 ease-in-out cursor-pointer
-                                            ${
-                                                isActive
-                                                    ? "bg-white/20"
-                                                    : "hover:bg-white/20"
-                                            }`}
+                                        className={`
+                                            group flex flex-col items-center p-2 rounded-lg transition-all
+                                            ${isActive ? "bg-white/20" : "hover:bg-white/20"}
+                                        `}
                                     >
                                         <FontAwesomeIcon
                                             icon={item.icon}
-                                            className="w-6 h-6 transition duration-200 group-hover:scale-125"
+                                            className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 transition group-hover:scale-125"
                                         />
-                                        <span className="text-xs text-center">{item.label}</span>
+                                        <span className="text-[10px] md:text-xs text-center mt-1">
+                                            {item.label}
+                                        </span>
                                     </Link>
                                 </li>
                             );
@@ -135,80 +92,14 @@ export const Sidebar = ({ isMobile = false, isMobileSidebarOpen = false, sidebar
                     </ul>
                 </nav>
 
-                <div className="mt-auto pt-4">
-                    <hr className="border-white/50 mb-4" />
-                    <div className="flex flex-col items-center text-center text-white/70 text-[8px] md:text-[10px]">
-                        <p>&copy; Copyright BBPS {new Date().getFullYear()}</p>
-                    </div>
+                {/* FOOTER */}
+                <div className="mt-auto pt-3">
+                    <hr className="border-white/40 mb-3" />
+                    <p className="text-center text-white/70 text-[9px] md:text-[11px]">
+                        © BBPS {new Date().getFullYear()}
+                    </p>
                 </div>
             </div>
         </div>
-    );
-
-    return (
-        <>
-            {isMobile ? (
-                <div className="bg-linear-to-b from-blue-900 to-blue-800 text-white px-4 py-3 shadow-md text-center">
-                    <button onClick={() => setIsOpen(!isOpen)}>
-                        <FontAwesomeIcon icon={isOpen ? faChevronUp : faChevronDown} />
-                    </button>
-                    {isOpen && (
-                        <ul>
-                            {filteredNavItems.map((item, index) => {
-                                const isActive = location.pathname === item.path;
-                                return (
-                                    <li key={index}>
-                                        <Link
-                                            to={item.path}
-                                            className={`group flex flex-col items-center space-y-1 p-2 text-sm rounded-lg transition duration-150 ease-in-out cursor-pointer
-                                        ${isActive
-                                                    ? "bg-white/20"
-                                                    : "hover:bg-white/20"
-                                                }`}
-                                        >
-                                            <span>{item.label}</span>
-                                        </Link>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    )}
-                </div>
-            ) : (
-                <div className="flex flex-col w-20 md:w-24 bg-linear-to-b from-blue-900 to-blue-800 text-white shadow-2xl p-2 h-full">
-                    <nav className="grow overflow-y-auto py-8">
-                        <ul className="space-y-6">
-                            {filteredNavItems.map((item, index) => {
-                                const isActive = location.pathname === item.path;
-                                return (
-                                    <li key={index}>
-                                        <Link
-                                            to={item.path}
-                                            className={`group flex flex-col items-center space-y-1 p-2 text-sm rounded-lg transition duration-150 ease-in-out cursor-pointer
-                                        ${isActive
-                                                    ? "bg-white/20"
-                                                    : "hover:bg-white/20"
-                                                }`}
-                                        >
-                                            <FontAwesomeIcon
-                                                icon={item.icon}
-                                                className="w-25 h-25 md:w-15 md:h-15 transition duration-200 group-hover:scale-130"
-                                            />
-                                            <span className="text-xs text-center">{item.label}</span>
-                                        </Link>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </nav>
-                    <div className="mt-auto pt-4">
-                        <hr className="border-white/50 mb-4" />
-                        <div className="flex flex-col items-center text-center text-white/70 text-[8px] md:text-[10px]">
-                            <p>&copy; Copyright BBPS {new Date().getFullYear()}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </>
     );
 };

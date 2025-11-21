@@ -5,13 +5,23 @@ import DashboaedSkeleton from "../components/DashboardSkeleton";
 import { useAuth } from "../contexts/AuthContext";
 import { useCookies } from "react-cookie";
 import { useGet } from "../hooks/useGet";
+import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  // const [cookie, setCookie, removeCooie] = useCookies("token");
+  const [cookie, setCookie] = useCookies();
+  const [isAdmin,setIsAdmin]=useState(false);
+  const navigate=useNavigate()
   // const { data ,refetch} = useGet("/get-billers/Mobile");
   useEffect(() => {
-    // simulate loading
+
+    if(!(cookie.token) || !(cookie.role))
+    {
+      alert("Stay Away ");
+      navigate("/");
+      return
+    }
+
     setTimeout(() => {
       setLoading(false);
     }, 2000);
@@ -21,7 +31,7 @@ const Dashboard = () => {
     
   }, []);
 
-  const isAdmin = user?.role === "admin"; // ✅ Role check
+; // ✅ Role check
 
   return (
     <>{loading ? <DashboaedSkeleton /> : isAdmin ? <Admin /> : <Merchent />}</>

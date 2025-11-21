@@ -1,15 +1,15 @@
 import React, { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import profilePic from "../images/avatars/1.png";
-// import profilePic from "../images/placeholder.jpeg";
-
+import { useCookies } from "react-cookie";
 
 export const ProfileSidebar = ({ isOpen, onClose }) => {
   const sidebarRef = useRef(null);
   const overlayRef = useRef(null);
   const navigate = useNavigate();
+  const [cookies, setCookie, removeCookie] = useCookies(["token", "role"]);
 
-  // Handle click outside (allow scrollbar clicks)
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -30,6 +30,14 @@ export const ProfileSidebar = ({ isOpen, onClose }) => {
 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
+
+  const logoutHandler = () => {
+    // Properly remove cookies
+    removeCookie("token", { path: "/" });
+    removeCookie("role", { path: "/" });
+    console.log("Logged out, cookies removed");
+    navigate("/");
+  };
 
   return (
     <>
@@ -91,7 +99,6 @@ export const ProfileSidebar = ({ isOpen, onClose }) => {
 
         {/* Menu items */}
         <div className="flex flex-col space-y-3 px-6">
-          
           <SidebarItem
             icon="fas fa-phone-alt"
             text="Contact Us"
@@ -105,15 +112,12 @@ export const ProfileSidebar = ({ isOpen, onClose }) => {
             icon="fas fa-sign-out-alt"
             text="Logout"
             gradient="from-purple-300 via-pink-400 to-pink-500"
-            // onClick={() => {
-            //   console.log("Logout clicked");
-            //   onClose();
-            // }}
+            onClick={logoutHandler}
           />
         </div>
       </div>
     </>
-  );s
+  );
 };
 
 const SidebarItem = ({ icon, text, gradient, onClick }) => (
@@ -129,9 +133,3 @@ const SidebarItem = ({ icon, text, gradient, onClick }) => (
     <span className="text-gray-700 font-medium group-hover:text-blue-600">{text}</span>
   </div>
 );
-
-
-
-
-
-

@@ -48,6 +48,7 @@ const PaymentConfirmation = () => {
     newWindow.print();
     newWindow.close();
   };
+console.log("PaymentConfirmation");
 
   return (
     <ServicesModalWrapper

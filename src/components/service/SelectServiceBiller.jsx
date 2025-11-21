@@ -40,6 +40,7 @@ const SelectServiceBiller = () => {
       setServiceList(data);
       setLoading(false);
     }
+    console.log("Select Service Biller");
   }, [data, apiLoading]);
 
   // Reset modal state on close
@@ -58,10 +59,22 @@ const SelectServiceBiller = () => {
 
     close();
     setTimeout(() => {
-      openModal("details", {
-        selectedBiller: selectedBillerData,
-        billerResponse,
-      });
+
+      console.log(selectedBillerData);
+
+      if (selectedBillerData.planMdmRequirement === "MANDATORY") {
+        console.log("enter");
+
+        openModal("plandisplay", {
+          data: selectedBillerData.billerId
+        })
+      }
+      else {
+        openModal("details", {
+          selectedBiller: selectedBillerData,
+          billerResponse,
+        });
+      }
     }, 260);
   };
 
@@ -69,8 +82,8 @@ const SelectServiceBiller = () => {
   const onChangeHandler = async (id) => {
     setSelectedBillerId(id); // store selected ID for dropdown to stay selected
 
-    const result = await fetchBillerInfo({ blr_id: id });
-
+    const res = await fetchBillerInfo( id );
+const result=res.data.biller
     if (Array.isArray(result) && result[0]) {
       // console.log("Selected biller object:", result[0]);
       // console.log(
@@ -119,8 +132,8 @@ const SelectServiceBiller = () => {
             onClick={() => handleNext(close)}
             disabled={loading || !selectedBillerId}
             className={`px-4 py-2 rounded text-white ${!selectedBillerId
-                ? "bg-blue-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
+              ? "bg-blue-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
               }`}
           >
             Next

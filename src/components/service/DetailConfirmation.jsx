@@ -60,6 +60,7 @@ const DetailConfirmation = () => {
       openModal("lastModal", { lastModal: res, serviceId });
     }, 150);
   };
+console.log("DetailConfirmation");
 
   return (
     <ServicesModalWrapper
