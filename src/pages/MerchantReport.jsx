@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../images/logo.png";
+import { usePost } from "../hooks/usePost";
 
 const MerchantReport = () => {
   const [filters, setFilters] = useState({
@@ -16,50 +17,66 @@ const MerchantReport = () => {
   });
 
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [apiData, setApiData] = useState([]);
   const rowsPerPage = 5;
 
-  // Mock Data
-  const mockData = Array.from({ length: 15 }, (_, i) => ({
-    SrNo: i + 1,
-    RequestId: `R00${i + 1}`,
-    CustomerName: `User ${i + 1}`,
-    Category: ["Electricity", "Gas", "Loan", "Water", "Mobile"][i % 5],
-    BillNumber: `B00${i + 1}`,
-    Amount: (i + 1) * 100,
-    Plan: i % 2 === 0 ? "Active" : "Inactive",
-    Status: ["Success", "Pending", "Failed", "Initiated"][i % 4],
-    Date: `2023-10-${(i + 1).toString().padStart(2, "0")}`,
-  }));
+  // ⭐ usePost hook
+  const {
+    execute: fetchPayments,
+    data: apiResponse,
+    isLoading,
+  } = usePost("/bbps/all-bill-payments/json");
 
+  // ⭐ Fetch API Data on load
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setData(mockData);
-      setLoading(false);
-    }, 1000);
+    const loadPayments = async () => {
+      await fetchPayments(); // triggers API call
+    };
+
+    loadPayments();
   }, []);
 
+  // ⭐ When API response updates, map to table rows
+  useEffect(() => {
+    if (!apiResponse) return;
+
+    // allow both: res.data or res.data.data or raw array
+    const list = Array.isArray(apiResponse)
+      ? apiResponse
+      : Array.isArray(apiResponse.data)
+      ? apiResponse.data
+      : [];
+
+    const mappedRows = list.map((item, index) => ({
+      SrNo: index + 1,
+      RequestId: item.request_id ?? "-",
+      Category: item.category ?? "-",
+      BillNumber: item.txnRefID ?? "-",
+      Amount: item.respAmount ?? 0,
+      Status: item.responseReason ?? "-",
+      Date: item.created_at?.split("T")[0] ?? "-",
+    }));
+
+    setApiData(mappedRows);
+    setData(mappedRows);
+  }, [apiResponse]);
+
+  // ⭐ Handle Filters
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFilters({ ...filters, [name]: value });
+    setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
   const handleSearch = () => {
-    setLoading(true);
-    setTimeout(() => {
-      const filteredData = mockData.filter((item) => {
-        return (
-          (!filters.fromDate || item.Date >= filters.fromDate) &&
-          (!filters.toDate || item.Date <= filters.toDate) &&
-          (!filters.category || item.Category === filters.category) &&
-          (!filters.status || item.Status === filters.status) &&
-          (!filters.billNumber || item.BillNumber.includes(filters.billNumber))
-        );
-      });
-      setData(filteredData);
-      setLoading(false);
-    }, 500);
+    const filtered = apiData.filter((item) => {
+      return (
+        (!filters.fromDate || item.Date >= filters.fromDate) &&
+        (!filters.toDate || item.Date <= filters.toDate) &&
+        (!filters.category || item.Category === filters.category) &&
+        (!filters.status || item.Status === filters.status) &&
+        (!filters.billNumber || item.BillNumber.includes(filters.billNumber))
+      );
+    });
+    setData(filtered);
   };
 
   const handleReset = () => {
@@ -70,9 +87,10 @@ const MerchantReport = () => {
       status: "",
       billNumber: "",
     });
-    setData(mockData);
+    setData(apiData);
   };
 
+  // ⭐ Export Excel
   const exportExcel = () => {
     if (!data.length) return alert("No data to export.");
     const ws = XLSX.utils.json_to_sheet(data);
@@ -81,28 +99,25 @@ const MerchantReport = () => {
     XLSX.writeFile(wb, "Merchant_Report.xlsx");
   };
 
+  // ⭐ Export PDF
   const exportPDF = () => {
     if (!data.length) return alert("No data to export.");
     const doc = new jsPDF();
     const tableColumn = [
-      "Sr. No.",
+      "SrNo",
       "Request Id",
-      "Customer Name",
       "Category",
       "Bill Number",
       "Amount",
-      "Plan",
       "Status",
       "Date",
     ];
-    const tableRows = data.map((item, index) => [
-      index + 1,
+    const tableRows = data.map((item) => [
+      item.SrNo,
       item.RequestId,
-      item.CustomerName,
       item.Category,
       item.BillNumber,
       item.Amount,
-      item.Plan,
       item.Status,
       item.Date,
     ]);
@@ -111,44 +126,19 @@ const MerchantReport = () => {
     doc.save("Merchant_Report.pdf");
   };
 
-  // 💠 Styled Status Labels (uniform width + lighter colors)
+  // ⭐ Status UI
   const renderStatusLabel = (status) => {
     const base =
-      "inline-block px-3 py-1 text-sm font-semibold rounded-full shadow-sm transition-all duration-300 text-center w-20";
+      "inline-block px-3 py-1 text-sm font-semibold rounded-full shadow-sm w-20 text-center";
     const styles = {
-      Success:
-        "bg-green-50 text-green-800 shadow-green-100/30 hover:bg-green-100",
-      Failed:
-        "bg-red-50 text-red-800 shadow-red-100/30 hover:bg-red-100",
-      Pending:
-        "bg-yellow-50 text-yellow-800 shadow-yellow-100/30 hover:bg-yellow-100",
-      Initiated:
-        "bg-sky-50 text-sky-800 shadow-sky-100/30 hover:bg-sky-100",
+      Successful: "bg-green-100 text-green-700",
+      Failed: "bg-red-100 text-red-700",
+      Pending: "bg-yellow-100 text-yellow-700",
+      Initiated: "bg-blue-100 text-blue-700",
     };
-
-    return <span className={`${base} ${styles[status] || ""}`}>{status}</span>;
+    return <span className={`${base} ${styles[status]}`}>{status}</span>;
   };
 
-  // 💎 Appian-style compact toggle for Plan
-  const renderPlanLabel = (plan) => {
-    return (
-      <div
-        className={`w-10 h-5 flex items-center rounded-full p-0.5 relative transition-all duration-300 ${
-          plan === "Active" ? "bg-green-500" : "bg-gray-300"
-        }`}
-      >
-        {/* Knob */}
-        <div
-          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
-            plan === "Active" ? "translate-x-5" : "translate-x-0"
-          }`}
-        ></div>
-      </div>
-    );
-  };
-  
-
-  // 💰 Format Amount to currency
   const formatCurrency = (amount) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -159,7 +149,6 @@ const MerchantReport = () => {
   const columns = [
     "SrNo",
     "RequestId",
-    "CustomerName",
     "Category",
     "BillNumber",
     {
@@ -171,32 +160,22 @@ const MerchantReport = () => {
       ),
     },
     {
-      label: "Plan",
-      render: (item) => renderPlanLabel(item.Plan),
-    },
-    {
       label: "Status",
       render: (item) => renderStatusLabel(item.Status),
     },
     "Date",
   ];
 
-
   return (
-    <div className="p-8 bg-gradient-to-br from-blue-50 via-gray-100 to-blue-100 min-h-screen transition-all">
-      {/* === Header === */}
+    <div className="p-8 bg-gradient-to-br from-blue-50 via-gray-100 to-blue-100 min-h-screen">
+
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight">
+        <h1 className="text-3xl font-extrabold text-gray-800">
           Transaction History
         </h1>
-        <img
-          src={logo}
-          alt="Bharat Connect Logo"
-          className="w-36 h-14 object-contain drop-shadow-lg"
-        />
+        <img src={logo} className="w-36 h-14" alt="Logo" />
       </div>
 
-      {/* === Search / Filter Bar === */}
       <SearchBar
         filters={filters}
         handleChange={handleChange}
@@ -211,45 +190,39 @@ const MerchantReport = () => {
             name: "category",
             label: "Category",
             type: "select",
-            options: ["Electricity", "Gas", "Loan", "Water", "Mobile"],
+            options: ["Electricity", "Gas", "Fastag", "LPG Gas"],
           },
           {
             name: "status",
             label: "Status",
             type: "select",
-            options: ["Failed", "Initiated", "Pending", "Success"],
+            options: ["Failed", "Initiated", "Pending", "Successful"],
           },
           { name: "billNumber", label: "Bill Number", type: "text" },
         ]}
       />
 
-      {/* === Table Section === */}
-      <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+      <div className="bg-white rounded-2xl shadow-xl border p-6 mt-4">
+        <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">
           Latest Transactions
         </h2>
 
-        {loading ? (
-          <div className="text-center py-10 text-blue-600 font-medium animate-pulse">
+        {isLoading ? (
+          <div className="text-center py-10 text-blue-600 animate-pulse">
             Loading transaction data...
           </div>
         ) : (
-
           <Table
             columns={columns}
             data={data}
             rowsPerPage={rowsPerPage}
             isPaginationRequired={true}
-
-            tableWrapperClass="overflow-hidden rounded-2xl shadow-md"
-
-            tableClass="min-w-full"
-            headerClass="bg-blue-500 text-white font-semibold text-sm uppercase"
-            rowClass="bg-white hover:bg-sky-50 transition-colors duration-200"
-
-            paginationClass="text-sm mt-2"
+              tableClass="min-w-full border border-gray-400 text-sm text-gray-700 font-sans overflow-x-auto"
+          headerClass="bg-blue-600 text-white font-semibold text-left uppercase border-b border-gray-400"
+          rowClass="bg-white hover:bg-blue-100 border-b border-gray-300 transition-colors duration-200"
+          cellClass="py-3 px-4 text-gray-700 whitespace-nowrap"
+          paginationClass="flex justify-center gap-2 mt-4 text-gray-700 font-medium"
           />
-          
         )}
       </div>
     </div>
@@ -257,4 +230,3 @@ const MerchantReport = () => {
 };
 
 export default MerchantReport;
-

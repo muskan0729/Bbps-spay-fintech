@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import Table from "../components/Table";
 import {
   FaClipboardList,
@@ -13,12 +13,15 @@ import { BsCheck2Circle } from "react-icons/bs";
 import { useAuth } from "../contexts/AuthContext";
 import BharatConnectLogo from "../images/logo.png"
 import { usePost } from "../hooks/usePost";
+import { toast, Toaster } from "react-hot-toast";
+
 const ComplaintPage = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const role = isAdmin ? "admin" : "merchant";
 
 const { execute: fetchPayment } = usePost("/bbps/complaint-register/json");
+
 
   const [formData, setFormData] = useState({
     complaintType: "",
@@ -27,18 +30,48 @@ const { execute: fetchPayment } = usePost("/bbps/complaint-register/json");
     complaintDisposition: "",
     complaintDescription: "",
     serviceComplaint: "",
+    billerId: "", // <-- added
   });
 
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
-  const [data] = useState([
-    { ComplaintID: "CC0125270014750", TxnReferenceID: "CC015270BAAG00021064", ComplaintType: "Transaction", ParticipationType: "BILLER", BillerID: "OTME00005XXZ43", ComplaintReason: "-", ComplaintDisposition: "Transaction Successful, account not updated", ComplaintStatus: "ASSIGNED" },
-    { ComplaintID: "CC0125270014751", TxnReferenceID: "CC015270BAAG00021065", ComplaintType: "Service", ParticipationType: "AGENT", BillerID: "OTME00006YYZ12", ComplaintReason: "Service not working properly", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
-    { ComplaintID: "CC0125270014752", TxnReferenceID: "CC015270BAAG00021066", ComplaintType: "Transaction", ParticipationType: "AGENT", BillerID: "OTME00007ZZZ34", ComplaintReason: "-", ComplaintDisposition: "Resolved", ComplaintStatus: "Resolved" },
-    { ComplaintID: "CC0125270014753", TxnReferenceID: "CC015270BAAG00021067", ComplaintType: "Service", ParticipationType: "BILLER", BillerID: "OTME00008AAA12", ComplaintReason: "Delay in service", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
-    { ComplaintID: "CC0125270014754", TxnReferenceID: "CC015270BAAG00021068", ComplaintType: "Transaction", ParticipationType: "BILLER", BillerID: "OTME00009BBB23", ComplaintReason: "-", ComplaintDisposition: "Transaction Successful, account not updated", ComplaintStatus: "ASSIGNED" },
-    { ComplaintID: "CC0125270014755", TxnReferenceID: "CC015270BAAG00021069", ComplaintType: "Service", ParticipationType: "AGENT", BillerID: "OTME00010CCC34", ComplaintReason: "Incorrect info displayed", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
-  ]);
+  const { execute: fetchComplaints } = usePost("/bbps/all-complaints/json");
+const [data, setData] = useState([]);
+
+useEffect(() => {
+  const loadComplaints = async () => {
+    try {
+      const response = await fetchComplaints(); // call API once
+      const apiData = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+      const mapped = apiData.map((item) => ({
+        ComplaintID: item.register_complaint_id,
+        TxnReferenceID: item.txn_ref_id,
+        ComplaintType: item.complaint_type,
+        ParticipationType: item.participation_type,
+        BillerID: item.biller_id,
+        ComplaintReason: item.complaint_desc,
+        ComplaintDisposition: item.complaint_disposition,
+        ComplaintStatus: item.complaint_status,
+      }));
+      setData(mapped);
+    } catch (error) {
+      console.error("Error loading complaint data:", error);
+    }
+  };
+
+  loadComplaints();
+}, []); // empty dependency array ensures one-time fetch
+
+
+
+  // const [data] = useState([
+  //   { ComplaintID: "CC0125270014750", TxnReferenceID: "CC015270BAAG00021064", ComplaintType: "Transaction", ParticipationType: "BILLER", BillerID: "OTME00005XXZ43", ComplaintReason: "-", ComplaintDisposition: "Transaction Successful, account not updated", ComplaintStatus: "ASSIGNED" },
+  //   { ComplaintID: "CC0125270014751", TxnReferenceID: "CC015270BAAG00021065", ComplaintType: "Service", ParticipationType: "AGENT", BillerID: "OTME00006YYZ12", ComplaintReason: "Service not working properly", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
+  //   { ComplaintID: "CC0125270014752", TxnReferenceID: "CC015270BAAG00021066", ComplaintType: "Transaction", ParticipationType: "AGENT", BillerID: "OTME00007ZZZ34", ComplaintReason: "-", ComplaintDisposition: "Resolved", ComplaintStatus: "Resolved" },
+  //   { ComplaintID: "CC0125270014753", TxnReferenceID: "CC015270BAAG00021067", ComplaintType: "Service", ParticipationType: "BILLER", BillerID: "OTME00008AAA12", ComplaintReason: "Delay in service", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
+  //   { ComplaintID: "CC0125270014754", TxnReferenceID: "CC015270BAAG00021068", ComplaintType: "Transaction", ParticipationType: "BILLER", BillerID: "OTME00009BBB23", ComplaintReason: "-", ComplaintDisposition: "Transaction Successful, account not updated", ComplaintStatus: "ASSIGNED" },
+  //   { ComplaintID: "CC0125270014755", TxnReferenceID: "CC015270BAAG00021069", ComplaintType: "Service", ParticipationType: "AGENT", BillerID: "OTME00010CCC34", ComplaintReason: "Incorrect info displayed", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
+  // ]);
 
 
   const handleChange = (e) => {
@@ -67,10 +100,10 @@ const handleSubmit = async (e) => {
 
     console.log("Complaint API Response:", response); // log API output
 
-    alert("Complaint submitted successfully!");
+    toast.success("Complaint submitted successfully!");
   } catch (error) {
     console.error("API Error:", error);
-    alert("Failed to submit complaint! Check console.");
+    toast.error("Failed to submit complaint! Check console.");
   }
 };
 
@@ -133,31 +166,32 @@ const handleSubmit = async (e) => {
   };
 
 
-  const columns = [
-    { label: "Complaint ID", key: "ComplaintID" },
-    { label: "Txn Reference ID", key: "TxnReferenceID" },
-    { label: "Complaint Type", key: "ComplaintType", render: (row) => renderComplaintType(row.ComplaintType) },
-    { label: "Participation Type", key: "ParticipationType", render: (row) => renderParticipationType(row.ParticipationType) },
-    { label: "Biller ID", key: "BillerID" },
-    { label: "Complaint Reason", key: "ComplaintReason" },
-    { label: "Disposition", key: "ComplaintDisposition" },
-    { label: "Status", key: "ComplaintStatus", render: (row) => renderStatusLabel(row.ComplaintStatus) },
-    {
-      key: "action", label: "Action", render: (row) => (
-        <button
-          onClick={() => handleViewDetails(row)}
-          title="View Complaint Details"
-          className="bg-blue-100 text-blue-600 p-2 rounded-md hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-sm"
-        >
-          <FaEye size={16} />
-        </button>
-      )
-    }
-  ];
+const columns = [
+  { label: "Complaint ID", key: "ComplaintID" },
+  { label: "Txn Reference ID", key: "TxnReferenceID" },
+  { label: "Complaint Type", key: "ComplaintType", render: (row) => renderComplaintType(row.ComplaintType) },
+  { label: "Participation Type", key: "ParticipationType", render: (row) => renderParticipationType(row.ParticipationType) },
+  { label: "Biller ID", key: "BillerID" },
+  { label: "Complaint Reason", key: "ComplaintReason" },
+  { label: "Disposition", key: "ComplaintDisposition" },
+  { label: "Status", key: "ComplaintStatus", render: (row) => renderStatusLabel(row.ComplaintStatus) },
+  {
+    key: "action", label: "Action",
+    render: (row) => (
+      <button
+        onClick={() => handleViewDetails(row)}
+        className="bg-blue-100 text-blue-600 p-2 rounded-md hover:bg-blue-500 hover:text-white"
+      >
+        <FaEye size={16} />
+      </button>
+    )
+  }
+];
+
 
   return (
     <div className="p-6 sm:p-8 bg-gradient-to-br from-blue-50 via-gray-100 to-blue-100 min-h-screen font-sans">
-
+      <Toaster position="top-right" reverseOrder={false} />
       {/* Merchant Form */}
       {role === "merchant" && (
         <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto mb-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
