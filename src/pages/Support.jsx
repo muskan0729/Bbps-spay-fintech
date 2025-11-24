@@ -15,7 +15,10 @@ const Support = () => {
   const [idInput, setIdInput] = useState("");
   const [tableData, setTableData] = useState([]);
   const [searchMessage, setSearchMessage] = useState("Enter Transaction ID or Filters");
-  const { data, loading, execute } = usePost("/bbps/get-txn-status");
+//Testing
+  const { data, loading, execute } = usePost("/bbps/get-txn-status-test");
+//Production
+    // const { data, loading, execute } = usePost("/bbps/get-txn-status");
   // const [isSingle,setIsSingle]=useState(null);
   const handleChange = (e) => {
     const { name, value } = e.target;

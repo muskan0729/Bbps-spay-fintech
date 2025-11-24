@@ -19,9 +19,10 @@ const ComplaintPage = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const role = isAdmin ? "admin" : "merchant";
-
-const { execute: fetchPayment } = usePost("/bbps/complaint-register/json");
-
+//production
+// const { execute: fetchPayment } = usePost("/bbps/complaint-register/json");
+//testing
+const { execute: fetchPayment } = usePost("/bbps/complaint-register-test/json");
 
   const [formData, setFormData] = useState({
     complaintType: "",
