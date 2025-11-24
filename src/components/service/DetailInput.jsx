@@ -13,17 +13,17 @@ const DetailInput = () => {
   const [params, setParams] = useState([]);
   const [formValues, setFormValues] = useState({});
 
-  // MANDATORY USER FIELDS — now editable
+  // MANDATORY FIELDS (for Mandatory billerFetchRequiremet)
   const [custMob, setCustMob] = useState("");
   const [custEmail, setCustEmail] = useState("");
   const [custAdd, setCustAdd] = useState("");
   const [custPan, setCustPan] = useState("");
-  // const [remitterName, setRemitterName] = useState(""); // ✅ NEW FIELD
 
   const [billerFetchRequiremet, setBillerFetchRequiremet] = useState(false);
 
   const { execute: fetchResponse } = usePost("/bbps/bill-process/json");
 
+  // Load Biller Params
   useEffect(() => {
     if (selectedBiller?.billerInputParams?.[0]?.paramsList) {
       setParams(selectedBiller.billerInputParams[0].paramsList);
@@ -35,9 +35,9 @@ const DetailInput = () => {
     ) {
       setBillerFetchRequiremet(true);
     }
-    console.log("DetailInput");
   }, [selectedBiller]);
 
+  // Track form values
   const handleChange = (key, value) => {
     setFormValues((prev) => ({
       ...prev,
@@ -45,14 +45,15 @@ const DetailInput = () => {
     }));
   };
 
+  // Handle submit request
   const handleSubmit = async (close) => {
     const mandatoryData = {
       customerAdhaar: custAdd,
       customerMobile: custMob,
       customerPan: custPan,
       customerEmail: custEmail,
-      // remitterName: remitterName, // ✅ ADDED HERE
     };
+
     const requestBody = {
       data: {
         billerId: selectedBiller.billerId,
@@ -60,52 +61,73 @@ const DetailInput = () => {
         ...(billerFetchRequiremet ? mandatoryData : {}),
       },
     };
-    console.log(mandatoryData);
+
     const response = await fetchResponse(requestBody.data);
 
     close();
-    console.log(selectedBiller);
 
     setTimeout(() => {
-
-        openModal("finalData", {
-          data: response,
-          custData: mandatoryData,
-          serviceId: selectedBiller.billerId,
-        });
+      openModal("finalData", {
+        data: response,
+        custData: mandatoryData,
+        serviceId: selectedBiller.billerId,
+      });
     }, 260);
   };
 
+  // Input Mapper (Handles dropdown / input box)
   const inputMapper = () =>
-    params.map((item, index) => (
-      <div key={index} className="mb-3 flex flex-col">
-        <label className="font-semibold mb-1" htmlFor={item.paramName}>
-          {item.paramName}
-        </label>
+    params.map((item, index) => {
+      const hasDropdown = item.values && item.values.trim() !== "";
 
-        <input
-          id={item.paramName}
-          name={item.paramName}
-          type="text"
-          className="border p-2 rounded"
-          onChange={(e) => handleChange(item.paramName, e.target.value)}
-        />
-      </div>
-    ));
+      const optionList = hasDropdown
+        ? item.values.split(",").map((v) => v.trim())
+        : [];
 
+      return (
+        <div key={index} className="mb-3 flex flex-col">
+          <label className="font-semibold mb-1" htmlFor={item.paramName}>
+            {item.paramName}
+          </label>
+
+          {hasDropdown ? (
+            <select
+              id={item.paramName}
+              name={item.paramName}
+              className="border p-2 rounded"
+              value={formValues[item.paramName] || ""}
+              onChange={(e) => handleChange(item.paramName, e.target.value)}
+              required={item.isOptional === "false"}
+            >
+              <option value="">Select {item.paramName}</option>
+              {optionList.map((opt, idx) => (
+                <option key={idx} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              id={item.paramName}
+              name={item.paramName}
+              type="text"
+              className="border p-2 rounded"
+              value={formValues[item.paramName] || ""}
+              minLength={Number(item.minLength)}
+              maxLength={Number(item.maxLength)}
+              pattern={item.regEx || ".*"}
+              required={item.isOptional === "false"}
+              onChange={(e) => handleChange(item.paramName, e.target.value)}
+            />
+          )}
+        </div>
+      );
+    });
+
+  // Mandatory Inputs (if billerFetchRequiremet is true)
   const mandatoryInputs = () => (
     <div className="mt-3">
       <h3 className="font-semibold mb-2">Customer Details</h3>
-
-      {/* <div className="flex flex-col mb-3">
-        <label className="font-semibold mb-1">Remitter Name</label>
-        <input
-          type="text"
-          className="border p-2 rounded"
-          value={remitterName}
-          onChange={(e) => setRemitterName(e.target.value)}
-        />
-      </div> */}
 
       <div className="flex flex-col mb-3">
         <label className="font-semibold mb-1">Customer Aadhaar</label>

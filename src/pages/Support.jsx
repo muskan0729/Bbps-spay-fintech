@@ -5,7 +5,7 @@ import { FaSearch, FaExclamationCircle, FaCheckCircle, FaInfoCircle } from "reac
 import { motion } from "framer-motion";
 import logo from "../images/logo.png";
 import { usePost } from "../hooks/usePost";
-
+import DashboardSkeleton from "../components/DashboardSkeleton"
 const Support = () => {
   const [filters, setFilters] = useState({
     mobileNumber: "",
@@ -93,7 +93,8 @@ const Support = () => {
   };
 
   return (
-    <div className="p-6 flex flex-col gap-8 bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50 min-h-screen">
+    loading ? <DashboardSkeleton/> :
+    (<div className="p-6 flex flex-col gap-8 bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50 min-h-screen">
       {/* Search Panel */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full lg:w-1/2 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-indigo-200 hover:scale-[1.02] transition-all duration-300">
         <h2 className="text-lg font-semibold text-gray-700 flex items-center gap-2 mb-3">
@@ -167,7 +168,7 @@ const Support = () => {
           !loading && <p className="text-gray-500 text-center py-4">No records to display.</p>
         )}
       </motion.div>
-    </div>
+    </div>)
   );
 };
 

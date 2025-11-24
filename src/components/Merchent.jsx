@@ -7,9 +7,11 @@ import Service1 from "../images/logo.png";
 import Service2 from "../images/placeholder.jpeg";
 import Service3 from "../images/placeholder.jpeg";
 import Service4 from "../images/placeholder.jpeg";
-
+import { useCookies } from "react-cookie";
 const Merchent = () => {
   const navigate = useNavigate();
+  const [cookie] = useCookies();
+
   const handelServiceClick = () => {
     navigate("/services");
   };
@@ -58,11 +60,12 @@ const Merchent = () => {
     "Plan",
     "Date",
   ];
+console.log(cookie.user);
 
   return (
     <span>
       <section className="flex flex-col md:flex-row bg-gray-50 p-6 rounded-lg shadow-md gap-6">
-        
+
         {/* Account Details */}
         <div className="flex flex-col items-center justify-center text-center w-full md:w-1/3 bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-xl shadow-sm border border-blue-200 
         hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
@@ -101,7 +104,7 @@ const Merchent = () => {
         <div className="flex-shrink-0 w-full md:w-1/3 bg-white rounded-2xl shadow-md overflow-hidden border border-blue-200 hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300">
           <div className="text-white text-center py-5 px-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-b-[35%]">
             <h2 className="text-lg font-semibold mb-1">
-              Welcome, ak@gmail.com
+              Welcome, {cookie.user.name}
             </h2>
             <p className="text-sm opacity-90">Your personalized dashboard</p>
           </div>
@@ -109,7 +112,7 @@ const Merchent = () => {
           <div className="p-6 bg-gray-50 flex flex-col justify-center">
             <p className="mb-2">
               <span className="font-semibold text-gray-800">User Name:</span>{" "}
-              <span className="text-gray-700">ak@gmail.com</span>
+              <span className="text-gray-700">{cookie.user.email}</span>
             </p>
             <p className="mb-2">
               <span className="font-semibold text-gray-800">Email:</span>{" "}
@@ -121,7 +124,7 @@ const Merchent = () => {
             </p>
             <p>
               <span className="font-semibold text-gray-800">Contact:</span>{" "}
-              <span className="text-gray-700">7878576985</span>
+              <span className="text-gray-700">{cookie.user.customer_mobile}</span>
             </p>
           </div>
         </div>
