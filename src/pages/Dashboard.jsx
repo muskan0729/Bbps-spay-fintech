@@ -10,28 +10,24 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const [cookie, setCookie] = useCookies();
-  const [isAdmin,setIsAdmin]=useState(false);
-  const navigate=useNavigate()
-  // const { data ,refetch} = useGet("/get-billers/Mobile");
+  const [isAdmin, setIsAdmin] = useState(null);
+  const navigate = useNavigate()
+
   useEffect(() => {
 
-    if(!(cookie.token) || !(cookie.role))
-    {
+    if (!(cookie.token) || !(cookie.role)) {
       alert("Stay Away ");
       navigate("/");
       return
     }
+    (cookie.role === 1) ? setIsAdmin(true) : setIsAdmin(false);
 
     setTimeout(() => {
       setLoading(false);
     }, 2000);
-    // console.log(data);
-    // refetch()
-
-    
   }, []);
 
-; // ✅ Role check
+  // ✅ Role check
 
   return (
     <>{loading ? <DashboaedSkeleton /> : isAdmin ? <Admin /> : <Merchent />}</>

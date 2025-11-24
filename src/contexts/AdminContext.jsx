@@ -7,7 +7,7 @@ export const AdminContextProvider = ({ children }) => {
 
   const [dataStore, setDataStore] = useState({});
 
-  const value = { isAdmin, setIsAdmin };
+  const value = { isAdmin, setIsAdmin};
 
   // --- New Generic Data Management Functions ---
 
