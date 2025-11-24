@@ -46,16 +46,13 @@ const Users = () => {
 		const timer = setTimeout(() => {
 			const dataToProcess = getData("postSubmitData");
 			let finalData = [...rawData];
-
 			if (dataToProcess?.newUser) {
 				deleteData("postSubmitData");
 				finalData.push(dataToProcess.newUser);
 			}
-
 			setTableData(dataWithTopUpButton(finalData));
 			setLoading(false);
 		}, 500); // 2-second delay
-
 		return () => clearTimeout(timer);
 	}, []);
 

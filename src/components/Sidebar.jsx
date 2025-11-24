@@ -8,7 +8,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faFileLines } from "@fortawesome/free-regular-svg-icons";
 import { Link, useLocation } from "react-router-dom";
-
+import { useCookies } from "react-cookie";
 import Dashboard from "../pages/Dashboard";
 import { ServicePage } from "../pages/ServicePage";
 import Report from "../pages/Report";
@@ -35,11 +35,11 @@ export const Sidebar = ({
     sidebarRef = null,
     setIsMobileSidebarOpen
 }) => {
-
+    const [cookie] = useCookies();
     const { user } = useAuth();
     const location = useLocation();
 
-    const role = user?.role || "user";
+    const role = cookie.role === 1 ? "admin" : "user";
     const filteredNavItems = navItems.filter(item => item.roles.includes(role));
 
     return (
