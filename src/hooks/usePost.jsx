@@ -30,12 +30,11 @@ export function usePost(endpoint) {
             withCredentials: true,
             headers: { "Content-Type": "application/json" },
           }
-
         );
         return response.data;
       } else {
-        if (endpoint === "/bbps/biller-info/json" || endpoint==="/bbps/plan-pull/json") {
-          // console.log(body);
+        if (endpoint === "/bbps/biller-info-test/json" || endpoint==="/bbps/plan-pull-test/json") {
+          console.log(body);
           // console.log(`url of bbps ${BASE_URL}${endpoint}`);
           const rawText = `${body}`;
           // console.log("RAW TEXT to backend:", rawText);
@@ -47,7 +46,7 @@ export function usePost(endpoint) {
               Authorization: `Bearer ${cookie.token.slice(4)}`,
             },
           });
-          console.log("response : ",response);
+          console.log("response : ",response," for:",endpoint);
           return(response)
 
         } else {

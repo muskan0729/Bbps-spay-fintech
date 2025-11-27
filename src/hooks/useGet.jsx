@@ -13,20 +13,11 @@ export function useGet(endpoint) {
   const fetchData = async () => {
     setLoading(true);
     setError(null);
-    // console.log(" fetchData here");
 
     try {
-      // console.log();
 
-      // console.log({
-      //   headers: {
-      //     Authorization: `Bearer ${cookie.token.slice(3)}`,
-      //   },
-      // });
       console.log(`get base url  : ${BASE_URL}${endpoint} and token = ${(cookie.token).slice(4)}`);
-      
       const response = await axios.get(`${BASE_URL}${endpoint}`, {
-        // withCredentials: true,
         headers: {
           "Authorization": `Bearer ${(cookie.token).slice(4)}`,
         },

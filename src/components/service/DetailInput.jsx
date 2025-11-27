@@ -6,14 +6,16 @@ import { usePost } from "../../hooks/usePost";
 
 const DetailInput = () => {
   const { isModalOpen, getModalData, openModal, closeModal } = useModal();
-  const { selectedBiller } = getModalData("details") || {};
 
+  // Modal data
+  const { selectedBiller } = getModalData("details") || {};
   const isOpen = isModalOpen("details");
 
+  // Dynamic params from biller API
   const [params, setParams] = useState([]);
   const [formValues, setFormValues] = useState({});
 
-  // MANDATORY FIELDS (for Mandatory billerFetchRequiremet)
+  // Mandatory extra fields
   const [custMob, setCustMob] = useState("");
   const [custEmail, setCustEmail] = useState("");
   const [custAdd, setCustAdd] = useState("");
@@ -21,10 +23,14 @@ const DetailInput = () => {
 
   const [billerFetchRequiremet, setBillerFetchRequiremet] = useState(false);
 
-  const { execute: fetchResponse } = usePost("/bbps/bill-process/json");
+  const { execute: fetchResponse } = usePost("/bbps/bill-process-test/json");
 
-  // Load Biller Params
+  /* -------------------------------------------------------
+     LOAD selectedBiller PARAMS
+  ------------------------------------------------------- */
   useEffect(() => {
+    if (!selectedBiller) return;
+
     if (selectedBiller?.billerInputParams?.[0]?.paramsList) {
       setParams(selectedBiller.billerInputParams[0].paramsList);
     }
@@ -37,7 +43,9 @@ const DetailInput = () => {
     }
   }, [selectedBiller]);
 
-  // Track form values
+  /* -------------------------------------------------------
+     TRACK INPUT CHANGES
+  ------------------------------------------------------- */
   const handleChange = (key, value) => {
     setFormValues((prev) => ({
       ...prev,
@@ -45,37 +53,69 @@ const DetailInput = () => {
     }));
   };
 
-  // Handle submit request
+  /* -------------------------------------------------------
+     SUBMIT REQUEST
+  ------------------------------------------------------- */
   const handleSubmit = async (close) => {
-    const mandatoryData = {
-      customerAdhaar: custAdd,
+    // 1️⃣ Merge mandatory UI fields into formValues dynamically
+    const extendedFormValues = {
+      ...formValues,
       customerMobile: custMob,
-      customerPan: custPan,
       customerEmail: custEmail,
+      customerAdhaar: custAdd,
+      customerPan: custPan,
     };
 
+    // console.log("EXTENDED FORM VALUES →", extendedFormValues);
+
+    // 2️⃣ Build mandatoryData based on biller param rules
+    const mandatoryData = {
+      customerMobile: custMob,
+      customerEmail: custEmail,
+      customerAdhaar: custAdd,
+      customerPan: custPan
+    };
+
+    // params.forEach((param) => {
+    //   if (param.isOptional === "false" && extendedFormValues[param.paramName]) {
+    //     mandatoryData[param.paramName] = extendedFormValues[param.paramName];
+    //   }
+    // });
+
+    // console.log("COLLECTED mandatoryData →", mandatoryData);
+
+    // 3️⃣ Build API request body
     const requestBody = {
       data: {
-        billerId: selectedBiller.billerId,
-        ...formValues,
+        billerId: selectedBiller?.billerId,
+        ...extendedFormValues,
         ...(billerFetchRequiremet ? mandatoryData : {}),
       },
     };
 
+    console.log("FINAL REQUEST BODY →", requestBody);
+    // console.log("Mandetory Data",mandatoryData);
+    
+    // 4️⃣ API CALL
     const response = await fetchResponse(requestBody.data);
 
     close();
 
+    // 5️⃣ Send next modal data
     setTimeout(() => {
+      console.log("billerFetchRequiremet: " ,billerFetchRequiremet);
+      
       openModal("finalData", {
-        data: response,
-        custData: mandatoryData,
-        serviceId: selectedBiller.billerId,
+        data: response.result.decryptedResponse,
+        custData: billerFetchRequiremet ? mandatoryData : {},
+        selectedBiller,
       });
     }, 260);
   };
 
-  // Input Mapper (Handles dropdown / input box)
+  /* -------------------------------------------------------
+     INPUT MAPPER (DYNAMIC PARAMS)
+  ------------------------------------------------------- */
   const inputMapper = () =>
     params.map((item, index) => {
       const hasDropdown = item.values && item.values.trim() !== "";
@@ -86,14 +126,10 @@ const DetailInput = () => {
 
       return (
         <div key={index} className="mb-3 flex flex-col">
-          <label className="font-semibold mb-1" htmlFor={item.paramName}>
-            {item.paramName}
-          </label>
+          <label className="font-semibold mb-1">{item.paramName}</label>
 
           {hasDropdown ? (
             <select
-              id={item.paramName}
-              name={item.paramName}
               className="border p-2 rounded"
               value={formValues[item.paramName] || ""}
               onChange={(e) => handleChange(item.paramName, e.target.value)}
@@ -108,8 +144,6 @@ const DetailInput = () => {
             </select>
           ) : (
             <input
-              id={item.paramName}
-              name={item.paramName}
               type="text"
               className="border p-2 rounded"
               value={formValues[item.paramName] || ""}
@@ -124,7 +158,9 @@ const DetailInput = () => {
       );
     });
 
-  // Mandatory Inputs (if billerFetchRequiremet is true)
+  /* -------------------------------------------------------
+     MANDATORY FIELDS UI
+  ------------------------------------------------------- */
   const mandatoryInputs = () => (
     <div className="mt-3">
       <h3 className="font-semibold mb-2">Customer Details</h3>
@@ -171,6 +207,9 @@ const DetailInput = () => {
     </div>
   );
 
+  /* -------------------------------------------------------
+     COMPONENT RETURN
+  ------------------------------------------------------- */
   return (
     <ServicesModalWrapper
       isOpen={isOpen}
@@ -179,7 +218,7 @@ const DetailInput = () => {
         <>
           <img src={placeholderImg} alt="Logo" className="h-7" />
           <span className="font-semibold ml-2">
-            Details for {selectedBiller?.billerName || ""}
+            Details for {selectedBiller?.billerName}
           </span>
         </>
       }

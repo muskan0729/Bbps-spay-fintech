@@ -22,7 +22,7 @@ const ComplaintPage = () => {
 //production
 // const { execute: fetchPayment } = usePost("/bbps/complaint-register/json");
 //testing
-const { execute: fetchPayment } = usePost("/bbps/complaint-register-test/json");
+const { execute: fetchPayment } = usePost("/bbps/complaint-register/json");
 
   const [formData, setFormData] = useState({
     complaintType: "",
@@ -36,7 +36,7 @@ const { execute: fetchPayment } = usePost("/bbps/complaint-register-test/json");
 
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
-  const { execute: fetchComplaints } = usePost("/bbps/all-complaints/json");
+  const { execute: fetchComplaints } = usePost("/bbps/all-complaints-test/json");
 const [data, setData] = useState([]);
 
 useEffect(() => {
