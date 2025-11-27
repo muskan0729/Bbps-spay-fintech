@@ -6,22 +6,21 @@ import { usePost } from "../../hooks/usePost";
 
 const PlanDisplay = () => {
   const { isModalOpen, getModalData, openModal, closeModal } = useModal();
-  const modalData = getModalData("plandisplay") || {};
+  const {selectedBiller} = getModalData("plandisplay") || {};
   const isOpen = isModalOpen("plandisplay");
 
-  const { execute } = usePost("/bbps/plan-pull/json");
-
+  const { execute } = usePost("/bbps/plan-pull-test/json");
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [response, setResponse] = useState(null);
 
   useEffect(() => {
     const fetchPlans = async () => {
-      if (!modalData?.data) return;
+      if (!selectedBiller.billerId) return;
 
       console.log("Fetching plans...");
 
-      const res = await execute(modalData.data);
+      const res = await execute(selectedBiller.billerId);
 
       setResponse(res);
 
@@ -36,11 +35,22 @@ const PlanDisplay = () => {
     };
 
     fetchPlans();
-  }, [modalData]);
+  }, [selectedBiller]);
 
   const handleSelectPlan = (plan) => {
-    setSelectedPlan(plan);
-  };
+  setSelectedPlan(plan);
+
+  closeModal("plandisplay");  // closes first modal
+
+  setTimeout(() => {
+    openModal("details", { 
+      selectedBiller: selectedBiller ,
+      plan:selectedPlan
+      // inputParams:inputParams
+    });
+  }, 150); // small delay ensures modal context updates
+};
+
 
   const handleNext = (close) => {
     if (!selectedPlan) {
@@ -61,8 +71,6 @@ const PlanDisplay = () => {
 const planHandle=(item)=>{
     
 }
-
-
   const renderPlans = () => {
     if (!plans || plans.length === 0) {
       return <p>No plans available.</p>;
@@ -71,7 +79,7 @@ const planHandle=(item)=>{
     return plans.map((item, index) => (
       <div
         key={index}
-        onClick={() => planHandle(item)}
+        onClick={() => handleSelectPlan(item)}
         className={`border rounded p-3 mb-3 shadow cursor-pointer 
           ${selectedPlan === item ? "border-blue-600 bg-blue-50" : ""}`}
       >
@@ -95,6 +103,8 @@ const planHandle=(item)=>{
       </div>
     ));
   };
+console.log("Plan Display");
+console.log(selectedBiller);
 
   return (
     <ServicesModalWrapper

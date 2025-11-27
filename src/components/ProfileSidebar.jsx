@@ -38,6 +38,7 @@ export const ProfileSidebar = ({ isOpen, onClose }) => {
     console.log("Logged out, cookies removed");
     navigate("/");
   };
+console.log(cookies.user.name);
 
   return (
     <>
@@ -91,8 +92,8 @@ export const ProfileSidebar = ({ isOpen, onClose }) => {
               </svg>
             </div>
           </div>
-          <h3 className="mt-3 font-semibold text-gray-800 text-lg">ak@gmail.com</h3>
-          <p className="text-sm text-gray-500">ak@gmail.com</p>
+          <h3 className="mt-3 font-semibold text-gray-800 text-lg">{cookies.user.name}</h3>
+          <p className="text-sm text-gray-500">{cookies.user.email}</p>
         </div>
 
         <hr className="my-6 mx-4 border-gray-200" />

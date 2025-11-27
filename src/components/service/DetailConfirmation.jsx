@@ -7,103 +7,146 @@ import { usePost } from "../../hooks/usePost";
 const DetailConfirmation = () => {
   const { isModalOpen, getModalData, closeModal, openModal } = useModal();
 
-  const { data, custData, serviceId } = getModalData("finalData") || {};
-  const { execute: fetchPayment } = usePost("/bbps/bill-payment/json");
+  // Ensure fallback {}
+  const modalData = getModalData("finalData") || {};
+  const { data = {}, custData = {}, selectedBiller = {} } = modalData;
 
   const [input, setInput] = useState([]);
   const [addInfo, setAddInfo] = useState([]);
   const [billerRes, setBillerRes] = useState({});
-  const isOpen = isModalOpen("finalData");
+  const [acceptAmount, setAcceptAmount] = useState(false);
 
-  // Extract response fields
+  const [formValues, setFormValues] = useState({ amount: "" });
+
+  const { execute: fetchPayment } = usePost("/bbps/bill-payment-test/json");
+
+  /* ---------------- LOAD RESPONSE FIELDS ---------------- */
   useEffect(() => {
-    if (!data?.result?.decryptedResponse) return;
-
-    const resp = data.result.decryptedResponse;
+    const resp = data
+    console.log(data);
+    
+    // if (!resp) {
+    //   console.warn("⚠ No decryptedResponse found in modal data");
+    //   return;
+    // }
 
     setInput(resp.inputParams?.input || []);
     setAddInfo(resp.additionalInfo?.info || []);
     setBillerRes(resp.billerResponse || {});
-  }, [data, custData]);
 
-  // Convert table items into array
-  const dynamicRows = [
-    ...input.map((i) => ({ key: i.paramName, value: i.paramValue })),
-    ...addInfo.map((i) => ({ key: i.infoName, value: i.infoValue })),
-    ...Object.entries(billerRes).map(([key, value]) => ({ key, value })),
-  ].filter((row) => row.value !== "" && row.value !== null && row.value !== undefined);
+    setAcceptAmount(selectedBiller?.billerAdhoc === "true");
+  }, [data, selectedBiller]);
 
-  // Convert array → object
-  const dynamicObject = dynamicRows.reduce((acc, item) => {
-    acc[item.key] = item.value;
-    return acc;
-  }, {});
+  /* ---------------- BUILD TABLE ROWS ---------------- */
 
-  // FINAL MERGED PAYMENT BODY
+  const billerRows = Object.entries(billerRes || {})
+    .map(([key, value]) => ({
+      key,
+      value,
+    }))
+    .filter((x) => x.value !== "" && x.value != null);
+
+const dynamicRows = [
+  ...input.map((i) => ({
+    key: i.paramName ?? "Unknown Param",
+    value: i.paramValue ?? "",
+  })),
+
+  ...addInfo.map((i) => ({
+    key: i.infoName ?? "Unknown Info",
+    value: i.infoValue ?? "",
+  })),
+
+  ...billerRows.map((item) => ({
+    key: item.key,
+    value:
+      item.key === "billAmount"
+        ? Number(item.value) / 100   // 👈 ONLY DISPLAY DIVIDED VALUE
+        : item.value,
+  })),
+];
+
+
+  /* ---------------- FINAL PAYMENT BODY ---------------- */
   const finalMergedData = {
-    billerId: serviceId,   // Added here
-    ...dynamicObject,
-    ...(custData || {}),
+    remarks: "Good here",
+    billerId: selectedBiller?.billerId,
+
+    // Convert rows → object
+    ...dynamicRows.reduce((acc, item) => {
+      acc[item.key] = item.value;
+      return acc;
+    }, {}),
+
+    ...custData,
+
+    paymentMode: "Cash",
+    splitPay: "N",
+    quickPay: "N",
+    remitterName: "Saurabh",
+
+    ...(acceptAmount ? { amount: formValues.amount } : {}),
   };
 
+  /* ---------------- EXECUTE PAYMENT ---------------- */
   const handlePay = async () => {
-    console.log("Customer Data:", custData);
-    console.log("Dynamic Rows:", dynamicRows);
-    console.log("FINAL MERGED OBJECT:", finalMergedData);
+    console.log("🔥 Final Payment Payload:", finalMergedData);
 
     const res = await fetchPayment(finalMergedData);
 
-    // Close the correct modal
     closeModal("finalData");
 
-    setTimeout(() => {
-      openModal("lastModal", { lastModal: res, serviceId });
-    }, 150);
+    openModal("lastModal", {
+      lastModal: res,
+      serviceId: selectedBiller?.billerId,
+      data,
+      custData,
+    });
   };
-console.log("DetailConfirmation");
 
   return (
     <ServicesModalWrapper
-      isOpen={isOpen}
+      isOpen={isModalOpen("finalData")}
       onClose={() => closeModal("finalData")}
       renderHeader={
         <>
-          <div className="flex justify-between w-full">
-            <img src={placeholderImg} alt="logo" className="h-7" />
-          </div>
-
+          <img src={placeholderImg} alt="logo" className="h-7 mx-auto" />
           <p className="text-center text-lg mt-1 font-semibold">
-            Are you want to proceed?
+            Are you sure you want to proceed?
           </p>
         </>
       }
       renderMiddle={
-        <div className="w-full mt-3">
-          <table className="w-full border-collapse">
-            <tbody>
-              {dynamicRows.map((row, i) => (
-                <tr key={i} className="border-b">
-                  <td className="py-2 px-2 font-semibold text-gray-700 w-1/2">
-                    {row.key}
-                  </td>
-                  <td className="py-2 px-2 text-gray-800 w-1/2">{row.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <>
+          {acceptAmount && (
+            <div className="mt-3">
+              <label className="font-semibold mb-1">Enter Amount</label>
+              <input
+                type="number"
+                className="border p-2 rounded w-full"
+                value={formValues.amount}
+                onChange={(e) => setFormValues({ amount: e.target.value })}
+              />
+            </div>
+          )}
 
-          <div className="flex gap-4 mt-3 text-sm text-gray-700">
-            <label>
-              <input type="checkbox" /> Late Payment Fee (45)
-            </label>
-            <label>
-              <input type="checkbox" /> Fixed Charges (50)
-            </label>
-            <label>
-              <input type="checkbox" /> Additional Charges (60)
-            </label>
+          <div className="w-full mt-3">
+            <table className="w-full border-collapse">
+              <tbody>
+                {dynamicRows.map((row, i) => (
+                  <tr key={i} className="border-b">
+                    <td className="py-2 px-2 font-semibold text-gray-700 w-1/2">
+                      {row.key}
+                    </td>
+                    <td className="py-2 px-2 text-gray-800 w-1/2">
+                      {row.value}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+        </>
       }
       renderFooter={(close) => (
         <div className="flex justify-center gap-3 mt-4">

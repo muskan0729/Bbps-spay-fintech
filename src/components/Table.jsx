@@ -16,9 +16,15 @@ const Table = ({
   paginationActiveClass = "",
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+console.log("from Table",data);
 
   const totalPages = Math.ceil(data.length / rowsPerPage) || 1;
+  console.log(totalPages);
+  
   const startIndex = (currentPage - 1) * rowsPerPage;
+  
+  console.log(startIndex);
+  
   const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
 
   const paginationHandler = (action) => {

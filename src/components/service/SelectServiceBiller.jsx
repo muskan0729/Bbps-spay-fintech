@@ -18,7 +18,7 @@ const SelectServiceBiller = () => {
 
   // Build endpoint dynamically
   const endpoint = useMemo(() => {
-    return service?.label ? `/get-billers/${service.label}` : null;
+    return service?.label ? `/get-billers-test/${service.label}` : null;
   }, [service?.label]);
 
   // Fetch biller list
@@ -28,7 +28,7 @@ const SelectServiceBiller = () => {
   const {
     data: billerResponse,
     execute: fetchBillerInfo,
-  } = usePost("/bbps/biller-info/json");
+  } = usePost("/bbps/biller-info-test/json");
 
   useEffect(() => {
     if (apiLoading) {
@@ -40,7 +40,7 @@ const SelectServiceBiller = () => {
       setServiceList(data);
       setLoading(false);
     }
-    console.log("Select Service Biller");
+    console.log("Select Service Biller",billerResponse);
   }, [data, apiLoading]);
 
   // Reset modal state on close
@@ -56,20 +56,18 @@ const SelectServiceBiller = () => {
       alert("Select a biller!");
       return;
     }
-
     close();
     setTimeout(() => {
-
-      console.log(selectedBillerData);
-
-      if (selectedBillerData.planMdmRequirement === "MANDATORY") {
-        console.log("enter");
-
+      // console.log(selectedBillerData);
+      if (selectedBillerData.planMdmRequirement === "MANDATORY" || selectedBillerData.planMdmRequirement === "OPTIONAL") {
+        console.log("enter", selectedBillerData);
         openModal("plandisplay", {
-          data: selectedBillerData.billerId
+          selectedBiller: selectedBillerData,
+          // inputParams:selectedBillerData.billerInputParams
         })
       }
       else {
+        console.log("enter", selectedBillerData);
         openModal("details", {
           selectedBiller: selectedBillerData,
           billerResponse,
@@ -82,16 +80,12 @@ const SelectServiceBiller = () => {
   const onChangeHandler = async (id) => {
     setSelectedBillerId(id); // store selected ID for dropdown to stay selected
 
-    const res = await fetchBillerInfo( id );
-const result=res.data.biller
+    const res = await fetchBillerInfo(id);
+    console.log(res);
+    
+    const result = res.data.biller
     if (Array.isArray(result) && result[0]) {
-      // console.log("Selected biller object:", result[0]);
-      // console.log(
-      //   result[0].billerId,
-      //   result[0].billerInputParams?.[0]?.paramsList?.[0]
-      // );
-
-      setSelectedBillerData(result[0]); // store full biller details
+      setSelectedBillerData(result[0]);
     }
   };
 
