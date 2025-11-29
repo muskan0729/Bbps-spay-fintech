@@ -8,10 +8,12 @@ import AddUserPage from './pages/AddUserPage';
 //import ProtectedRoute from "./components/ProtectedRoute";
 import { CookiesProvider } from "react-cookie";
 import Demo from "./pages/demo";
+import { SchemeContextProvider } from "./contexts/SchemeContext";
 
 function App() {
   return (
     <CookiesProvider>
+      <SchemeContextProvider>
     <Routes>
       {/* Public route */}
       <Route path="/" element={<LoginPage />} />
@@ -38,6 +40,7 @@ function App() {
         <Route path="addUser" element={<AddUserPage />} />
       </Route>
     </Routes>
+        </SchemeContextProvider>
     </CookiesProvider>
   );
 }
