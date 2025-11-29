@@ -1,1155 +1,513 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { usePost } from "../hooks/usePost";
 
-// Regex patterns
-const PAN_REGEX = new RegExp("^[A-Z]{5}[0-9]{4}[A-Z]{1}$");
-const GSTIN_REGEX = new RegExp(
-    "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
-);
-const IFSC_REGEX = new RegExp("^[A-Z]{4}0[0-9A-Z]{6}$");
-const MOBILE_REGEX = new RegExp("^[0-9]{10}$");
-const MCC_REGEX = new RegExp("^[0-9]{4}$");
-const PINCODE_REGEX = new RegExp("^[0-9]{6}$");
-// Robust Email Regex
-const EMAIL_REGEX = new RegExp(
-    "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
-);
-const AADHAAR_REGEX = new RegExp("^[0-9]{12}$");
+const AddUserPage = () => {
+  const navigate = useNavigate();
+  const { execute: executeMember, loading } = usePost("/onboard-merchant");
 
-const DIRECTOR_PAN_REGEX = PAN_REGEX; // same as company PAN
-const DIRECTOR_AADHAAR_REGEX = AADHAAR_REGEX;
+  const [formData, setFormData] = useState({
+    // BUSINESS DETAILS
+    name: "",
+    mobile_no: "",
+    email: "",
+    business_mcc: "",
+    company_type: "",
+    company_pan_no: "",
+    company_gst_no: "",
+    cin_llpin: "",
+    date_of_incorporation: "",
 
-export const validateDirectorField = (id, value, required) => {
-    value = value || ""; // normalize
+    // ACCOUNT DETAILS
+    account_holder_name: "",
+    bank_account_no: "",
+    ifsc_code: "",
 
-    if (required && value.trim() === "") return false; // required check
-
-    switch (id) {
-        case "name":
-            return value.trim().length > 0;
-        case "gender":
-            return ["male", "female", "other"].includes(value);
-        case "pan":
-            return DIRECTOR_PAN_REGEX.test(value.toUpperCase());
-        case "aadhaar":
-            return value === "" ? false : DIRECTOR_AADHAAR_REGEX.test(value);
-        case "dob":
-            return value !== "" && !isFutureDate(value); // must not be blank or future
-        default:
-            return true;
-    }
-};
-
-// Universal validation function checking against the regex
-export const validateField = (id, value, required) => {
-    let isValid = true;
-    const normalizedValue = value || "";
-
-    // 1. Check for required fields
-    if (required && normalizedValue.length === 0) {
-        return false;
-    }
-
-    // If not required and empty, it's valid
-    if (!required && normalizedValue.length === 0) {
-        return true;
-    }
-
-    // 2. Check for regex patterns
-    switch (id) {
-        case "businessEmail":
-            isValid = EMAIL_REGEX.test(normalizedValue);
-            break;
-        case "companyPan":
-            isValid =
-                normalizedValue.length === 10 && PAN_REGEX.test(normalizedValue);
-            break;
-        case "gstNumber":
-            isValid =
-                normalizedValue.length === 15 && GSTIN_REGEX.test(normalizedValue);
-            break;
-        case "ifsc":
-            isValid =
-                normalizedValue.length === 11 && IFSC_REGEX.test(normalizedValue);
-            break;
-        case "mobile":
-            isValid =
-                normalizedValue.length === 10 && MOBILE_REGEX.test(normalizedValue);
-            break;
-        case "businessMcc":
-            isValid = normalizedValue.length === 4 && MCC_REGEX.test(normalizedValue);
-            break;
-        case "pincode":
-            isValid =
-                normalizedValue.length === 6 && PINCODE_REGEX.test(normalizedValue);
-            break;
-        case "bankAccount":
-            isValid = /^[0-9]{9,18}$/.test(normalizedValue);
-            break;
-        default:
-            isValid = true;
-            break;
-    }
-    return isValid;
-};
-
-// Helper function to check if the date is in the future
-const isFutureDate = (dateString) => {
-    if (!dateString) return false;
-    const inputDate = new Date(dateString);
-    // Set time component to start of day (midnight) to compare only dates
-    inputDate.setHours(0, 0, 0, 0);
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Returns true if inputDate is greater than today's date
-    return inputDate > today;
-};
-
-const TODAY_DATE = new Date().toISOString().split("T")[0];
-
-const INDIA_STATES = [
-    { code: "AP", name: "Andhra Pradesh" },
-    { code: "AR", name: "Arunachal Pradesh" },
-    // ... (India States list remains the same)
-    { code: "AS", name: "Assam" },
-    { code: "BR", name: "Bihar" },
-    { code: "CT", name: "Chhattisgarh" },
-    { code: "GA", name: "Goa" },
-    { code: "GJ", name: "Gujarat" },
-    { code: "HR", name: "Haryana" },
-    { code: "HP", name: "Himachal Pradesh" },
-    { code: "JK", name: "Jammu and Kashmir" },
-    { code: "JH", name: "Jharkhand" },
-    { code: "KA", name: "Karnataka" },
-    { code: "KL", name: "Kerala" },
-    { code: "MP", name: "Madhya Pradesh" },
-    { code: "MH", name: "Maharashtra" },
-    { code: "MN", name: "Manipur" },
-    { code: "ML", name: "Meghalaya" },
-    { code: "MZ", name: "Mizoram" },
-    { code: "NL", name: "Nagaland" },
-    { code: "OR", name: "Odisha" },
-    { code: "PB", name: "Punjab" },
-    { code: "RJ", name: "Rajasthan" },
-    { code: "SK", name: "Sikkim" },
-    { code: "TN", name: "Tamil Nadu" },
-    { code: "TG", name: "Telangana" },
-    { code: "TR", name: "Tripura" },
-    { code: "UP", name: "Uttar Pradesh" },
-    { code: "UT", name: "Uttarakhand" },
-    { code: "WB", name: "West Bengal" },
-    // Union Territories
-    { code: "AN", name: "Andaman and Nicobar Islands" },
-    { code: "CH", name: "Chandigarh" },
-    { code: "DN", name: "Dadra and Nagar Haveli and Daman and Diu" },
-    { code: "DL", name: "Delhi" },
-    { code: "JK-UT", name: "Jammu and Kashmir (UT)" },
-    { code: "LA", name: "Ladakh" },
-    { code: "LD", name: "Lakshadweep" },
-    { code: "PY", name: "Puducherry" },
-];
-
-// Initial state for the main form
-const initialFormState = {
-    businessName: "",
-    mobile: "",
-    businessEmail: "",
-    businessMcc: "",
-    companyType: "",
-    companyPan: "",
-    gstNumber: "",
-    cinLlp: "",
-    incorporationDate: "",
-    accountName: "",
-    bankAccount: "",
-    ifsc: "",
+    // LOCATION DETAILS
     city: "",
     state: "",
     district: "",
-    pincode: "",
+    pin_code: "",
     address: "",
-};
 
-export const AddUserPage = () => {
-    const navigate = useNavigate();
-    const { setData } = useAuth();
-    const [formData, setFormData] = useState(initialFormState);
-    const [directorErrors, setDirectorErrors] = useState({});
-    const [directorTouched, setDirectorTouched] = useState({});
+    // OTHER FIELDS
+    website_url: "",
+    description: "",
+  });
 
-    // State for real-time validation errors
-    const [validationErrors, setValidationErrors] = useState({});
+  const [companyDocs, setCompanyDocs] = useState({
+    company_pan_no_doc: null,
+    company_gst_no_doc: null,
+    cancel_cheque_doc: null,
+  });
 
-    // State to track if a field has been touched (to only show error after focus)
-    const [isTouched, setIsTouched] = useState({});
+  const [directors, setDirectors] = useState(() => [
+  {
+    director_name: "",
+    director_pan_no: "",
+    director_aadhar_no: "",
+    director_gender: "",
+    director_dob: "",
+    user_pan_doc: null,
+    user_addhar_doc: null,
+  },
+]);
 
-    const [directors, setDirectors] = useState([
-        // Start with one director
-        { id: Date.now() + 1 },
+
+  const handleChange = (key, value) =>
+    setFormData((prev) => ({ ...prev, [key]: value }));
+
+  const handleFileChange = (key, file) =>
+    setCompanyDocs((prev) => ({ ...prev, [key]: file }));
+
+  const handleDirectorChange = (i, key, val) => {
+    const copy = [...directors];
+    copy[i][key] = val;
+    setDirectors(copy);
+  };
+
+  const addDirector = () =>
+    setDirectors((prev) => [
+      ...prev,
+      {
+        director_name: "",
+        director_pan_no: "",
+        director_aadhar_no: "",
+        director_gender: "",
+        director_dob: "",
+        user_pan_doc: null,
+        user_addhar_doc: null,
+      },
     ]);
 
-    // Handler run on Blur (when element loses focus)
-    const handleValidation = (e) => {
-        const { id, value, required } = e.target;
+  const removeDirector = (i) =>
+    setDirectors((prev) => prev.filter((_, x) => x !== i));
 
-        // 1. Mark as touched
-        setIsTouched((prev) => ({ ...prev, [id]: true }));
+  const input = "w-full px-3 py-2 border rounded-lg border-gray-300";
+  const file = "w-full px-3 py-3 border rounded-lg bg-white border-gray-300";
+  const grid3 = "grid grid-cols-1 md:grid-cols-3 gap-5";
+  const box = "bg-white p-6 rounded-xl shadow border border-gray-200 mb-8";
+  const label = "font-semibold text-gray-700 mb-1 block";
 
-        // 2. Perform base validation (using the new utility)
-        const isBaseValid = validateField(id, value, required);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        // 3. Perform specific date validation
-        let isDateValid = true;
-        let customError = "";
+    const fd = new FormData();
+    Object.keys(formData).forEach((k) => fd.append(k, formData[k]));
 
-        if (id === "incorporationDate" && isFutureDate(value)) {
-            isDateValid = false;
-            customError = "Date of Incorporation cannot be in the future.";
-        }
+    Object.keys(companyDocs).forEach((k) => {
+      if (companyDocs[k]) fd.append(k, companyDocs[k]);
+    });
 
-        const isValid = isBaseValid && isDateValid;
+    directors.forEach((d, i) => {
+      Object.entries(d).forEach(([k, v]) => {
+        if (v) fd.append(`director_info[${i}][${k}]`, v);
+      });
+    });
 
-        // 4. Set error state
-        setValidationErrors((prev) => ({
-            ...prev,
-            [id]: !isValid, // true if there is an error
-            [`${id}CustomError`]: customError, // Save custom error message
-        }));
-    };
+    fd.append("scheme_id", "");
 
-    const validateDirector = (index, field, value) => {
-        const isValid = validateDirectorField(field, value, field === "name"); // name required
-        setDirectorErrors((prev) => ({
-            ...prev,
-            [index]: { ...(prev[index] || {}), [field]: !isValid },
-        }));
-    };
+    const res = await executeMember(fd);
+    if (res?.success) {
+  alert(res.message || "Merchant registered successfully!");
+  navigate("/users");
+} else {
+  alert("Failed: " + (res?.message || JSON.stringify(res)));
+}
+  };
 
-    // Unified form change handler
-    const handleChange = (e) => {
-        const { id, value, required } = e.target;
-        let newValue = value;
+  return (
+    <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Registration Form</h1>
 
-        // 1. Input Control (Restricting length and type)
-        if (id === "mobile" || id === "businessMcc" || id === "pincode") {
-            newValue = value.replace(/[^0-9]/g, "");
-            if (id === "mobile") newValue = newValue.substring(0, 10);
-            if (id === "businessMcc") newValue = newValue.substring(0, 4);
-            if (id === "pincode") newValue = newValue.substring(0, 6);
-        }
+      <form onSubmit={handleSubmit}>
+        {/* BUSINESS DETAILS */}
+        <div className={box}>
+          <h2 className="text-xl font-bold text-blue-700 mb-4">Business Details</h2>
 
-        // 2. PAN/GSTIN/IFSC Control (Uppercase and Alphanumeric for PAN)
-        if (id === "companyPan") {
-            newValue = value
-                .toUpperCase()
-                .replace(/[^A-Z0-9]/g, "")
-                .substring(0, 10); // FIX: Ensure only valid PAN chars
-        } else if (id === "gstNumber" || id === "ifsc") {
-            newValue = value.toUpperCase();
-        }
+          <div className={grid3}>
+            {/* Name */}
+            <div>
+              <label className={label}>Business Name *</label>
+              <input
+                className={input}
+                value={formData.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+              />
+            </div>
 
-        // 3. Update State
-        setFormData((prev) => ({
-            ...prev,
-            [id]: newValue,
-        }));
+            {/* Mobile */}
+            <div>
+              <label className={label}>Mobile *</label>
+              <input
+                className={input}
+                value={formData.mobile_no}
+                onChange={(e) => handleChange("mobile_no", e.target.value)}
+              />
+            </div>
 
-        // 4. Real-time Validation Feedback if touched
-        if (isTouched[id]) {
-            const isBaseValid = validateField(id, newValue, required);
-            let isDateValid = true;
+            {/* Email */}
+            <div>
+              <label className={label}>Business Email *</label>
+              <input
+                className={input}
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+              />
+            </div>
 
-            if (id === "incorporationDate" && isFutureDate(newValue)) {
-                isDateValid = false;
-            }
+            {/* MCC */}
+            <div>
+              <label className={label}>Business MCC *</label>
+              <input
+                className={input}
+                value={formData.business_mcc}
+                onChange={(e) => handleChange("business_mcc", e.target.value)}
+              />
+            </div>
 
-            const isValid = isBaseValid && isDateValid;
+            {/* Company Type */}
+            <div>
+              <label className={label}>Company Type *</label>
+              <select
+                className={input}
+                value={formData.company_type}
+                onChange={(e) => handleChange("company_type", e.target.value)}
+              >
+                <option value="">Select</option>
+                <option value="private">Private</option>
+                <option value="public">Public</option>
+              </select>
+            </div>
 
-            setValidationErrors((prev) => ({
-                ...prev,
-                [id]: !isValid,
-                [`${id}CustomError`]: isDateValid
-                    ? ""
-                    : "Date of Incorporation cannot be in the future.",
-            }));
-        }
-    };
+            {/* Company PAN */}
+            <div>
+              <label className={label}>Company PAN *</label>
+              <input
+                className={input}
+                value={formData.company_pan_no}
+                onChange={(e) => handleChange("company_pan_no", e.target.value)}
+              />
+            </div>
 
-    // Director form change handler
-    const handleDirectorChange = (index, name, value) => {
-        const newDirectors = directors.map((d, i) =>
-            i === index ? { ...d, [name]: value } : d
-        );
-        setDirectors(newDirectors);
-        validateDirector(index, name, value); // update error state
-    };
+            {/* GST */}
+            <div>
+              <label className={label}>GST Number *</label>
+              <input
+                className={input}
+                value={formData.company_gst_no}
+                onChange={(e) => handleChange("company_gst_no", e.target.value)}
+              />
+            </div>
 
-    // Mock data for the starter code's logic
-    const newUserData = {
-        userId: Date.now(),
-        name: formData.businessName || "New Business",
-        email: formData.businessEmail,
-        amount: 0
-        // amount: Math.floor(Math.random() * 1000) + 100, // mock amount
-    };
+            {/* CIN */}
+            <div>
+              <label className={label}>CIN / LLPIN *</label>
+              <input
+                className={input}
+                value={formData.cin_llpin}
+                onChange={(e) => handleChange("cin_llpin", e.target.value)}
+              />
+            </div>
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        const form = e.target;
-
-        let directorHasError = false;
-
-        directors.forEach((d, index) => {
-            const fields = ["name", "pan", "aadhaar", "dob"];
-            fields.forEach((f) => {
-                const valid = validateDirectorField(f, d[f], f === "name");
-                setDirectorErrors((prev) => ({
-                    ...prev,
-                    [index]: { ...(prev[index] || {}), [f]: !valid },
-                }));
-                if (!valid) directorHasError = true;
-            });
-        });
-
-        if (directorHasError) {
-            alert("Please fix errors in Director Information before submitting.");
-            return;
-        }
-
-        // Trigger browser validation for Director form fields
-        if (!form.checkValidity()) {
-            alert("Please correct the errors in the Director Information fields.");
-            return;
-        }
-
-        // Final check for controlled fields
-        let formHasError = false;
-        const finalErrors = {};
-        const errorIds = []; // Temporary array to track errors
-
-        Object.keys(formData).forEach((key) => {
-            const inputElement = document.getElementById(key);
-            if (inputElement) {
-                const required = inputElement.required;
-
-                // 1. Check base validation
-                const isBaseValid = validateField(key, formData[key], required);
-
-                // 2. Check date validation
-                let isDateValid = true;
-                let customError = "";
-                if (key === "incorporationDate" && isFutureDate(formData[key])) {
-                    isDateValid = false;
-                    customError = "Date of Incorporation cannot be in the future.";
+            {/* Date of Incorporation */}
+            <div>
+              <label className={label}>Date of Incorporation *</label>
+              <input
+                type="date"
+                className={input}
+                value={formData.date_of_incorporation}
+                onChange={(e) =>
+                  handleChange("date_of_incorporation", e.target.value)
                 }
-
-                const isInvalid = !(isBaseValid && isDateValid);
-
-                setIsTouched((prev) => ({ ...prev, [key]: true }));
-
-                if (isInvalid) {
-                    finalErrors[key] = true;
-                    finalErrors[`${key}CustomError`] = customError;
-                    formHasError = true;
-                    errorIds.push(key);
-                } else {
-                    delete finalErrors[key];
-                    delete finalErrors[`${key}CustomError`];
+              />
+            </div>
+               {/* Website Url */}
+            <div>
+              <label className={label}>Website Url *</label>
+              <input
+                type="text"
+                className={input}
+                value={formData.website_url}
+                onChange={(e) =>
+                  handleChange("website_url", e.target.value)
                 }
-            }
-        });
+              />
+            </div>
+          </div>
 
-        setValidationErrors((prev) => ({ ...prev, ...finalErrors }));
+          {/* FILE uploads */}
+          <div className={`${grid3} mt-6`}>
+            <div>
+              <label className={label}>Company PAN Document *</label>
+              <input
+                type="file"
+                className={file}
+                onChange={(e) =>
+                  handleFileChange("company_pan_no_doc", e.target.files[0])
+                }
+              />
+            </div>
 
-        if (formHasError) {
-            alert("Please correct the validation errors before submitting.");
-            // Optional: Focus on the first error field
-            if (errorIds.length > 0) {
-                document.getElementById(errorIds[0]).focus();
-            }
-            return;
-        }
+            <div>
+              <label className={label}>Company GST Document *</label>
+              <input
+                type="file"
+                className={file}
+                onChange={(e) =>
+                  handleFileChange("company_gst_no_doc", e.target.files[0])
+                }
+              />
+            </div>
 
-        console.log("Form Data:", formData);
-        console.log("Directors Data:", directors);
-
-        // --- Key Action: Set the temporary data ---
-        setData("postSubmitData", {
-            message: `${formData.businessName} successfully registered!`,
-            newUser: newUserData,
-            status: "success",
-        });
-
-        // Navigate back to the list page (e.g., '/')
-        navigate("/users");
-    };
-
-    const addDirector = () => {
-        setDirectors([...directors, { id: Date.now() }]);
-    };
-
-    const removeDirector = (indexToRemove) => {
-        setDirectors(directors.filter((_, index) => index !== indexToRemove));
-    };
-
-    // Helper function to get the validation status class
-    const getValidationClass = (id) => {
-        // Check if the field has been touched and has an error
-        const isInvalid = isTouched[id] && validationErrors[id];
-
-        // Apply red border if invalid, green border if touched and valid (and not empty), otherwise default gray
-        if (isInvalid) {
-            return "border-red-500 focus:border-red-500 focus:ring-red-500";
-        } else if (isTouched[id] && !validationErrors[id] && formData[id]) {
-            return "border-green-500 focus:border-green-500 focus:ring-green-500";
-        }
-        return "border-gray-300 focus:ring-blue-500 focus:border-blue-500";
-    };
-
-    // Helper function to get the title for an input
-    const getTitle = (id) => {
-        const element = document.getElementById(id);
-        return (
-            validationErrors[`${id}CustomError`] || (element ? element.title : "")
-        );
-    };
-
-    // The main form component
-    return (
-        <div className="text-sm mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-200 mt-8">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">
-                Registration Form
-            </h1>
-
-            <form onSubmit={handleSubmit}>
-                {/* --- Business Details Section --- */}
-                <h2 className="text-xl font-semibold text-gray-700 mb-4">
-                    Business Details
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 text-sm">
-                    {/* Business Name */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="businessName"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Business Name <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="businessName"
-                            value={formData.businessName}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter Value"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "businessName"
-                            )}`}
-                            required
-                        />
-                        {isTouched["businessName"] && validationErrors["businessName"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                This field is required.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Mobile */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="mobile"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Mobile <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="number"
-                            id="mobile"
-                            value={formData.mobile}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter 10-digit mobile"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "mobile"
-                            )}`}
-                            required
-                            minLength="10"
-                            maxLength="10"
-                            title="Mobile number must be 10 digits"
-                        />
-                        {isTouched["mobile"] && validationErrors["mobile"] && (
-                            <p className="mt-1 text-xs text-red-600">{getTitle("mobile")}</p>
-                        )}
-                    </div>
-
-                    {/* Business Email */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="businessEmail"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Business Email <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="email"
-                            id="businessEmail"
-                            value={formData.businessEmail}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter Email address"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "businessEmail"
-                            )}`}
-                            required
-                            title="Please enter a valid email address (e.g., user@example.com)"
-                        />
-                        {isTouched["businessEmail"] &&
-                            validationErrors["businessEmail"] && (
-                                <p className="mt-1 text-xs text-red-600">
-                                    {getTitle("businessEmail")}
-                                </p>
-                            )}
-                    </div>
-
-                    {/* Business MCC */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="businessMcc"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Business MCC <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="businessMcc"
-                            value={formData.businessMcc}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter 4-digit MCC Code"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "businessMcc"
-                            )}`}
-                            required
-                            minLength="4"
-                            maxLength="4"
-                            title="MCC must be a 4-digit code"
-                        />
-                        {isTouched["businessMcc"] && validationErrors["businessMcc"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                {getTitle("businessMcc")}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Company Type */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="companyType"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Company Type <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                            id="companyType"
-                            value={formData.companyType}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            className={`p-2 border rounded-md bg-white ${getValidationClass(
-                                "companyType"
-                            )}`}
-                            required
-                        >
-                            <option value="">Select Type</option>
-                            <option value="pvt">Pvt. Ltd.</option>
-                            <option value="llp">LLP</option>
-                            <option value="sole">Sole Proprietorship</option>
-                        </select>
-                        {isTouched["companyType"] && validationErrors["companyType"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                Please select a company type.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Company Pancard Number */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="companyPan"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Company Pancard Number <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="companyPan"
-                            value={formData.companyPan}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter PAN (E.g. ABCDE1234F)"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "companyPan"
-                            )}`}
-                            required
-                            minLength="10"
-                            maxLength="10"
-                            title="PAN must be 5 letters, 4 digits, 1 letter (e.g., ABCDE1234F)"
-                        />
-                        {isTouched["companyPan"] && validationErrors["companyPan"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                {getTitle("companyPan")}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* GST Number */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="gstNumber"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            GST Number <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="gstNumber"
-                            value={formData.gstNumber}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter 15-Character GSTIN (E.g. 22ABCDE1234F1Z5)"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "gstNumber"
-                            )}`}
-                            required
-                            minLength="15"
-                            maxLength="15"
-                            title="GSTIN must be 15 characters (2-digit State Code, 10-digit PAN, 3 additional chars, e.g., 22ABCDE1234F1Z5)"
-                        />
-                        {isTouched["gstNumber"] && validationErrors["gstNumber"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                {getTitle("gstNumber")}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* CIN/LLP */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="cinLlp"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            CIN/LLP
-                        </label>
-                        <input
-                            type="text"
-                            id="cinLlp"
-                            value={formData.cinLlp}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter CIN or LLPIN"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "cinLlp"
-                            )}`}
-                            maxLength="21" // CIN is 21 alphanumeric characters
-                            title="CIN should be 21 characters."
-                        />
-                        {isTouched["cinLlp"] && validationErrors["cinLlp"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                Please check CIN/LLP format.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Date of Incorporation (FIXED FUTURE DATE CHECK) */}
-                    <div className="flex flex-col relative">
-                        <label
-                            htmlFor="incorporationDate"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Date of Incorporation <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="date"
-                            id="incorporationDate"
-                            value={formData.incorporationDate}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="dd-mm-yyyy"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "incorporationDate"
-                            )}`}
-                            required
-                            max={TODAY_DATE}
-                            title="Date is required."
-                        />
-                        {isTouched["incorporationDate"] &&
-                            validationErrors["incorporationDate"] && (
-                                <p className="mt-1 text-xs text-red-600">
-                                    {getTitle("incorporationDate") === ""
-                                        ? "Date is required."
-                                        : getTitle("incorporationDate")}
-                                </p>
-                            )}
-                    </div>
-                </div>
-
-                {/* --- Account Details Section --- */}
-                <h2 className="text-xl font-semibold text-gray-700 mb-4">
-                    Account Details
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    {/* Account Holder Name */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="accountName"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Account Holder Name <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="accountName"
-                            value={formData.accountName}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter Value"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "accountName"
-                            )}`}
-                            required
-                        />
-                        {isTouched["accountName"] && validationErrors["accountName"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                This field is required.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Bank Account No */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="bankAccount"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Bank Account No <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="number"
-                            id="bankAccount"
-                            value={formData.bankAccount}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter Value"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "bankAccount"
-                            )}`}
-                            required
-                            minLength="9"
-                            maxLength="18"
-                            title="Bank Account number must be between 9 and 18 digits"
-                        />
-                        {isTouched["bankAccount"] && validationErrors["bankAccount"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                {getTitle("bankAccount")}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* IFSC */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="ifsc"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            IFSC <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="ifsc"
-                            value={formData.ifsc}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter Value (e.g. KKBK0000000)"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "ifsc"
-                            )}`}
-                            required
-                            minLength="11"
-                            maxLength="11"
-                            title="IFSC must be 11 characters (4 letters, 0, 6 alphanumeric)"
-                        />
-                        {isTouched["ifsc"] && validationErrors["ifsc"] && (
-                            <p className="mt-1 text-xs text-red-600">{getTitle("ifsc")}</p>
-                        )}
-                    </div>
-                </div>
-
-                {/* --- Location Details Section --- */}
-                <h2 className="text-xl font-semibold text-gray-700 mb-4">
-                    Location Details
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    {/* City */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="city"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            City <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="city"
-                            value={formData.city}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter Value"
-                            className={`p-2 border rounded-md ${getValidationClass("city")}`}
-                            required
-                        />
-                        {isTouched["city"] && validationErrors["city"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                This field is required.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* State */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="state"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            State <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                            id="state"
-                            value={formData.state}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            className={`p-2 border rounded-md bg-white ${getValidationClass(
-                                "state"
-                            )}`}
-                            required
-                        >
-                            <option value="">Select State</option>
-                            {INDIA_STATES.map((item) => (
-                                <option key={item.code} value={item.code}>
-                                    {item.name}
-                                </option>
-                            ))}
-                        </select>
-                        {isTouched["state"] && validationErrors["state"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                Please select a state.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* District */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="district"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            District <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="district"
-                            value={formData.district}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter Value"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "district"
-                            )}`}
-                            required
-                        />
-                        {isTouched["district"] && validationErrors["district"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                This field is required.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Pincode */}
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="pincode"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Pincode <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="pincode"
-                            value={formData.pincode}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter 6-digit Pincode"
-                            className={`p-2 border rounded-md ${getValidationClass(
-                                "pincode"
-                            )}`}
-                            required
-                            minLength="6"
-                            maxLength="6"
-                            title="Pincode must be a 6-digit number"
-                        />
-                        {isTouched["pincode"] && validationErrors["pincode"] && (
-                            <p className="mt-1 text-xs text-red-600">{getTitle("pincode")}</p>
-                        )}
-                    </div>
-
-                    {/* Address */}
-                    <div className="flex flex-col lg:col-span-2">
-                        <label
-                            htmlFor="address"
-                            className="text-sm font-semibold text-gray-700 mb-1"
-                        >
-                            Address <span className="text-red-500">*</span>
-                        </label>
-                        <textarea
-                            id="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            onBlur={handleValidation}
-                            placeholder="Enter Address"
-                            rows="1"
-                            className={`p-2 border rounded-md resize-y ${getValidationClass(
-                                "address"
-                            )}`}
-                            required
-                        ></textarea>
-                        {isTouched["address"] && validationErrors["address"] && (
-                            <p className="mt-1 text-xs text-red-600">
-                                This field is required.
-                            </p>
-                        )}
-                    </div>
-                </div>
-
-                {/* --- Director Information Section --- */}
-                <div className="flex justify-between items-center mb-4 mt-6">
-                    <h2 className="text-xl font-semibold text-gray-700">
-                        Director Information
-                    </h2>
-                    <button
-                        type="button"
-                        onClick={addDirector}
-                        className="flex items-center bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out"
-                    >
-                        <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                        Add Director
-                    </button>
-                </div>
-
-                {/* Director Forms */}
-                {directors.map((director, index) => (
-                    <DirectorForm
-                        key={director.id}
-                        index={index}
-                        director={director}
-                        onChange={handleDirectorChange}
-                        onRemove={removeDirector}
-                        errors={directorErrors}
-                        touched={directorTouched}
-                        setTouched={setDirectorTouched}
-                    />
-                ))}
-
-                {/* --- Submit Button Section --- */}
-                <div className="p-3 mt-8 border-t border-gray-200 flex justify-end">
-                    <button
-                        type="submit"
-                        className="bg-green-800 text-white rounded-lg px-6 py-2 h-10 hover:bg-green-900 focus:ring-2 focus:ring-green-300 focus:border-green-300 outline-none transition duration-150 ease-in-out"
-                    >
-                        Submit
-                    </button>
-                </div>
-            </form>
+            <div>
+              <label className={label}>Cancel Cheque *</label>
+              <input
+                type="file"
+                className={file}
+                onChange={(e) =>
+                  handleFileChange("cancel_cheque_doc", e.target.files[0])
+                }
+              />
+            </div>
+          </div>
         </div>
-    );
+
+        {/* ACCOUNT DETAILS */}
+        <div className={box}>
+          <h2 className="text-xl font-bold text-blue-700 mb-4">Account Details</h2>
+
+          <div className={grid3}>
+            <div>
+              <label className={label}>Account Holder Name *</label>
+              <input
+                className={input}
+                value={formData.account_holder_name}
+                onChange={(e) =>
+                  handleChange("account_holder_name", e.target.value)
+                }
+              />
+            </div>
+
+            <div>
+              <label className={label}>Bank Account No *</label>
+              <input
+                className={input}
+                value={formData.bank_account_no}
+                onChange={(e) =>
+                  handleChange("bank_account_no", e.target.value)
+                }
+              />
+            </div>
+
+            <div>
+              <label className={label}>IFSC Code *</label>
+              <input
+                className={input}
+                value={formData.ifsc_code}
+                onChange={(e) => handleChange("ifsc_code", e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* LOCATION DETAILS */}
+        <div className={box}>
+          <h2 className="text-xl font-bold text-blue-700 mb-4">
+            Location Details
+          </h2>
+
+          <div className={grid3}>
+            <div>
+              <label className={label}>City *</label>
+              <input
+                className={input}
+                value={formData.city}
+                onChange={(e) => handleChange("city", e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className={label}>State *</label>
+              <input
+                className={input}
+                value={formData.state}
+                onChange={(e) => handleChange("state", e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className={label}>District *</label>
+              <input
+                className={input}
+                value={formData.district}
+                onChange={(e) => handleChange("district", e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className={label}>Pincode *</label>
+              <input
+                className={input}
+                value={formData.pin_code}
+                onChange={(e) => handleChange("pin_code", e.target.value)}
+              />
+            </div>
+
+            <div className="md:col-span-3">
+              <label className={label}>Address *</label>
+              <input
+                className={input}
+                value={formData.address}
+                onChange={(e) => handleChange("address", e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* DIRECTORS */}
+      {/* DIRECTOR SECTION */}
+<div className={box}>
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-xl font-bold text-blue-700">Director Information</h2>
+    <button
+      type="button"
+      onClick={addDirector}
+      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+    >
+      + Add Director
+    </button>
+  </div>
+
+  {directors.map((d, i) => (
+    <div key={i} className="p-5 border rounded-xl bg-gray-50 mb-6 shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-semibold text-gray-800 text-lg">
+          Director {i + 1}
+        </h3>
+
+        {/* REMOVE BUTTON — disabled if only ONE director */}
+        <button
+          type="button"
+          onClick={() => removeDirector(i)}
+          disabled={directors.length === 1}
+          className={`px-4 py-1 rounded text-white ${
+            directors.length === 1
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-red-600 hover:bg-red-700"
+          }`}
+        >
+          Remove
+        </button>
+      </div>
+
+      <div className={grid3}>
+        {/* NAME */}
+        <div>
+          <label className={label}>Director Name</label>
+          <input
+            className={input}
+            value={d.director_name}
+            onChange={(e) =>
+              handleDirectorChange(i, "director_name", e.target.value)
+            }
+          />
+        </div>
+
+        {/* PAN */}
+        <div>
+          <label className={label}>Director PAN</label>
+          <input
+            className={input}
+            value={d.director_pan_no}
+            onChange={(e) =>
+              handleDirectorChange(i, "director_pan_no", e.target.value)
+            }
+          />
+        </div>
+
+        {/* AADHAAR */}
+        <div>
+          <label className={label}>Director Aadhaar</label>
+          <input
+            className={input}
+            value={d.director_aadhar_no}
+            onChange={(e) =>
+              handleDirectorChange(i, "director_aadhar_no", e.target.value)
+            }
+          />
+        </div>
+
+        {/* GENDER */}
+        <div>
+          <label className={label}>Gender</label>
+          <select
+            className={input}
+            value={d.director_gender}
+            onChange={(e) =>
+              handleDirectorChange(i, "director_gender", e.target.value)
+            }
+          >
+            <option value="">Select</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        {/* DOB */}
+        <div>
+          <label className={label}>Date of Birth</label>
+          <input
+            type="date"
+            className={input}
+            value={d.director_dob}
+            onChange={(e) =>
+              handleDirectorChange(i, "director_dob", e.target.value)
+            }
+          />
+        </div>
+
+        {/* PAN DOC */}
+        <div>
+          <label className={label}>Director PAN Document</label>
+          <input
+            type="file"
+            className={file}
+            onChange={(e) =>
+              handleDirectorChange(i, "user_pan_doc", e.target.files[0])
+            }
+          />
+        </div>
+
+        {/* AADHAAR DOC */}
+        <div>
+          <label className={label}>Director Aadhaar Document</label>
+          <input
+            type="file"
+            className={file}
+            onChange={(e) =>
+              handleDirectorChange(i, "user_addhar_doc", e.target.files[0])
+            }
+          />
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+
+        {/* SUBMIT */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg rounded-lg"
+        >
+          {loading ? "Submitting..." : "Submit"}
+        </button>
+      </form>
+    </div>
+  );
 };
 
-// Mock Director component for the dynamic list
-const DirectorForm = ({
-    index,
-    director,
-    onChange,
-    onRemove,
-    errors,
-    touched,
-    setTouched,
-}) => {
-    const handleDirectorChange = (field, value) => {
-        onChange(index, field, value);
-    };
-
-    const handleBlur = (field, value) => {
-        setTouched((prev) => ({
-            ...prev,
-            [index]: { ...(prev[index] || {}), [field]: true },
-        }));
-        onChange(index, field, value); // triggers validateDirector
-    };
-
-    const getValidationClass = (field) => {
-        if (touched[index]?.[field] && errors[index]?.[field]) {
-            return "border-red-500 focus:border-red-500 focus:ring-red-500";
-        } else if (
-            touched[index]?.[field] &&
-            !errors[index]?.[field] &&
-            director[field]
-        ) {
-            return "border-green-500 focus:border-green-500 focus:ring-green-500";
-        }
-        return "border-gray-300 focus:ring-blue-500 focus:border-blue-500";
-    };
-
-    return (
-        <div className="text-sm border border-gray-300 p-4 rounded-lg mt-4 relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <h3 className="col-span-full font-semibold text-gray-700">
-                Director {index + 1}
-            </h3>
-
-            <div className="flex flex-col">
-                <label
-                    htmlFor={`director-name-${index}`}
-                    className="text-sm font-semibold text-gray-700 mb-1"
-                >
-                    Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                    type="text"
-                    id={`director-name-${index}`}
-                    placeholder="Enter Name"
-                    value={director.name || ""}
-                    onChange={(e) => handleDirectorChange("name", e.target.value)}
-                    onBlur={(e) => handleBlur("name", e.target.value)}
-                    className={`p-2 border rounded-md ${getValidationClass("name")}`}
-                />
-                {touched[index]?.name && errors[index]?.name && (
-                    <p className="text-xs text-red-600">Name is required</p>
-                )}
-            </div>
-
-            <div className="flex flex-col">
-                <label
-                    htmlFor={`director-gender-${index}`}
-                    className="text-sm font-semibold text-gray-700 mb-1"
-                >
-                    Gender <span className="text-red-500">*</span>
-                </label>
-                <select
-                    id={`director-gender-${index}`}
-                    value={director.gender || ""}
-                    onChange={(e) => handleDirectorChange("gender", e.target.value)}
-                    onBlur={(e) => handleBlur("gender", e.target.value)}
-                    className={`p-2 border rounded-md bg-white ${getValidationClass(
-                        "gender"
-                    )}`}
-                >
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                </select>
-                {touched[index]?.gender && errors[index]?.gender && (
-                    <p className="text-xs text-red-600">Please select gender</p>
-                )}
-            </div>
-
-            <div className="flex flex-col relative">
-                <label
-                    htmlFor={`director-dob-${index}`}
-                    className="text-sm font-semibold text-gray-700 mb-1"
-                >
-                    DOB  <span className="text-red-500">*</span>
-                </label>
-                <input
-                    type="date"
-                    id={`director-dob-${index}`}
-                    placeholder="dd-mm-yyyy"
-                    value={director.dob || ""}
-                    onChange={(e) => handleDirectorChange("dob", e.target.value)}
-                    onBlur={(e) => handleBlur("dob", e.target.value)}
-                    className={`p-2 border rounded-md uppercase ${getValidationClass(
-                        "dob"
-                    )}`}
-                    max={TODAY_DATE}
-                />
-                {touched[index]?.dob && errors[index]?.dob && (
-                    <p className="text-xs text-red-600">DOB cannot be in the future</p>
-                )}
-            </div>
-
-            <div className="flex flex-col">
-                <label
-                    htmlFor={`director-pan-${index}`}
-                    className="text-sm font-semibold text-gray-700 mb-1"
-                >
-                    Pancard Number <span className="text-red-500">*</span>
-                </label>
-                <input
-                    type="text"
-                    id={`director-pan-${index}`}
-                    placeholder="PAN (E.g. ABCDE1234F)"
-                    value={director.pan || ""}
-                    onChange={(e) =>
-                        handleDirectorChange("pan", e.target.value.toUpperCase())
-                    }
-                    onBlur={(e) => handleBlur("pan", e.target.value)}
-                    className={`p-2 border rounded-md ${getValidationClass(
-                        "pan"
-                    )}`}
-                    maxLength="10"
-                />
-                {touched[index]?.pan && errors[index]?.pan && (
-                    <p className="text-xs text-red-600">PAN must be 5 letters, 4 digits, 1 letter (e.g., ABCDE1234F)</p>
-                )}
-            </div>
-
-            <div className="flex flex-col">
-                <label
-                    htmlFor={`director-aadhar-${index}`}
-                    className="text-sm font-semibold text-gray-700 mb-1"
-                >
-                    Aadhaar Number  <span className="text-red-500">*</span>
-                </label>
-                <input
-                    type="text"
-                    id={`director-aadhaar-${index}`}
-                    placeholder="Enter 12-digit Aadhaar number"
-                    value={director.aadhaar || ""}
-                    onChange={(e) =>
-                        handleDirectorChange(
-                            "aadhaar",
-                            e.target.value.replace(/[^0-9]/g, "").slice(0, 12)
-                        )
-                    }
-                    onBlur={(e) => handleBlur("aadhaar", e.target.value)}
-                    className={`p-2 border rounded-md ${getValidationClass("aadhaar")}`}
-                />
-                {touched[index]?.aadhaar && errors[index]?.aadhaar && (
-                    <p className="text-xs text-red-600">Aadhaar must be 12 digits</p>
-                )}
-            </div>
-
-            {/* Remove button positioned absolutely on the right */}
-            <button
-                type="button"
-                onClick={() => onRemove(index)}
-                className="absolute top-2 right-2 text-red-600 hover:text-red-800"
-                title="Remove Director"
-            >
-                <FontAwesomeIcon icon={faTimes} />
-            </button>
-        </div>
-    );
-};
+export default AddUserPage;

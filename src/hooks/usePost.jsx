@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useCookies } from "react-cookie";
+
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export function usePost(endpoint) {
@@ -8,18 +9,16 @@ export function usePost(endpoint) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [cookie] = useCookies(["token"]);
+
   const execute = async (body) => {
     setLoading(true);
     setError(null);
 
     try {
       let response;
+
+      // ---------- LOGIN REQUEST ----------
       if (endpoint === "/login") {
-        // console.log(`${BASE_URL}${endpoint}`);
-        // console.log(body);
-
-        // console.log(body.email,body.password);
-
         response = await axios.post(
           `${BASE_URL}${endpoint}`,
           {
@@ -33,51 +32,40 @@ export function usePost(endpoint) {
         );
         console.log(" here is response :",response);        
         return response.data;
-      } else {
-        if (endpoint === "/bbps/biller-info-test/json" || endpoint==="/bbps/plan-pull-test/json") {
-          console.log(body);
-          // console.log(`url of bbps ${BASE_URL}${endpoint}`);
-          const rawText = `${body}`;
-          // console.log("RAW TEXT to backend:", rawText);
-          console.log(rawText);
-
-          response = await axios.post(`${BASE_URL}${endpoint}`, rawText, {
-            headers: {
-              "Content-Type": "text/plain",
-              Authorization: `Bearer ${cookie.token.slice(4)}`,
-            },
-          });
-          console.log("response : ",response," for:",endpoint);
-          if (response.data) {
-            return response;
-          }
-
-        } else {
-          // console.log(`${BASE_URL}${endpoint}`);
-
-          // console.log(body);
-          
-          response = await axios.post(`${BASE_URL}${endpoint}`, body, {
-            // withCredentials: true,
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${cookie.token.slice(4)}`,
-            },
-          });
-          console.log("POST RESSSSSSSSSSSS",response);
-          if (response.data) {
-            return response.data;
-          }
-
-        }
       }
-      setData(response.data); // store in state for UI if needed
-      return response.data;   // ✅ return actual response immediately
+
+      // ---------- BBPS RAW JSON REQUEST ----------
+      if (
+        endpoint === "/bbps/biller-info-test/json" ||
+        endpoint === "/bbps/plan-pull-test/json"
+      ) {
+        response = await axios.post(`${BASE_URL}${endpoint}`, body, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${cookie.token.slice(4)}`,
+          },
+        });
+
+        return response;
+      }
+
+      // ---------- DEFAULT POST (FOR FORMDATA) ----------
+      const isFormData = body instanceof FormData;
+
+      response = await axios.post(`${BASE_URL}${endpoint}`, body, {
+        headers: {
+          Authorization: `Bearer ${cookie.token.slice(4)}`,
+          ...(isFormData ? {} : { "Content-Type": "application/json" }), // ❗ Correct logic
+        },
+      });
+
+      setData(response.data);
+      return response.data;
     } catch (err) {
       const errData = err.response?.data || "Something went wrong...";
       setError(errData);
-      return errData
-      console.log("ERRRROR",error);
+      console.error(err);
+      throw err;
     } finally {
       setLoading(false);
     }

@@ -6,27 +6,24 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export function useGet(endpoint) {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [cookie] = useCookies(["token"]);
 
   const fetchData = async () => {
+    if (!cookie.token) return;
+
     setLoading(true);
     setError(null);
 
     try {
-
-      console.log(`get base url  : ${BASE_URL}${endpoint} and token = ${(cookie.token).slice(4)}`);
       const response = await axios.get(`${BASE_URL}${endpoint}`, {
         headers: {
-          "Authorization": `Bearer ${(cookie.token).slice(4)}`,
+          "Authorization": `Bearer ${cookie.token}`, // remove slice unless your backend needs it
         },
       });
-      console.log("response GET",response.data);
       setData(response.data);
-      
     } catch (err) {
-      console.log("Error",err);
       setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
@@ -34,10 +31,7 @@ export function useGet(endpoint) {
   };
 
   useEffect(() => {
-    if (cookie.token) {
-      fetchData();
-      // console.log(data);
-    }
+    fetchData();
   }, [endpoint, cookie.token]);
 
   return { data, loading, error, refetch: fetchData };
