@@ -39,9 +39,11 @@ export function usePost(endpoint) {
         endpoint === "/bbps/biller-info-test/json" ||
         endpoint === "/bbps/plan-pull-test/json"
       ) {
+        console.log(body);
+        
         response = await axios.post(`${BASE_URL}${endpoint}`, body, {
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
             Authorization: `Bearer ${cookie.token.slice(4)}`,
           },
         });

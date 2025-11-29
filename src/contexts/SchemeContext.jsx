@@ -1,3 +1,14 @@
-// import { createContext,useContext,useState } from "react";
+// contexts/SchemeContext.jsx
+import { createContext, useState } from "react";
 
-// export Scheme
+export const SchemeContext = createContext();
+
+export const SchemeContextProvider = ({ children }) => {
+  const [isModelOpen, setIsModelOpen] = useState(false);
+
+  return (
+    <SchemeContext.Provider value={{ isModelOpen, setIsModelOpen }}>
+      {children}
+    </SchemeContext.Provider>
+  );
+};
