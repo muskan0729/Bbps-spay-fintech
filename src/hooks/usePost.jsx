@@ -31,6 +31,7 @@ export function usePost(endpoint) {
             headers: { "Content-Type": "application/json" },
           }
         );
+        console.log(" here is response :",response);        
         return response.data;
       } else {
         if (endpoint === "/bbps/biller-info-test/json" || endpoint==="/bbps/plan-pull-test/json") {
@@ -47,7 +48,9 @@ export function usePost(endpoint) {
             },
           });
           console.log("response : ",response," for:",endpoint);
-          return(response)
+          if (response.data) {
+            return response;
+          }
 
         } else {
           // console.log(`${BASE_URL}${endpoint}`);
@@ -61,8 +64,10 @@ export function usePost(endpoint) {
               "Authorization": `Bearer ${cookie.token.slice(4)}`,
             },
           });
-          console.log(response.data);
-          // return response;
+          console.log("POST RESSSSSSSSSSSS",response);
+          if (response.data) {
+            return response.data;
+          }
 
         }
       }
@@ -71,7 +76,8 @@ export function usePost(endpoint) {
     } catch (err) {
       const errData = err.response?.data || "Something went wrong...";
       setError(errData);
-      console.error(err);
+      return errData
+      console.log("ERRRROR",error);
     } finally {
       setLoading(false);
     }
