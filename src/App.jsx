@@ -3,7 +3,8 @@ import LoginPage from "./pages/LoginPage";
 import ContactUs from "./pages/ContactUs";
 import { Layout } from './components/Layout';
 import { navItems } from "./components/Sidebar";
-import { AddUserPage } from "./pages/AddUserPage";
+import AddUserPage from './pages/AddUserPage';
+
 //import ProtectedRoute from "./components/ProtectedRoute";
 import { CookiesProvider } from "react-cookie";
 import Demo from "./pages/demo";
