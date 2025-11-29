@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginIllustration from '../images/loginbg.jpg';
 import { usePost } from '../hooks/usePost';
@@ -12,6 +12,11 @@ const LoginPage = () => {
   const [cookie, setCookie] = useCookies(["token"]);
   const { data, loading, error, execute: login } = usePost("/login"); // Initialize hook correctly
 
+
+    useEffect(()=>{
+      setErrorMsg(error?.message)
+      console.log("hyiuyu" ,error);
+    },[error])
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!email || !password) {
@@ -22,6 +27,7 @@ const LoginPage = () => {
       const body = { email: email, password: password };
 
       const res = await login(body);
+
       console.log("Login success:", res);
       setCookie("token", res.token, {
         path: "/"
@@ -36,9 +42,10 @@ const LoginPage = () => {
       navigate("/dashboard");
 
     } catch (err) {
-      const message = err.response?.data?.message || err.message || "Something went wrong";
-      setErrorMsg(message);
-      console.log("Login error:", err);
+      const message = errorMsg ||"Something went wrong";
+      // setErrorMsg(message);
+      console.log("Login error:", message);
+      // alert(message)
     }
   };
 

@@ -7,7 +7,7 @@ import { usePost } from "../../hooks/usePost";
 const DetailConfirmation = () => {
   const { isModalOpen, getModalData, closeModal, openModal } = useModal();
 
-  // Ensure fallback {}
+  // Fallback for modal data
   const modalData = getModalData("finalData") || {};
   const { data = {}, custData = {}, selectedBiller = {} } = modalData;
 
@@ -15,76 +15,74 @@ const DetailConfirmation = () => {
   const [addInfo, setAddInfo] = useState([]);
   const [billerRes, setBillerRes] = useState({});
   const [acceptAmount, setAcceptAmount] = useState(false);
-
+  const [userDataRequire, setUserDataRequire] = useState(false);
   const [formValues, setFormValues] = useState({ amount: "" });
-
-  const { execute: fetchPayment } = usePost("/bbps/bill-payment-test/json");
+  const [userData, setUserData] = useState({});
+  const { error, execute: fetchPayment } = usePost(
+    "/bbps/bill-payment-test/json"
+  );
+  const [resError, setResError] = useState();
 
   /* ---------------- LOAD RESPONSE FIELDS ---------------- */
   useEffect(() => {
-    const resp = data
-    console.log(data);
-    
-    // if (!resp) {
-    //   console.warn("⚠ No decryptedResponse found in modal data");
-    //   return;
-    // }
+    if (error) {
+      setResError(error.message || "Something went wrong");
+      console.log("API Error (hook):", error);
+    }
+  }, [error]);
 
-    setInput(resp.inputParams?.input || []);
-    setAddInfo(resp.additionalInfo?.info || []);
-    setBillerRes(resp.billerResponse || {});
+  useEffect(() => {
+    if (!selectedBiller) return;
 
+    // Check if user data is required
+    if (
+      selectedBiller?.billerFetchRequiremet !== "MANDATORY" &&
+      selectedBiller?.billerFetchRequiremet !== "OPTIONAL"
+    ) {
+      setUserDataRequire(true);
+    }
+    setInput(data.inputParams?.input || []);
+    setAddInfo(data.additionalInfo?.info || []);
+    setBillerRes(data.billerResponse || {});
     setAcceptAmount(selectedBiller?.billerAdhoc === "true");
-  }, [data, selectedBiller]);
+  }, [selectedBiller, data]);
 
   /* ---------------- BUILD TABLE ROWS ---------------- */
-
   const billerRows = Object.entries(billerRes || {})
-    .map(([key, value]) => ({
-      key,
-      value,
-    }))
+    .map(([key, value]) => ({ key, value }))
     .filter((x) => x.value !== "" && x.value != null);
 
-const dynamicRows = [
-  ...input.map((i) => ({
-    key: i.paramName ?? "Unknown Param",
-    value: i.paramValue ?? "",
-  })),
+  const dynamicRows = [
+    ...input.map((i) => ({
+      key: i.paramName ?? "Unknown Param",
+      value: i.paramValue ?? "",
+    })),
+    ...addInfo.map((i) => ({
+      key: i.infoName ?? "Unknown Info",
+      value: i.infoValue ?? "",
+    })),
+    ...billerRows.map((item) => ({
+      key: item.key,
+      value: item.key === "billAmount" ? Number(item.value) / 100 : item.value,
+    })),
+  ];
 
-  ...addInfo.map((i) => ({
-    key: i.infoName ?? "Unknown Info",
-    value: i.infoValue ?? "",
-  })),
-
-  ...billerRows.map((item) => ({
-    key: item.key,
-    value:
-      item.key === "billAmount"
-        ? Number(item.value) / 100   // 👈 ONLY DISPLAY DIVIDED VALUE
-        : item.value,
-  })),
-];
-
+  const handleChange = (key, value) => {
+    setUserData((prev) => ({ ...prev, [key]: value }));
+  };
 
   /* ---------------- FINAL PAYMENT BODY ---------------- */
   const finalMergedData = {
-    remarks: "Good here",
     billerId: selectedBiller?.billerId,
-
-    // Convert rows → object
     ...dynamicRows.reduce((acc, item) => {
       acc[item.key] = item.value;
       return acc;
     }, {}),
-
     ...custData,
-
+    ...userData,
     paymentMode: "Cash",
     splitPay: "N",
     quickPay: "N",
-    remitterName: "Saurabh",
-
     ...(acceptAmount ? { amount: formValues.amount } : {}),
   };
 
@@ -92,12 +90,28 @@ const dynamicRows = [
   const handlePay = async () => {
     console.log("🔥 Final Payment Payload:", finalMergedData);
 
-    const res = await fetchPayment(finalMergedData);
+    const response = await fetchPayment(finalMergedData);
+    console.log("API Response:", response);
 
+    // 1️⃣ Generic API error
+    if (response?.status === false && response?.message) {
+      setResError(response.message);
+      console.log("API Error:", response.message);
+      return; // prevent closing modal
+    }
+
+    // 2️⃣ Validation errors
+    if (response?.errors) {
+      const messages = Object.values(response.errors).flat().join(", ");
+      setResError(messages);
+      console.log("Validation Error:", messages);
+      return;
+    }
+
+    // ✅ Success → proceed
     closeModal("finalData");
-
     openModal("lastModal", {
-      lastModal: res,
+      lastModal: response,
       serviceId: selectedBiller?.billerId,
       data,
       custData,
@@ -118,27 +132,116 @@ const dynamicRows = [
       }
       renderMiddle={
         <>
+          {/* Amount Field */}
           {acceptAmount && (
-            <div className="mt-3">
-              <label className="font-semibold mb-1">Enter Amount</label>
+            <div className="mt-4">
+              <label className="font-semibold mb-1 block">Enter Amount</label>
               <input
                 type="number"
-                className="border p-2 rounded w-full"
+                className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500 outline-none"
                 value={formValues.amount}
                 onChange={(e) => setFormValues({ amount: e.target.value })}
               />
             </div>
           )}
 
-          <div className="w-full mt-3">
-            <table className="w-full border-collapse">
+          {/* Show API Error */}
+          {resError && <div className="text-red-500 mt-2">{resError}</div>}
+
+          {/* User Required Input Fields */}
+          <div className="mt-5 bg-gray-50 p-4 rounded-lg shadow-sm border">
+            <h3 className="font-semibold text-lg mb-3 text-gray-800">
+              Customer Details
+            </h3>
+
+            {userDataRequire && (
+              <div className="space-y-3">
+                <div>
+                  <label className="font-medium block mb-1">
+                    Customer Mobile
+                  </label>
+                  <input
+                    type="text"
+                    name="customerMobile"
+                    maxLength={10}
+                    placeholder="Enter Customer Mobile"
+                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                    onChange={(e) =>
+                      handleChange(e.target.name, e.target.value)
+                    }
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium block mb-1">Customer PAN</label>
+                  <input
+                    type="text"
+                    name="customerPan"
+                    placeholder="Enter Customer PAN"
+                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                    onChange={(e) =>
+                      handleChange(e.target.name, e.target.value)
+                    }
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium block mb-1">
+                    Customer Email
+                  </label>
+                  <input
+                    type="email"
+                    name="customerEmail"
+                    placeholder="Enter Customer Email"
+                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                    onChange={(e) =>
+                      handleChange(e.target.name, e.target.value)
+                    }
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Remitter Name */}
+            <div>
+              <label className="font-medium block mb-1">Remitter Name</label>
+              <input
+                type="text"
+                name="remitterName"
+                placeholder="Enter Remitter Name"
+                className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                onChange={(e) => handleChange(e.target.name, e.target.value)}
+                required
+              />
+            </div>
+
+            {/* Remarks */}
+            <div>
+              <label className="font-medium block mb-1">Remarks</label>
+              <input
+                type="text"
+                name="remarks"
+                placeholder="Enter Remarks"
+                className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                onChange={(e) => handleChange(e.target.name, e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Dynamic Rows Table */}
+          <div className="w-full mt-6">
+            <table className="w-full border border-gray-200 rounded-lg overflow-hidden shadow-sm">
               <tbody>
                 {dynamicRows.map((row, i) => (
-                  <tr key={i} className="border-b">
-                    <td className="py-2 px-2 font-semibold text-gray-700 w-1/2">
+                  <tr key={i} className="border-b last:border-none">
+                    <td className="py-2 px-3 font-semibold text-gray-700 bg-gray-100 w-1/2">
                       {row.key}
                     </td>
-                    <td className="py-2 px-2 text-gray-800 w-1/2">
+                    <td className="py-2 px-3 text-gray-800 w-1/2">
                       {row.value}
                     </td>
                   </tr>
@@ -156,7 +259,6 @@ const dynamicRows = [
           >
             Pay
           </button>
-
           <button
             onClick={close}
             className="px-6 py-2 bg-gray-400 text-white rounded"

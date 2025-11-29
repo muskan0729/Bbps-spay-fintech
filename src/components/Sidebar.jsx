@@ -18,6 +18,7 @@ import CheckTransactionComplaint from "../pages/CheckTransactionComplaint";
 import Users from "../pages/Users";
 
 import { useAuth } from "../contexts/AuthContext";
+import Scheme from "../pages/Scheme";
 
 export const navItems = [
     { icon: faGauge, label: "Dashboard", path: "/dashboard", roles: ["admin", "user"], component: Dashboard },
@@ -27,6 +28,7 @@ export const navItems = [
     { icon: faMagnifyingGlass, label: "Support", path: "/support", roles: ["user"], component: Support },
     { icon: faTriangleExclamation, label: "Complaint", path: "/complaint", roles: ["admin", "user"], component: ComplaintPage },
     { icon: faCircleExclamation, label: "Check Complaint", path: "/checkcomplaint", roles: ["user"], component: CheckTransactionComplaint },
+    { icon: faCircleExclamation, label: "Scheme", path: "/scheme", roles: ["admin"], component: Scheme }
 ];
 
 export const Sidebar = ({
