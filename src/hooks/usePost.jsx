@@ -30,6 +30,7 @@ export function usePost(endpoint) {
             headers: { "Content-Type": "application/json" },
           }
         );
+        console.log(" here is response :",response);        
         return response.data;
       }
 

@@ -8,27 +8,24 @@ import { usePost } from "../../hooks/usePost";
 const SelectServiceBiller = () => {
   const { isModalOpen, getModalData, openModal, closeModal } = useModal();
 
-  const [selectedBillerId, setSelectedBillerId] = useState(""); // <-- dropdown controlled ID
-  const [selectedBillerData, setSelectedBillerData] = useState(null); // <-- API biller object
+  const [selectedBillerId, setSelectedBillerId] = useState("");
+  const [selectedBillerData, setSelectedBillerData] = useState(null);
   const [serviceList, setServiceList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dropdownOpen, setDropdownOpen] = useState(false); // <-- NEW
 
   const isOpen = isModalOpen("serviceSelecter");
   const { service } = getModalData("serviceSelecter") || {};
 
-  // Build endpoint dynamically
   const endpoint = useMemo(() => {
     return service?.label ? `/get-billers-test/${service.label}` : null;
   }, [service?.label]);
 
-  // Fetch biller list
   const { data, loading: apiLoading } = useGet(endpoint);
 
-  // Fetch selected biller info
-  const {
-    data: billerResponse,
-    execute: fetchBillerInfo,
-  } = usePost("/bbps/biller-info-test/json");
+  const { data: billerResponse, execute: fetchBillerInfo } = usePost(
+    "/bbps/biller-info-test/json"
+  );
 
   useEffect(() => {
     if (apiLoading) {
@@ -40,34 +37,28 @@ const SelectServiceBiller = () => {
       setServiceList(data);
       setLoading(false);
     }
-    console.log("Select Service Biller",billerResponse);
   }, [data, apiLoading]);
 
-  // Reset modal state on close
   const resetForm = () => {
     setSelectedBillerId("");
     setSelectedBillerData(null);
     setLoading(true);
   };
 
-  // Move to next modal
   const handleNext = (close) => {
     if (!selectedBillerId) {
       alert("Select a biller!");
       return;
     }
+
     close();
     setTimeout(() => {
-      // console.log(selectedBillerData);
-      if (selectedBillerData.planMdmRequirement === "MANDATORY" || selectedBillerData.planMdmRequirement === "OPTIONAL") {
-        console.log("enter", selectedBillerData);
-        openModal("plandisplay", {
-          selectedBiller: selectedBillerData,
-          // inputParams:selectedBillerData.billerInputParams
-        })
-      }
-      else {
-        console.log("enter", selectedBillerData);
+      if (
+        selectedBillerData?.planMdmRequirement === "MANDATORY" ||
+        selectedBillerData?.planMdmRequirement === "OPTIONAL"
+      ) {
+        openModal("plandisplay", { selectedBiller: selectedBillerData });
+      } else {
         openModal("details", {
           selectedBiller: selectedBillerData,
           billerResponse,
@@ -76,14 +67,13 @@ const SelectServiceBiller = () => {
     }, 260);
   };
 
-  // When user selects a biller
   const onChangeHandler = async (id) => {
-    setSelectedBillerId(id); // store selected ID for dropdown to stay selected
+    setSelectedBillerId(id);
+    setDropdownOpen(false);
 
     const res = await fetchBillerInfo(id);
-    console.log(res);
-    
-    const result = res.data.biller
+    const result = res.data.biller;
+
     if (Array.isArray(result) && result[0]) {
       setSelectedBillerData(result[0]);
     }
@@ -102,33 +92,69 @@ const SelectServiceBiller = () => {
           </span>
         </>
       }
+      
       renderMiddle={
-        <select
-          value={selectedBillerId}
-          onChange={(e) => onChangeHandler(e.target.value)}
-          disabled={loading}
-          className="w-full p-3 border border-gray-200 rounded mb-4"
-        >
-          <option value="">
-            {loading ? "Loading..." : "Select Biller"}
-          </option>
+        data && data.length > 0 ? (
+          <div className="relative w-full mt-3">
+            {/* Selected box */}
+            <div
+              onClick={() => !loading && setDropdownOpen(!dropdownOpen)}
+              className="border p-3 rounded bg-white w-full flex justify-between items-center cursor-pointer text-sm"
+            >
+              <span className="truncate w-[90%]">
+                {selectedBillerId
+                  ? serviceList.find((x) => x.blr_id === selectedBillerId)
+                      ?.blr_name
+                  : loading
+                  ? "Loading..."
+                  : "Select Biller"}
+              </span>
+              <span>▼</span>
+            </div>
 
-          {serviceList.map((item) => (
-            <option key={item.blr_id} value={item.blr_id}>
-              {item.blr_name}
-            </option>
-          ))}
-        </select>
+            {/* Dropdown list */}
+            {dropdownOpen && (
+              <div
+                className="
+                  absolute top-full left-0 mt-1 
+                  w-full 
+                  max-h-48 
+                  overflow-y-auto 
+                  bg-white border rounded shadow-lg z-50
+                "
+              >
+                {serviceList.map((item) => (
+                  <div
+                    key={item.blr_id}
+                    onClick={() => onChangeHandler(item.blr_id)}
+                    className="
+                      p-3 text-sm 
+                      hover:bg-blue-100 
+                      cursor-pointer 
+                      break-words
+                    "
+                  >
+                    {item.blr_name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>No Biller Available</div>
+        )
       }
+
       renderFooter={(close) => (
         <>
           <button
             onClick={() => handleNext(close)}
             disabled={loading || !selectedBillerId}
-            className={`px-4 py-2 rounded text-white ${!selectedBillerId
-              ? "bg-blue-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-              }`}
+            className={`px-4 py-2 rounded text-white ${
+              !selectedBillerId
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             Next
           </button>

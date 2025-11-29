@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ServicesModalWrapper } from "../ServicesModalWrapper";
 import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
@@ -22,12 +22,26 @@ const DetailInput = () => {
   const [custPan, setCustPan] = useState("");
 
   const [billerFetchRequiremet, setBillerFetchRequiremet] = useState(false);
-
-  const { execute: fetchResponse } = usePost("/bbps/bill-process-test/json");
+  const [resError, setResError] = useState();
+  const { error, execute: fetchResponse } = usePost(
+    "/bbps/bill-process-test/json"
+  );
 
   /* -------------------------------------------------------
      LOAD selectedBiller PARAMS
   ------------------------------------------------------- */
+  useEffect(() => {
+
+    setResError(error);  // sync UI error
+    console.log("line 35", error?.result?.message);
+
+  }, [resError]);
+
+
+  // const checkError=useCallback(async()=>{
+  //   await setResError(error);
+  // },[error]);
+
   useEffect(() => {
     if (!selectedBiller) return;
 
@@ -58,55 +72,73 @@ const DetailInput = () => {
   ------------------------------------------------------- */
   const handleSubmit = async (close) => {
     // 1️⃣ Merge mandatory UI fields into formValues dynamically
+
     const extendedFormValues = {
       ...formValues,
+    };
+    // 2️⃣ Build mandatoryData based on biller param rules
+    const mandatoryData = {
       customerMobile: custMob,
       customerEmail: custEmail,
       customerAdhaar: custAdd,
       customerPan: custPan,
     };
 
-    // console.log("EXTENDED FORM VALUES →", extendedFormValues);
-
-    // 2️⃣ Build mandatoryData based on biller param rules
-    const mandatoryData = {
-      customerMobile: custMob,
-      customerEmail: custEmail,
-      customerAdhaar: custAdd,
-      customerPan: custPan
-    };
-
-    // params.forEach((param) => {
-    //   if (param.isOptional === "false" && extendedFormValues[param.paramName]) {
-    //     mandatoryData[param.paramName] = extendedFormValues[param.paramName];
-    //   }
-    // });
-
-    // console.log("COLLECTED mandatoryData →", mandatoryData);
-
     // 3️⃣ Build API request body
+    // console.log("Line 88", typeof billerFetchRequiremet);
+    const currentBillerFetchRequiremet = billerFetchRequiremet;
+    // console.log(currentBillerFetchRequiremet);
+
+    // if()
     const requestBody = {
       data: {
         billerId: selectedBiller?.billerId,
         ...extendedFormValues,
-        ...(billerFetchRequiremet ? mandatoryData : {}),
+        ...(currentBillerFetchRequiremet ? mandatoryData : {}),
       },
     };
 
-    console.log("FINAL REQUEST BODY →", requestBody);
+    // console.log("FINAL REQUEST BODY →", requestBody);
     // console.log("Mandetory Data",mandatoryData);
-    
+
     // 4️⃣ API CALL
+
+    // callAPI()
+
+    // setResError(null);
     const response = await fetchResponse(requestBody.data);
+
+    // const response = await fetchResponse(requestBody.data);
+    // checkError();
+    const res = response?.result;
+
+    // Check if it's an error shape
+    if (res?.status === false && res?.message) {
+      console.log("API Error:", res.message);
+      setResError(res.message);
+      return; // prevent closing modal
+    }
+
+    // Otherwise, success shape
+    const decrypted = res?.decryptedResponse;
+    if (!decrypted || decrypted.responseCode !== "000") {
+      console.log("API Error:", decrypted?.responseReason || "Unknown error");
+      setResError(decrypted?.responseReason || "Unknown error");
+      return;
+    }
+
+    // Success → proceed
+
+    console.log("out");
+    console.log(response?.result);
 
     close();
 
     // 5️⃣ Send next modal data
     setTimeout(() => {
-      console.log("billerFetchRequiremet: " ,billerFetchRequiremet);
-      
+      // console.log("billerFetchRequiremet: " ,billerFetchRequiremet);
       openModal("finalData", {
-        data: response.result.decryptedResponse,
+        data: response?.result?.decryptedResponse,
         custData: billerFetchRequiremet ? mandatoryData : {},
         selectedBiller,
       });
@@ -172,6 +204,7 @@ const DetailInput = () => {
           className="border p-2 rounded"
           value={custAdd}
           onChange={(e) => setCustAdd(e.target.value)}
+          required
         />
       </div>
 
@@ -182,6 +215,7 @@ const DetailInput = () => {
           className="border p-2 rounded"
           value={custMob}
           onChange={(e) => setCustMob(e.target.value)}
+          required
         />
       </div>
 
@@ -192,6 +226,7 @@ const DetailInput = () => {
           className="border p-2 rounded"
           value={custPan}
           onChange={(e) => setCustPan(e.target.value)}
+          required
         />
       </div>
 
@@ -202,6 +237,7 @@ const DetailInput = () => {
           className="border p-2 rounded"
           value={custEmail}
           onChange={(e) => setCustEmail(e.target.value)}
+          required
         />
       </div>
     </div>
@@ -228,6 +264,9 @@ const DetailInput = () => {
             <>
               {inputMapper()}
               {billerFetchRequiremet && mandatoryInputs()}
+              <div className="text-red-500">
+                {resError && resError?.result?.message}
+              </div>
             </>
           ) : (
             <p>Loading...</p>
