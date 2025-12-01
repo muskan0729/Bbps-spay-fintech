@@ -51,6 +51,16 @@ export function usePost(endpoint) {
         return response;
       }
 
+      if(endpoint==="/delete-scheme"){
+        console.log("ID====>",body);
+        response=await axios.post(`${BASE_URL}${endpoint}/${body}`,{
+           headers: {
+            // "Content-Type": "text/plain",
+            Authorization: `Bearer ${cookie.token.slice(4)}`,
+          },
+        })        
+      }
+
       // ---------- DEFAULT POST (FOR FORMDATA) ----------
       const isFormData = body instanceof FormData;
 

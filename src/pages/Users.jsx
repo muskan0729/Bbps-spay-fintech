@@ -10,7 +10,11 @@ const Users = () => {
   const { getData, deleteData } = useAuth();
 
   // Fetch merchants using useGet hook
-  const { data: merchantsData, loading: loadingMerchants, error } = useGet("/get-merchants");
+  const {
+    data: merchantsData,
+    loading: loadingMerchants,
+    error,
+  } = useGet("/get-merchants");
 
   const [openTopUpModal, setOpenTopUpModal] = useState(false);
   const [topUpModalData, setTopUpModalData] = useState(null);
@@ -86,10 +90,6 @@ const Users = () => {
       );
     }
 
-  
-
-  
-
     setTableData(dataWithTopUpButton(filtered));
   };
 
@@ -97,47 +97,50 @@ const Users = () => {
     <>
       {/* Search / Filter Section */}
       <section className="mx-auto bg-white p-4 rounded-xl shadow-md border border-gray-200 mt-8 flex flex-col justify-between">
-  {/* Section Title */}
-  <h2 className="text-xl font-semibold text-gray-800 mb-4">
-    Filter Users
-  </h2>
+        {/* Section Title */}
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Filter Users
+        </h2>
 
-  <div className="flex flex-wrap gap-4 justify-between items-end">
-    <div className="flex flex-col flex-1 min-w-[180px]">
-      <label htmlFor="name" className="text-gray-700 font-medium mb-2">Name:</label>
-      <input
-        type="text"
-        id="name"
-        placeholder="Enter Name"
-        value={filters.name}
-        onChange={handleFilterChange}
-        className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-      />
-    </div>
+        <div className="flex flex-wrap gap-4 justify-between items-end">
+          <div className="flex flex-col flex-1 min-w-[180px]">
+            <label htmlFor="name" className="text-gray-700 font-medium mb-2">
+              Name:
+            </label>
+            <input
+              type="text"
+              id="name"
+              placeholder="Enter Name"
+              value={filters.name}
+              onChange={handleFilterChange}
+              className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
 
-    <div className="flex flex-col flex-1 min-w-[180px]">
-      <label htmlFor="email" className="text-gray-700 font-medium mb-2">Email:</label>
-      <input
-        type="email"
-        id="email"
-        placeholder="Enter Email"
-        value={filters.email}
-        onChange={handleFilterChange}
-        className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-      />
-    </div>
+          <div className="flex flex-col flex-1 min-w-[180px]">
+            <label htmlFor="email" className="text-gray-700 font-medium mb-2">
+              Email:
+            </label>
+            <input
+              type="email"
+              id="email"
+              placeholder="Enter Email"
+              value={filters.email}
+              onChange={handleFilterChange}
+              className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
 
-    <div className="flex justify-end mt-6">
-      <button
-        onClick={applyFilters}
-        className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300"
-      >
-        Search
-      </button>
-    </div>
-  </div>
-</section>
-
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={applyFilters}
+              className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300"
+            >
+              Search
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* Users Table Section */}
       <section>
