@@ -25,7 +25,7 @@ const MerchantReport = () => {
     execute: fetchPayments,
     data: apiResponse,
     isLoading,
-  } = usePost("/bbps/all-bill-payments/json");
+  } = usePost("/bbps/all-bill-payments-test/json");
 
   // ⭐ Fetch API Data on load
   useEffect(() => {
