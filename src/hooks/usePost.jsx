@@ -53,12 +53,16 @@ export function usePost(endpoint) {
 
       if(endpoint==="/delete-scheme"){
         console.log("ID====>",body);
-        response=await axios.post(`${BASE_URL}${endpoint}/${body}`,{
+        console.log(`Bearer  token${cookie.token.slice(4)}`);
+        console.log(`URL  ${BASE_URL}${endpoint}/${body}`);
+        
+        response=await axios.post(`${BASE_URL}${endpoint}/${body}`,{},{
            headers: {
             // "Content-Type": "text/plain",
             Authorization: `Bearer ${cookie.token.slice(4)}`,
           },
-        })        
+        })    
+      return response   
       }
 
       // ---------- DEFAULT POST (FOR FORMDATA) ----------

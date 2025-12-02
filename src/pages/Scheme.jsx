@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import Table from "../components/Table";
 import { useGet } from "../hooks/useGet";
 import { SchemeContext } from "../contexts/SchemeContext";
-import AddScheme from "../components/AddScheme";
+import AddScheme from "../components/SchemeOperationModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -43,7 +43,7 @@ const Scheme = () => {
               className="p-2 m-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-sm"
               onClick={() => {
                 console.log(d);
-                setValue(d.id)
+                setValue(d)
                 setOperation(2);
                 setIsModelOpen(true);
               }}
@@ -53,6 +53,7 @@ const Scheme = () => {
 
             <button
               onClick={() => {
+                setValue(d.id)
                 setOperation(3);
                 setIsModelOpen(true);
               }}
@@ -95,7 +96,7 @@ const Scheme = () => {
 
         {/* Table */}
         <div className="bg-white shadow-sm rounded-lg p-4 overflow-x-auto">
-          <Table data={tableData} columns={columns} />
+          <Table data={tableData} columns={columns} isPaginationRequired={true} />
         </div>
       </div>
 

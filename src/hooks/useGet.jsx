@@ -10,19 +10,31 @@ export function useGet(endpoint) {
   const [error, setError] = useState(null);
   const [cookie] = useCookies(["token"]);
 
-  const fetchData = async () => {
+  const fetchData = async (byID = null) => {
     if (!cookie.token) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await axios.get(`${BASE_URL}${endpoint}`, {
-        headers: {
-          "Authorization": `Bearer ${cookie.token}`, // remove slice unless your backend needs it
-        },
-      });
-      setData(response.data);
+      if (!byID) {
+        // Normal fetch
+        const response = await axios.get(`${BASE_URL}${endpoint}`, {
+          headers: {
+            Authorization: `Bearer ${cookie.token}`,
+          },
+        });
+        setData(response.data);
+      } else {
+        // Fetch with ID
+        const response = await axios.get(`${BASE_URL}${endpoint}/${byID}`, {
+          headers: {
+            Authorization: `Bearer ${cookie.token}`,
+          },
+        });
+        console.log(response.data);
+        setData(response.data);
+      }
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {
