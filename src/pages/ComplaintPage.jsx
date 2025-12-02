@@ -52,7 +52,7 @@ useEffect(() => {
         BillerID: item.biller_id,
         ComplaintReason: item.complaint_desc,
         ComplaintDisposition: item.complaint_disposition,
-        ComplaintStatus: item.complaint_status,
+        ComplaintStatus: item.complaint_status.replace(/_/g, " "),
       }));
       setData(mapped);
     } catch (error) {
@@ -134,6 +134,9 @@ const handleSubmit = async (e) => {
 
   // ✅ Participation Type — soft pastel tones for readability
   const renderParticipationType = (type) => {
+      if (!type) {
+    return <span>-</span>;
+    }
     const base =
       "px-2 py-1 text-xs font-semibold rounded-full border shadow-sm transition-all duration-300";
     const styles = {
