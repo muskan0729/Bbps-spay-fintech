@@ -6,7 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useGet } from "../hooks/useGet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-import {usePost} from "../hooks/usePost";
+import { usePost } from "../hooks/usePost";
 const ConformationBox = ({ onYes, onNo }) => {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
