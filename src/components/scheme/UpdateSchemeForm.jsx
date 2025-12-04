@@ -7,7 +7,7 @@ import { useGet } from "../../hooks/useGet";
 
 const UpdateSchemeForm = ({ value }) => {
   const { setIsModelOpen } = useContext(SchemeContext);
-  const { data: merchentData } = useGet("/get-merchants");
+  const { data: merchentData } = useGet("/get-merchants ");
   const { data: billerData } = useGet("/get-biller-name-and-category");
   const { data: findBiller, refetch: featchBiller } = useGet(`/show-merchant`);
   const { execute } = usePost("/update-scheme");
