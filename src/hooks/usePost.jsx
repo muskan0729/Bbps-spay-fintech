@@ -4,13 +4,13 @@ import { useCookies } from "react-cookie";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export function usePost(endpoint) {
+export function usePost(endpoint) { 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [cookie] = useCookies(["token"]);
 
-  const execute = async (body) => {
+  const execute = async (body={}) => {
     setLoading(true);
     setError(null);
 
