@@ -6,9 +6,7 @@ import { useGet } from "../../hooks/useGet";
 
 const UpdateSchemeForm = ({ value, refresh }) => {
   const { setIsModelOpen } = useContext(SchemeContext);
-
-  // Fetch dropdown data
-  const { data: merchantData } = useGet("/get-merchants");
+  const { data: merchentData } = useGet("/get-merchants ");
   const { data: billerData } = useGet("/get-biller-name-and-category");
   // const {data:}
   // Update API
