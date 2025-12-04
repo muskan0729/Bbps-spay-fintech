@@ -5,10 +5,10 @@ import AddSchemeForm from "./scheme/AddSchemeForm";
 import UpdateSchemeForm from "./scheme/UpdateSchemeForm";
 import DeleteSchemeConfirm from "./scheme/DeleteSchemeConfirm";
 
-const SchemeOperationModal = ({ operation, value }) => {
-  if (operation === 1) return <AddSchemeForm />;
-  if (operation === 2) return <UpdateSchemeForm value={value} />;
-  if (operation === 3) return <DeleteSchemeConfirm value={value} />;
+const SchemeOperationModal = ({ operation, value, refresh }) => {
+  if (operation === 1) return <AddSchemeForm refresh={refresh}/>;
+  if (operation === 2) return <UpdateSchemeForm value={value} refresh={refresh}/>;
+  if (operation === 3) return <DeleteSchemeConfirm value={value} refresh={refresh}/>;
   
   return null;
 };

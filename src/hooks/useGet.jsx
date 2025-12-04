@@ -27,12 +27,15 @@ export function useGet(endpoint) {
         setData(response.data);
       } else {
         // Fetch with ID
+        console.log(byID);
+        
+        console.log(`url::${BASE_URL}${endpoint}/${byID}`);
         const response = await axios.get(`${BASE_URL}${endpoint}/${byID}`, {
           headers: {
             Authorization: `Bearer ${cookie.token}`,
           },
         });
-        console.log(response.data);
+        // console.log("Get option 2",response.data);
         setData(response.data);
       }
     } catch (err) {
