@@ -3,15 +3,18 @@ import React, { useContext } from "react";
 import { SchemeContext } from "../../contexts/SchemeContext";
 import { usePost } from "../../hooks/usePost";
 
-const DeleteSchemeConfirm = ({ value }) => {
+const DeleteSchemeConfirm = ({ value, refresh }) => {
   const { setIsModelOpen } = useContext(SchemeContext);
   const { execute } = usePost("/delete-scheme");
 
   const closeModal = () => setIsModelOpen(false);
 
   const handleDelete = async () => {
-    await execute(value);
-    closeModal();
+    const res = await execute(value);
+    if (res) {
+      refresh();
+      closeModal();
+    }
   };
 
   return (

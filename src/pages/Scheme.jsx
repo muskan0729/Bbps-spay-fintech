@@ -3,22 +3,30 @@ import React, { useContext, useEffect, useState } from "react";
 import Table from "../components/Table";
 import { useGet } from "../hooks/useGet";
 import { SchemeContext } from "../contexts/SchemeContext";
-import AddScheme from "../components/SchemeOperationModal";
+import SchemeOperationModal from "../components/SchemeOperationModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen } from "@fortawesome/free-solid-svg-icons";
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { usePost } from "../hooks/usePost";
+import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 
-// import
 const Scheme = () => {
   const { isModelOpen, setIsModelOpen } = useContext(SchemeContext);
-  const { data: response, loading } = useGet("/get-schemes");
-  const { execute } = usePost("/");
+
+  // 🔥 Refresh trigger state
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // 🔥 Refresh function passed to child
+  const refresh = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
+
+  // 🔥 API becomes dynamic -> auto reload when refreshKey changes
+  const { data: response, loading } = useGet(
+    `/get-schemes?refresh=${refreshKey}`
+  );
+
   const [tableData, setTableData] = useState([]);
-  const [isSchemeModalOpen, setIsSchemeModalOpen] = useState(false);
   const [operation, setOperation] = useState(null);
-  const [value,setValue]=useState(null);
+  const [value, setValue] = useState(null);
+
   const columns = [
     "id",
     "name",
@@ -33,40 +41,54 @@ const Scheme = () => {
     "action",
   ];
 
+  //  Build table rows when response updates
   useEffect(() => {
     if (response?.data) {
-      const withActionButton = response.data.map((d) => ({
-        ...d,
-        action: (
-          <span className="flex items-center gap-2">
-            <button
-              className="p-2 m-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-sm"
-              onClick={() => {
-                console.log(d);
-                setValue(d)
-                setOperation(2);
-                setIsModelOpen(true);
-              }}
-            >
-              <FontAwesomeIcon icon={faPen} />
-            </button>
+      const withActionButton = response.data.map((d) => {
+        const { status, ...rest } = d; // remove status
 
-            <button
-              onClick={() => {
-                setValue(d.id)
-                setOperation(3);
-                setIsModelOpen(true);
-              }}
-              className="p-2 m-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 shadow-sm"
-            >
-              <FontAwesomeIcon icon={faTrash} />
-            </button>
-          </span>
-        ),
-      }));
+        return {
+          ...rest,
+          status:
+            status === 0 ? (
+              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                Inactive
+              </span>
+            ) : (
+              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                Active
+              </span>
+            ),
+
+          action: (
+            <span className="flex items-center gap-2">
+              <button
+                className="p-2 m-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                onClick={() => {
+                  setValue(d);
+                  setOperation(2);
+                  setIsModelOpen(true);
+                }}
+              >
+                <FontAwesomeIcon icon={faPen} />
+              </button>
+
+              <button
+                onClick={() => {
+                  setValue(d.id);
+                  setOperation(3);
+                  setIsModelOpen(true);
+                }}
+                className="p-2 m-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                <FontAwesomeIcon icon={faTrash} />
+              </button>
+            </span>
+          ),
+        };
+      });
 
       setTableData(withActionButton);
-      console.log("SCHEME 38", withActionButton);
     } else {
       setTableData([]);
     }
@@ -74,7 +96,6 @@ const Scheme = () => {
 
   return (
     <>
-      {/* MAIN PAGE */}
       <div
         className={`p-5 md:p-8 ${
           isModelOpen ? "blur-sm pointer-events-none" : ""
@@ -84,7 +105,7 @@ const Scheme = () => {
           <h1 className="text-2xl font-bold text-gray-800">Scheme Manager</h1>
 
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
             onClick={() => {
               setOperation(1);
               setIsModelOpen(true);
@@ -94,15 +115,23 @@ const Scheme = () => {
           </button>
         </div>
 
-        {/* Table */}
         <div className="bg-white shadow-sm rounded-lg p-4 overflow-x-auto">
-          <Table data={tableData} columns={columns} isPaginationRequired={true} />
+          <Table
+            data={tableData}
+            columns={columns}
+            isPaginationRequired={true}
+          />
         </div>
       </div>
 
-      {/* MODAL */}
-      {isModelOpen && <AddScheme operation={operation} value={value}/>}
-      {/* isSchemeModel */}
+      {/* 🔥 Pass refresh to modal → child */}
+      {isModelOpen && (
+        <SchemeOperationModal
+          operation={operation}
+          value={value}
+          refresh={refresh}
+        />
+      )}
     </>
   );
 };
