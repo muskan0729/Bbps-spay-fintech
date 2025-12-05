@@ -7,12 +7,13 @@ import { useGet } from "../hooks/useGet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { usePost } from "../hooks/usePost";
+import TableSkeleton from "../components/TableSkeleton";
+
 const ConformationBox = ({ onYes, onNo }) => {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
         <h2 className="text-lg font-semibold mb-4">Are you sure?</h2>
-
         <div className="flex justify-center gap-4">
           <button
             onClick={onYes}
@@ -20,12 +21,32 @@ const ConformationBox = ({ onYes, onNo }) => {
           >
             Yes
           </button>
-
           <button
             onClick={onNo}
             className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
           >
             No
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const EditModel = ({ user, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white w-80 p-6 rounded-xl shadow-xl text-center">
+        <h2 className="text-lg font-semibold mb-4">Edit User</h2>
+        <p className="mb-4">
+          You can add your edit form here for user: {user.name}
+        </p>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 rounded-lg"
+          >
+            Close
           </button>
         </div>
       </div>
@@ -39,106 +60,85 @@ const Users = () => {
 
   const [isAlert, setIsAlert] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const {
     data: merchantsData,
     loading: loadingMerchants,
     error,
   } = useGet("/get-merchants");
-
+  const { execute: updateStatus } = usePost("/update-user-statuses");
   const [openTopUpModal, setOpenTopUpModal] = useState(false);
   const [topUpModalData, setTopUpModalData] = useState(null);
 
   const [originalData, setOriginalData] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  // const [userId, setUserId] = useState(null);
-  const [filters, setFilters] = useState({
-    name: "",
-    email: "",
-  });
+  const [filters, setFilters] = useState({ name: "", email: "" });
 
-  const endpoint = useMemo(() => {
-    return `/delete-merchant/${deleteId}`;
-  }, [deleteId]);
-  const { execute: deleteUser } = usePost(`${endpoint}`);
-
-  const columns = [
-    "User ID",
-    "Name",
-    "Email",
-    "Amount",
-    "Top Up",
-    "Actions",
-    "account_status",
-  ];
+  const endpoint = useMemo(() => `/delete-merchant/${deleteId}`, [deleteId]);
+  const { execute: deleteUser } = usePost(endpoint);
 
   // -----------------------------
-  // DELETE BUTTON → SHOW CONFIRMATION
+  // TOGGLE ACCOUNT STATUS
   // -----------------------------
-  const handleDelete = (id) => {
-    setDeleteId(id);
-    setIsAlert(true);
-  };
-
-  // -----------------------------
-  // YES BUTTON → DELETE USER
-  // -----------------------------
-  const confirmDelete = async () => {
-    console.log("Deleting user:", deleteId);
-    const res = await deleteUser();
-    // Add your API delete call here
-    if (res) {
-      setIsAlert(false);
-      setDeleteId(null);
+  const handleToggleStatus = async (item) => {
+    const newStatus = item.account_status ? 0 : 1;
+    try {
+      await updateStatus({ user_id: item.id, account_status: newStatus });
+      // Update UI
+      setOriginalData((prev) =>
+        prev.map((u) =>
+          u.id === item.id ? { ...u, account_status: newStatus } : u
+        )
+      );
+    } catch (err) {
+      console.error("Status update failed:", err);
     }
   };
 
   // -----------------------------
-  // NO BUTTON → CLOSE ALERT
+  // TABLE COLUMNS
   // -----------------------------
-  const cancelDelete = () => {
-    setIsAlert(false);
-    setDeleteId(null);
-  };
+  const columns = [
+    { label: "Actions", key: "actions" },
+    { label: "User ID", key: "user_id" },
+    { label: "Name", key: "name" },
+    { label: "Email", key: "email" },
+    { label: "Amount", key: "amount" },
+    { label: "Top Up", key: "top_up" },
+    { label: "Account Status", key: "account_status" },
+  ];
 
-  const handleEdit = () => {
-    console.log("handleEdit");
-  };
-
-  // -----------------------------
-  // TABLE DATA BUILDER
-  // -----------------------------
-  const dataWithTopUpButton = (data) =>
+  const buildTableRows = (data) =>
     data.map((item, index) => ({
-      "User ID": item.id || index + 1,
-      Name: item.name,
-      Email: item.email,
-
-      Status: (
-        <span
-          className={
-            item?.account_status
-              ? "px-2 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold"
-              : "px-2 py-1 rounded-full bg-red-100 text-red-700 text-sm font-semibold"
-          }
-        >
-          {item?.account_status ? "Active" : "Inactive"}
-        </span>
+      user_id: item.id || index + 1,
+      name: item.name,
+      email: item.email,
+      account_status: (
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={item.account_status === true}
+            onChange={() => handleToggleStatus(item)}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-red-400 rounded-full peer peer-checked:bg-green-500 transition-all duration-300"></div>
+          <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-5"></div>
+          <span className="ml-3 text-sm font-medium">
+            {item.account_status ? "Active" : "Inactive"}
+          </span>
+        </label>
       ),
-
-      Amount: `₹ ${Number(item.merchant_bbps_wallet || 0).toFixed(2)}`,
-
-      Actions: (
+      amount: `₹ ${Number(item.merchant_bbps_wallet || 0).toFixed(2)}`,
+      actions: (
         <div className="flex items-center gap-3">
           <button
             className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             title="Edit"
-            onClick={handleEdit}
+            onClick={() => setSelectedUser(item)}
           >
             <FontAwesomeIcon icon={faPen} />
           </button>
-
           <button
             className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             title="Delete"
@@ -148,11 +148,10 @@ const Users = () => {
           </button>
         </div>
       ),
-
-      "Top Up": (
+      top_up: (
         <button
           onClick={() => {
-            setTopUpModalData({ merchantId: item.id, userId: item.id });
+            setTopUpModalData({ merchantId: item.id });
             setOpenTopUpModal(true);
           }}
           className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
@@ -163,45 +162,71 @@ const Users = () => {
     }));
 
   // -----------------------------
+  // DELETE ACTIONS
+  // -----------------------------
+  const handleDelete = (id) => {
+    setDeleteId(id);
+    setIsAlert(true);
+  };
+  const confirmDelete = async () => {
+    const res = await deleteUser();
+    if (res) {
+      setIsAlert(false);
+      setDeleteId(null);
+    }
+  };
+  const cancelDelete = () => {
+    setIsAlert(false);
+    setDeleteId(null);
+  };
+
+  // -----------------------------
   // LOAD INITIAL DATA
   // -----------------------------
   useEffect(() => {
     if (merchantsData?.status) {
       let finalData = [...merchantsData.data];
-
-      const dataToProcess = getData("postSubmitData");
-      if (dataToProcess?.newUser) {
+      const stored = getData("postSubmitData");
+      if (stored?.newUser) {
         deleteData("postSubmitData");
-        finalData.push(dataToProcess.newUser);
+        finalData.push(stored.newUser);
       }
-
       setOriginalData(finalData);
-      setTableData(dataWithTopUpButton(finalData));
+      setTableData(buildTableRows(finalData));
     }
-    setLoading(false);
   }, [merchantsData]);
 
+  // -----------------------------
+  // FILTERS
+  // -----------------------------
   const handleFilterChange = (e) => {
     const { id, value } = e.target;
     setFilters((prev) => ({ ...prev, [id]: value }));
   };
-
   const applyFilters = () => {
     let filtered = [...originalData];
-
-    if (filters.name) {
+    if (filters.name)
       filtered = filtered.filter((item) =>
         item.name.toLowerCase().includes(filters.name.toLowerCase())
       );
-    }
-
-    if (filters.email) {
+    if (filters.email)
       filtered = filtered.filter((item) =>
         item.email.toLowerCase().includes(filters.email.toLowerCase())
       );
-    }
+    setTableData(buildTableRows(filtered));
+  };
 
-    setTableData(dataWithTopUpButton(filtered));
+  const tstyle = {
+    tableClass:
+      "min-w-full bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200 overflow-hidden text-gray-700",
+    headerClass:
+      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white text-sm font-semibold uppercase tracking-wide shadow-inner sticky top-0",
+    rowClass:
+      "bg-white even:bg-gray-50 hover:bg-indigo-50/60 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl mb-2 cursor-pointer",
+    cellClass:
+      "py-3 px-4 text-sm font-medium first:rounded-l-xl last:rounded-r-xl",
+    paginationClass:
+      "bg-white/60 shadow-inner rounded-lg px-4 py-2 text-gray-700 flex items-center justify-center gap-2 mt-4",
   };
 
   return (
@@ -211,7 +236,6 @@ const Users = () => {
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Filter Users
         </h2>
-
         <div className="flex flex-wrap gap-4 justify-between items-end">
           <div className="flex flex-col flex-1 min-w-[180px]">
             <label htmlFor="name" className="text-gray-700 font-medium mb-2">
@@ -226,7 +250,6 @@ const Users = () => {
               className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
-
           <div className="flex flex-col flex-1 min-w-[180px]">
             <label htmlFor="email" className="text-gray-700 font-medium mb-2">
               Email:
@@ -240,7 +263,6 @@ const Users = () => {
               className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
-
           <button
             onClick={applyFilters}
             className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 mt-6"
@@ -253,9 +275,9 @@ const Users = () => {
       {/* USERS LIST */}
       <section>
         <div className="mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-200 mt-8">
-          {(loading || loadingMerchants) && <span>Loading...</span>}
-
-          {!loading && !loadingMerchants && (
+          {loadingMerchants ? (
+            <TableSkeleton />
+          ) : (
             <>
               <div className="flex items-center justify-between p-3">
                 <span className="font-semibold">All Users List</span>
@@ -266,17 +288,16 @@ const Users = () => {
                   Add Users
                 </button>
               </div>
-
               <Table
                 data={tableData}
                 columns={columns}
                 currentPage={1}
                 rowsPerPage={10}
                 isPaginationRequired={true}
+                {...tstyle}
               />
             </>
           )}
-
           {error && <div className="text-red-500 mt-4">{error}</div>}
         </div>
       </section>
@@ -292,6 +313,11 @@ const Users = () => {
 
       {/* DELETE CONFIRMATION BOX */}
       {isAlert && <ConformationBox onYes={confirmDelete} onNo={cancelDelete} />}
+
+      {/* EDIT MODEL */}
+      {selectedUser && (
+        <EditModel user={selectedUser} onClose={() => setSelectedUser(null)} />
+      )}
     </>
   );
 };

@@ -22,9 +22,6 @@ const AddSchemeForm = ({ refresh }) => {
   const [isError, setIsError] = useState("");
   const [category, setCategory] = useState("");
   const [billerData, setBillerData] = useState([]);
-  // useEffect(()=>{
-  //   console.log(category);
-  // },[category]);
 
   const endpoint = useMemo(() => {
     return category ? `/get-billers-test/${category}` : null;
@@ -74,7 +71,6 @@ const AddSchemeForm = ({ refresh }) => {
 
   const billerOptions =
     billerData?.map((b) => ({ value: b.blr_id, label: b.blr_name })) || [];
-  // console.log("Biller Options ::",billerOptions);
 
   const closeModal = () => setIsModelOpen(false);
 
@@ -84,8 +80,7 @@ const AddSchemeForm = ({ refresh }) => {
       commission_type: "wallet",
       type: commissionType,
       commission_value: chargeValue,
-      status: false,
-      //   gst_type: GSTType,
+      status: true,
       gst_type: "percent",
       gst_value: chargeGSTValue,
       merchant_id: merchentValue.map((m) => m.value),
@@ -114,17 +109,6 @@ const AddSchemeForm = ({ refresh }) => {
           &times;
         </button>
 
-        {/* Scheme Name */}
-        {/* <div className="mb-4">
-          <h4 className="text-md font-semibold mb-1">Scheme Name</h4>
-          <input
-            type="text"
-            placeholder="Enter Scheme Name"
-            className="w-full border rounded-md px-3 py-2 text-sm"
-            onChange={(e) => setSchemeName(e.target.value)}
-          />
-        </div> */}
-
         <span>{isError}</span>
 
         <div className="flex flex-col gap-2 w-64">
@@ -135,7 +119,7 @@ const AddSchemeForm = ({ refresh }) => {
               setCategory(e.target.value);
             }}
             className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800"
-            value={category} // optional: bind value to state
+            value={category} 
           >
             <option value="">Select Category</option>
             {servicesList.map((s) => (
@@ -153,7 +137,6 @@ const AddSchemeForm = ({ refresh }) => {
           <table className="w-full rounded-md text-sm">
             <thead>
               <tr className="bg-blue-300 text-left">
-                {/* <th className="p-2">Operator</th> */}
                 <th className="p-2">Merchant</th>
                 <th className="p-2">Biller</th>
                 <th className="p-2">Type</th>
@@ -164,8 +147,6 @@ const AddSchemeForm = ({ refresh }) => {
 
             <tbody>
               <tr>
-                {/* <td className="p-2">Payin Commission Slab</td> */}
-
                 <td className="p-2">
                   <Select
                     options={merchentOptions}
@@ -210,8 +191,6 @@ const AddSchemeForm = ({ refresh }) => {
                     className="w-full rounded px-2 py-1"
                     onChange={(e) => setGSTType(e.target.value)}
                   >
-                    {/* <option value="">Select</option> */}
-                    {/* <option value="flat">Flat</option> */}
                     <option value="percent">Percent</option>
                   </select>
                 </td>

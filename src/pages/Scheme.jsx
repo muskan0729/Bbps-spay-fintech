@@ -6,6 +6,7 @@ import { SchemeContext } from "../contexts/SchemeContext";
 import SchemeOperationModal from "../components/SchemeOperationModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import TableSkeleton from "../components/TableSkeleton";
 
 const Scheme = () => {
   const { isModelOpen, setIsModelOpen } = useContext(SchemeContext);
@@ -28,6 +29,7 @@ const Scheme = () => {
   const [value, setValue] = useState(null);
 
   const columns = [
+    "action",
     "id",
     "name",
     "commission_type",
@@ -38,9 +40,19 @@ const Scheme = () => {
     "gst_value",
     "created_at",
     "updated_at",
-    "action",
   ];
-
+  const tstyle = {
+    tableClass:
+      "min-w-full bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200 overflow-hidden text-gray-700",
+    headerClass:
+      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white text-sm font-semibold uppercase tracking-wide shadow-inner sticky top-0",
+    rowClass:
+      "bg-white even:bg-gray-50 hover:bg-indigo-50/60 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl mb-2 cursor-pointer",
+    cellClass:
+      "py-3 px-4 text-sm font-medium first:rounded-l-xl last:rounded-r-xl",
+    paginationClass:
+      "bg-white/60 shadow-inner rounded-lg px-4 py-2 text-gray-700 flex items-center justify-center gap-2 mt-4",
+  };
   //  Build table rows when response updates
   useEffect(() => {
     if (response?.data) {
@@ -114,14 +126,18 @@ const Scheme = () => {
             Add Scheme
           </button>
         </div>
-
-        <div className="bg-white shadow-sm rounded-lg p-4 overflow-x-auto">
-          <Table
-            data={tableData}
-            columns={columns}
-            isPaginationRequired={true}
-          />
-        </div>
+        {loading ? (
+          <TableSkeleton />
+        ) : (
+          <div className="bg-white shadow-sm rounded-lg p-4 overflow-x-auto">
+            <Table
+              data={tableData}
+              columns={columns}
+              isPaginationRequired={true}
+              {...tstyle}
+            />
+          </div>
+        )}
       </div>
 
       {/* 🔥 Pass refresh to modal → child */}
