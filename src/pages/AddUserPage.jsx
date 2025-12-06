@@ -94,7 +94,7 @@ const AddUserPage = () => {
   const textRegex = /^[A-Za-z]+$/;
   const textNumberRegex = /^[A-Za-z0-9]+$/;
   const numberRegex = /^[0-9]{4}$/;
-  const aadharRegex=/^[0-9]{12}$/;
+  const aadharRegex = /^[0-9]{12}$/;
   const validationRules = {
     name: { required: true, pattern: nameRegex },
     mobile_no: { required: true, pattern: phoneRegex },
@@ -238,9 +238,7 @@ const AddUserPage = () => {
               <input
                 className={input}
                 value={formData.company_gst_no}
-                onChange={(e) =>
-                  handleChange("company_gst_no", e.target.value)
-                }
+                onChange={(e) => handleChange("company_gst_no", e.target.value)}
                 pattern={validationRules.company_gst_no.pattern.source}
                 required={validationRules.company_gst_no.required}
               />

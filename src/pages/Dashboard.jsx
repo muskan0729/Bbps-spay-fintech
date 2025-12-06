@@ -14,14 +14,7 @@ const Dashboard = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-
-    if (!(cookie.token) || !(cookie.role)) {
-      alert("Stay Away ");
-      navigate("/");
-      return
-    }
     (cookie.role === 1) ? setIsAdmin(true) : setIsAdmin(false);
-
     setTimeout(() => {
       setLoading(false);
     }, 2000);
