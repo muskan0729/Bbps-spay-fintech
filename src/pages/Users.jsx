@@ -61,12 +61,16 @@ const Users = () => {
   const [isAlert, setIsAlert] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
+  const refresh = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
   const {
     data: merchantsData,
     loading: loadingMerchants,
     error,
-  } = useGet("/get-merchants");
+  } = useGet(`/get-merchants?refresh=${refreshKey}`);
   const { execute: updateStatus } = usePost("/update-user-statuses");
   const [openTopUpModal, setOpenTopUpModal] = useState(false);
   const [topUpModalData, setTopUpModalData] = useState(null);
@@ -125,7 +129,7 @@ const Users = () => {
           <div className="w-11 h-6 bg-red-400 rounded-full peer peer-checked:bg-green-500 transition-all duration-300"></div>
           <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-5"></div>
           <span className="ml-3 text-sm font-medium">
-            {item.account_status ? "Active" : "Inactive"}
+            {/* {item.account_status ? "Active" : "Inactive"} */}
           </span>
         </label>
       ),
@@ -135,7 +139,9 @@ const Users = () => {
           <button
             className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             title="Edit"
-            onClick={() => setSelectedUser(item)}
+            onClick={() => {
+              navigate("/UpdateUser", { state: { item } });
+            }}
           >
             <FontAwesomeIcon icon={faPen} />
           </button>
@@ -168,13 +174,17 @@ const Users = () => {
     setDeleteId(id);
     setIsAlert(true);
   };
+
   const confirmDelete = async () => {
     const res = await deleteUser();
-    if (res) {
+    if (res?.status) {
       setIsAlert(false);
       setDeleteId(null);
+
+      refresh();
     }
   };
+
   const cancelDelete = () => {
     setIsAlert(false);
     setDeleteId(null);
@@ -310,10 +320,8 @@ const Users = () => {
           onClose={() => setOpenTopUpModal(false)}
         />
       )}
-
       {/* DELETE CONFIRMATION BOX */}
       {isAlert && <ConformationBox onYes={confirmDelete} onNo={cancelDelete} />}
-
       {/* EDIT MODEL */}
       {selectedUser && (
         <EditModel user={selectedUser} onClose={() => setSelectedUser(null)} />
