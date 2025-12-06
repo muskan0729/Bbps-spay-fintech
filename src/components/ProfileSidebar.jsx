@@ -35,10 +35,11 @@ export const ProfileSidebar = ({ isOpen, onClose }) => {
     // Properly remove cookies
     removeCookie("token", { path: "/" });
     removeCookie("role", { path: "/" });
+    removeCookie("user", { path: "/" });
     console.log("Logged out, cookies removed");
     navigate("/");
   };
-console.log(cookies.user.name);
+  // console.log(cookies.user.name);
 
   return (
     <>
@@ -92,8 +93,10 @@ console.log(cookies.user.name);
               </svg>
             </div>
           </div>
-          <h3 className="mt-3 font-semibold text-gray-800 text-lg">{cookies.user.name}</h3>
-          <p className="text-sm text-gray-500">{cookies.user.email}</p>
+          <h3 className="mt-3 font-semibold text-gray-800 text-lg">
+            {cookies.user?.name}
+          </h3>
+          <p className="text-sm text-gray-500">{cookies.user?.email}</p>
         </div>
 
         <hr className="my-6 mx-4 border-gray-200" />
@@ -131,6 +134,8 @@ const SidebarItem = ({ icon, text, gradient, onClick }) => (
     >
       <i className={`${icon} text-white text-lg`}></i>
     </div>
-    <span className="text-gray-700 font-medium group-hover:text-blue-600">{text}</span>
+    <span className="text-gray-700 font-medium group-hover:text-blue-600">
+      {text}
+    </span>
   </div>
 );

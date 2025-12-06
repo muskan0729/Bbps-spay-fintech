@@ -1,49 +1,70 @@
 import { Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import ContactUs from "./pages/ContactUs";
-import { Layout } from './components/Layout';
+import { Layout } from "./components/Layout";
 import { navItems } from "./components/Sidebar";
-import AddUserPage from './pages/AddUserPage';
-
-//import ProtectedRoute from "./components/ProtectedRoute";
+import AddUserPage from "./pages/AddUserPage";
 import { CookiesProvider } from "react-cookie";
-import Demo from "./pages/demo";
 import { SchemeContextProvider } from "./contexts/SchemeContext";
 import UpdateUser from "./pages/UpdateUser";
+import RedirectGuard from "./components/RedirectGuard";
 
 function App() {
   return (
-    <CookiesProvider>
-      <SchemeContextProvider>
-    <Routes>
-      {/* Public route */}
-      <Route path="/" element={<LoginPage />} />
-    {/* <Route path="/demo" element={<Demo />} /> */}
+    <SchemeContextProvider>
+      <CookiesProvider>
+        <Routes>
+          {/* Public Route */}
+          <Route path="/" element={<LoginPage />} />
 
-      {/* Protected page wrapper */}
-      <Route
-        element={
-//          <ProtectedRoute>
-            <Layout />
-  //        </ProtectedRoute>
-        }
-      >
-        {navItems.map((item) => (
+          {/* Protected Layout Wrapper */}
           <Route
-            key={item.path}
-            path={item.path.substring(1)}
-            element={<item.component />}
-          />
-        ))}
+            element={
+              <RedirectGuard>
+                <Layout />
+              </RedirectGuard>
+            }
+          >
+            {/* Dynamic sidebar routes */}
+            {navItems.map((item) => (
+              <Route
+                key={item.path}
+                path={item.path.substring(1)}
+                element={<item.component />}
+              />
+            ))}
 
-        {/* Manual routes */}
-        <Route path="contact-us" element={<ContactUs />} />
-        <Route path="addUser" element={<AddUserPage />} />
-        <Route path="UpdateUser" element={<UpdateUser/>}></Route>
-      </Route>
-    </Routes>
-        </SchemeContextProvider>
-    </CookiesProvider>
+            {/* Manual protected routes */}
+            <Route
+              path="contact-us"
+              element={
+                <RedirectGuard>
+                  <ContactUs />
+                </RedirectGuard>
+              }
+            />
+
+            <Route
+              path="addUser"
+              element={
+                <RedirectGuard requiredRole={1}>
+                  <AddUserPage />
+                </RedirectGuard>
+              }
+            />
+
+            <Route
+              path="updateUser"
+              element={
+                <RedirectGuard requiredRole={1}>
+                  <UpdateUser />
+                </RedirectGuard>
+              }
+            />
+          </Route>
+        </Routes>
+      </CookiesProvider>
+    </SchemeContextProvider>
   );
 }
 
