@@ -5,10 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useGet } from "../hooks/useGet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash, faShieldAlt } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { usePost } from "../hooks/usePost";
 import TableSkeleton from "../components/TableSkeleton";
-import { useCookies } from "react-cookie";
 
 const ConformationBox = ({ onYes, onNo }) => {
   return (
@@ -63,7 +62,7 @@ const Users = () => {
   const [deleteId, setDeleteId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  // const [permissionsUser,setPermissionsUser]
+
   const refresh = () => {
     setRefreshKey((prev) => prev + 1);
   };
@@ -101,160 +100,6 @@ const Users = () => {
     }
   };
 
-  // ------------------ PERMISSIONS MODAL ------------------
-const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
-  const [selectedCategories, setSelectedCategories] = useState([]);
-
-
-  // GET current categories for the user
-  const { data, isLoading, error, refetch } = useGet(
-    userId ? `/user/${userId}/categories`: null
-  );
-
-  // POST new categories for the user
-  const { execute: postCategories, isLoading: isAdding } = usePost(
-    `/user/${userId}/categories`
-  );
-
-  // DELETE single category
-  const { execute: removeCategory } = usePost(
-    `/user/${userId}/categories/remove`
-  );
-
-  const allCategories = [
-    "Agent Collection",
-    "Broadband Postpaid",
-    "Cable TV",
-    "Clubs and Associations",
-    "Credit Card",
-    "Donation",
-    "DTH",
-    "eChallan",
-    "Education Fees",
-    "Electricity",
-    "EV Recharge",
-    "Fastag",
-    "Gas",
-    "Housing Society",
-    "Insurance",
-    "Landline Postpaid",
-    "Loan Repayment",
-    "LPG Gas",
-    "Mobile Postpaid",
-    "Mobile Prepaid",
-    "Municipal Services",
-    "Municipal Taxes",
-    "National Pension System",
-    "NCMC Recharge",
-    "Prepaid Meter",
-    "Recurring Deposit",
-    "Rental",
-    "Subscription",
-    "Water",
-  ];
-
-  // Filter out already assigned categories
-  const availableCategories = useMemo(
-    () =>
-      data?.categories
-        ? allCategories.filter((c) => !data.categories.includes(c))
-        : allCategories,
-    [data]
-  );
-
-  const handleAddCategories = async () => {
-    if (selectedCategories.length === 0) return;
-
-    try {
-      await postCategories({ categories: selectedCategories });
-      refetch(); // refresh categories list
-      setSelectedCategories([]); // reset selection
-      onClose(); // close modal
-      if (refreshUsers) refreshUsers(); // refresh users table in parent
-      alert("Categories added successfully!");
-    } catch (err) {
-      console.error("Failed to add categories:", err);
-      alert("Failed to add categories!");
-    }
-  };
-
-  const handleRemoveCategory = async (category) => {
-    if (!window.confirm(`Remove category "${category}"?`)) return;
-
-    try {
-      await removeCategory({ category });
-      refetch(); // refresh categories list
-      if (refreshUsers) refreshUsers();
-      alert(`Category "${category}" removed successfully!`);
-    } catch (err) {
-      console.error("Failed to remove category:", err);
-      alert("Failed to remove category!");
-    }
-  };
-
-  const handleSelectChange = (e) => {
-    const options = Array.from(e.target.selectedOptions).map((o) => o.value);
-    setSelectedCategories(options);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-96 p-6 rounded-xl shadow-xl relative">
-        <h2 className="text-lg font-semibold mb-4">Manage Categories</h2>
-
-        {isLoading && <p>Loading categories...</p>}
-        {error && <p className="text-red-500">Failed to load categories</p>}
-
-        <ul className="mb-4 max-h-40 overflow-y-auto border p-2 rounded">
-          {data?.categories?.length === 0 && <li>No categories assigned</li>}
-          {data?.categories?.map((cat, idx) => (
-            <li
-              key={idx}
-              className="py-1 border-b last:border-b-0 flex justify-between items-center"
-            >
-              <span>{cat}</span>
-              <button
-                onClick={() => handleRemoveCategory(cat)}
-                className="text-red-500 font-bold hover:text-red-700 ml-2"
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-
-        <div className="flex gap-2 mb-4">
-          <select
-            multiple
-            className="flex-1 border p-2 rounded h-32"
-            value={selectedCategories}
-            onChange={handleSelectChange}
-          >
-            {availableCategories.map((cat, idx) => (
-              <option key={idx} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-          <button
-            className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700 transition-colors"
-            onClick={handleAddCategories}
-            disabled={isAdding || selectedCategories.length === 0}
-          >
-            {isAdding ? "Adding..." : "Add"}
-          </button>
-        </div>
-
-        <button
-          className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-          onClick={onClose}
-        >
-          ✕
-        </button>
-      </div>
-    </div>
-  );
-};
   // -----------------------------
   // TABLE COLUMNS
   // -----------------------------
@@ -306,13 +151,6 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
             onClick={() => handleDelete(item.id)}
           >
             <FontAwesomeIcon icon={faTrash} />
-          </button>
-          <button
-            className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-            title="Permissions"
-            onClick={() => setPermissionsUser(item)}
-          >
-            <FontAwesomeIcon icon={faShieldAlt} />
           </button>
         </div>
       ),
@@ -491,11 +329,5 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
     </>
   );
 };
-{/* PERMISSIONS MODAL */}
-      {permissionsUser && (
-        <PermissionsModal
-          userId={permissionsUser.id}
-          onClose={() => setPermissionsUser(null)}
-        />
-      )}
+
 export default Users;
