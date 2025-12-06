@@ -10,13 +10,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { ModalProvider, useModal } from "../contexts/ServicesModalContext";
-// import { ServiceSelectionModal, DetailsModalComponent, TxnConfirmModal, TxnFormModal } from "./ServicesModal";
 import SelectServiceBiller from "./service/SelectServiceBiller";
 import PaymentConfirmation from "./service/PaymentConfirmation";
 import DetailConfirmation from "./service/DetailConfirmation";
 import DetailInput from "./service/DetailInput";
 import PlanDisplay from "./service/PlanDisplay";
 import placeholderImg from "../images/logo.png";
+import { useGet } from "../hooks/useGet";
+import { useCookies } from "react-cookie";
 
 // --- Services List ---
 const servicesList = [
@@ -56,8 +57,6 @@ const ServiceIcon = ({ item }) => {
   const { openModal } = useModal();
 
   const handleClick = () => {
-    // Open the Biller modal dynamically with the service data
-
     openModal("serviceSelecter", { service: item });
   };
 
@@ -78,6 +77,18 @@ const ServiceIcon = ({ item }) => {
 // --- Main Grid and Modals Wrapper Component ---
 const ServiceGridContent = () => {
   const { isModalOpen } = useModal();
+  const [cookie] = useCookies();
+  const userId = cookie?.user?.id;
+
+  const { data, isLoading, error } = useGet(
+    userId ? `/user/${userId}/categories` : null
+  );
+
+  // ✅ Filter services only once here
+  const filteredServices =
+    data?.status && data.categories
+      ? servicesList.filter((service) => data.categories.includes(service.label))
+      : [];
 
   return (
     <div>
@@ -85,17 +96,21 @@ const ServiceGridContent = () => {
         <img src={placeholderImg} className="h-14" />
       </div>
 
+      {isLoading && <p>Loading services...</p>}
+      {error && <p>Error: {error.message}</p>}
+
       <ul className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-y-2 gap-x-2 w-full">
-        {servicesList.map((item, index) => (
+        {filteredServices.map((item, index) => (
           <ServiceIcon key={index} item={item} />
         ))}
       </ul>
+
       {/* Dynamic Modals */}
       {isModalOpen("serviceSelecter") && <SelectServiceBiller />}
       {isModalOpen("details") && <DetailInput />}
       {isModalOpen("finalData") && <DetailConfirmation />}
       {isModalOpen("lastModal") && <PaymentConfirmation />}
-      {isModalOpen("plandisplay")&& <PlanDisplay/>}
+      {isModalOpen("plandisplay") && <PlanDisplay />}
     </div>
   );
 };
