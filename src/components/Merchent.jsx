@@ -8,9 +8,20 @@ import Service2 from "../images/placeholder.jpeg";
 import Service3 from "../images/placeholder.jpeg";
 import Service4 from "../images/placeholder.jpeg";
 import { useCookies } from "react-cookie";
+import { useGet } from "../hooks/useGet";
+
 const Merchent = () => {
+   
+
+
   const navigate = useNavigate();
   const [cookie] = useCookies();
+  const userId = cookie.user.id;
+
+const { data: merchantsData } = useGet(`/reports/user/${userId}`);
+
+console.log("Merchants Data:", merchantsData);
+
 
   const handelServiceClick = () => {
     navigate("/services");
@@ -20,45 +31,60 @@ const Merchent = () => {
     navigator.clipboard.writeText(text);
     alert(`Copied: ${text}`);
   };
+  const renderStatusLabel = (status) => {
+  const normalized = status?.toLowerCase(); // normalize
+  
+  const base =
+    "inline-block px-3 py-1 text-sm font-semibold rounded-full shadow-sm w-20 text-center";
+  
+  const styles = {
+    success: "bg-green-100 text-green-700",
+    failed: "bg-red-100 text-red-700",
+    pending: "bg-yellow-100 text-yellow-700",
+    initiated: "bg-blue-100 text-blue-700",
+  };
 
-  const tData = [
-    {
-      "Req ID": 33,
-      "Customer name": "ABC",
-      Category: "Mobile",
-      "Bill No": 12303,
-      Amount: 1000,
-      Plan: "ACTIVE",
-      Date: "03-09-2025 05:57:40",
-    },
-    {
-      "Req ID": 22,
-      "Customer name": "EFG",
-      Category: "DTH",
-      "Bill No": 12303,
-      Amount: 500,
-      Plan: "ACTIVE",
-      Date: "23-09-2025 05:57:40",
-    },
-    {
-      "Req ID": 11,
-      "Customer name": "HIJ",
-      Category: "mobile",
-      "Bill No": 12303,
-      Amount: 250,
-      Plan: "ACTIVE",
-      Date: "23-09-2025 06:02:14",
-    },
-  ];
+  return (
+    <span className={`${base} ${styles[normalized] || "bg-gray-100 text-gray-700"}`}>
+      {status}
+    </span>
+  );
+};
+
+
+ const tData =
+  merchantsData?.data?.map((item) => ({
+    id: item.id,
+    user_name: item.user_name,
+    request_id: item.spay_txn_id || "-",
+    category: item.product_type,
+    mobile_no: item.mobile,
+    respAmount: item.amount,
+    txnStatus: item.status,
+    responseReason: item.description,
+    payout_opening_balance: item.payout_opening_balance,
+    payout_closing_balance: item.payout_closing_balance,
+    payment_mode: item.payment_mode,
+    created_at: item.created_at,
+  })) || [];
+
 
   const tColumns = [
-    "Req ID",
-    "Customer name",
-    "Category",
-    "Bill No",
-    "Amount",
-    "Plan",
-    "Date",
+    { label: "ID", key: "id" },
+    { label: "User Name", key: "user_name" },
+    { label: "Request ID", key: "request_id" },
+    { label: "Category", key: "category" },
+    { label: "Mobile Number", key: "mobile_no" },
+    { label: "Amount", key: "respAmount" },
+   {
+    label: "Status",
+    key: "txnStatus",
+    render: (item) => renderStatusLabel(item.txnStatus),
+  },
+
+    { label: "Date", key: "created_at" },
+
+    // {label:"NONE",key:"trikj"}
   ];
 console.log(cookie.user);
 
@@ -74,7 +100,7 @@ console.log(cookie.user);
           </h3>
 
           <h2 className="text-2xl font-bold text-blue-700 mb-4">
-            ₹78,79,743.56
+            ₹{cookie.user.merchant_bbps_wallet}
           </h2>
 
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -112,11 +138,11 @@ console.log(cookie.user);
           <div className="p-6 bg-gray-50 flex flex-col justify-center">
             <p className="mb-2">
               <span className="font-semibold text-gray-800">User Name:</span>{" "}
-              <span className="text-gray-700">{cookie.user.email}</span>
+              <span className="text-gray-700">{cookie.user.name}</span>
             </p>
             <p className="mb-2">
               <span className="font-semibold text-gray-800">Email:</span>{" "}
-              <span className="text-gray-700">ak@gmail.com</span>
+              <span className="text-gray-700">{cookie.user.email}</span>
             </p>
             <p className="mb-2">
               <span className="font-semibold text-gray-800">Entity Type:</span>{" "}
@@ -124,7 +150,7 @@ console.log(cookie.user);
             </p>
             <p>
               <span className="font-semibold text-gray-800">Contact:</span>{" "}
-              <span className="text-gray-700">{cookie.user.customer_mobile}</span>
+              <span className="text-gray-700">{cookie.user.mobile_no}</span>
             </p>
           </div>
         </div>
@@ -176,11 +202,16 @@ console.log(cookie.user);
           Latest Transaction List
         </h2>
         <Table
-          isPaginationRequired={false}
-          rowsPerPage={3}
+          isPaginationRequired={10}
+          rowsPerPage={10}
           columns={tColumns}
           data={tData}
           currentPage={1}
+            tableClass="min-w-full border border-gray-400 text-sm text-gray-700 font-sans overflow-x-auto"
+          headerClass="bg-blue-600 text-white font-semibold text-left uppercase border-b border-gray-400"
+          rowClass="bg-white hover:bg-blue-100 border-b border-gray-300 transition-colors duration-200"
+          cellClass="py-3 px-4 text-gray-700 whitespace-nowrap"
+          paginationClass="flex justify-center gap-2 mt-4 text-gray-700 font-medium"
         />
       </section>
 

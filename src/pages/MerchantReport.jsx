@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../images/logo.png";
 import { usePost } from "../hooks/usePost";
+import { useCookies } from "react-cookie";
 
 const MerchantReport = () => {
   const [filters, setFilters] = useState({
@@ -19,13 +20,16 @@ const MerchantReport = () => {
   const [data, setData] = useState([]);
   const [apiData, setApiData] = useState([]);
   const rowsPerPage = 5;
+  const [cookie] = useCookies();
+  const userId = cookie.user.id;
+
 
   // ⭐ usePost hook
   const {
     execute: fetchPayments,
     data: apiResponse,
     isLoading,
-  } = usePost("/bbps/all-bill-payments-test/json");
+  } = usePost(`/bbps/user-bill-payments-test/json/${userId}`);
 
   // ⭐ Fetch API Data on load
   useEffect(() => {
@@ -53,7 +57,7 @@ const MerchantReport = () => {
       Category: item.category ?? "-",
       BillNumber: item.txnRefID ?? "-",
       Amount: item.respAmount ?? 0,
-      Status: item.responseReason ?? "-",
+      Status: item.responseReason || "Pending",
       Date: item.created_at?.split("T")[0] ?? "-",
     }));
 
@@ -129,7 +133,7 @@ const MerchantReport = () => {
   // ⭐ Status UI
   const renderStatusLabel = (status) => {
     const base =
-      "inline-block px-3 py-1 text-sm font-semibold rounded-full shadow-sm w-20 text-center";
+      "inline-block px-1 py-1 text-xs font-semibold rounded-full shadow-sm w-20 text-center";
     const styles = {
       Successful: "bg-green-100 text-green-700",
       Failed: "bg-red-100 text-red-700",

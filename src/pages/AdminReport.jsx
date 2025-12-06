@@ -16,6 +16,7 @@ import {
 import { MdCategory } from "react-icons/md";
 import { BsCalendarDate } from "react-icons/bs";
 import { FaClockRotateLeft } from "react-icons/fa6";
+import { usePost } from "../hooks/usePost";
 
 const AdminReport = () => {
   const [filters, setFilters] = useState({
@@ -28,6 +29,41 @@ const AdminReport = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const rowsPerPage = 5;
+
+  // ⭐ usePost hook
+  const {
+    execute: fetchPayments,
+    data: apiResponse,
+    isLoading: apiLoading,
+  } = usePost(`/bbps/all-bill-payments-test/json`);
+
+  console.log("apidemores0", apiResponse);
+  useEffect(() => {
+    setLoading(true);
+    fetchPayments();
+  }, []);
+
+  // Map API response to table data
+useEffect(() => {
+  if (apiResponse) {
+    const mappedData = apiResponse.map((item, index) => ({
+      SrNo: index + 1,
+        userName: item.u_name || "-",
+      RequestId: item.request_id || item.txnRefID || "N/A",
+      CustomerName: item.mobile_no || "N/A",
+      Category: item.category || "-",
+      BillNumber: item.txnRefID || item.request_id || "-",
+      Amount: Number(item.respAmount) || 0,
+      Status: item.responseReason || item.txnStatus || "Pending",
+      Date: item.created_at
+        ? new Date(item.created_at).toLocaleDateString("en-GB")
+        : "-",
+    }));
+    setData(mappedData);
+    setLoading(false);
+  }
+}, [apiResponse]);
+
 
   const handlePlanToggle = (index) => {
     setData((prev) =>
@@ -58,9 +94,9 @@ const AdminReport = () => {
 
   const renderStatusLabel = (status, index) => {
     const base =
-      "px-2 py-1 text-xs font-semibold rounded-full flex items-center gap-2 transition-all duration-300";
+      "px-1 py-1 text-xs font-semibold rounded-full flex items-center gap-2 transition-all duration-300";
     const styles = {
-      Success: { bg: "bg-green-100", text: "text-green-800", color: "#10B981" },
+      Successful: { bg: "bg-green-100", text: "text-green-800", color: "#10B981" },
       Failed: { bg: "bg-red-100", text: "text-red-800", color: "#EF4444" },
       Pending: { bg: "bg-yellow-100", text: "text-yellow-800", color: "#F59E0B" },
       Initiated: { bg: "bg-cyan-100", text: "text-cyan-800", color: "#06B6D4" },
@@ -106,6 +142,15 @@ const AdminReport = () => {
     {
       label: (
         <div className="flex items-center gap-1">
+          <FaClipboardList className="text-gray-700 text-base" />
+          <span>User Name</span>
+        </div>
+      ),
+      key: "userName",
+    },
+    {
+      label: (
+        <div className="flex items-center gap-1">
           <FaCheckCircle className="text-gray-700 text-base" />
           <span>Request ID</span>
         </div>
@@ -147,7 +192,7 @@ const AdminReport = () => {
         </span>
       ),
     },
-    { label: "Plan", render: (row, i) => renderPlanLabel(row.Plan, i) },
+   
     { label: "Status", render: (row, i) => renderStatusLabel(row.Status, i) },
     {
       label: (
@@ -158,39 +203,8 @@ const AdminReport = () => {
       ),
       key: "Date",
     },
-    {
-      label: "Action",
-      render: (row) => (
-        <button
-          className="group flex items-center gap-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-3 py-1.5 rounded-xl
-          hover:from-teal-600 hover:to-teal-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
-          onClick={() => alert(`Viewing details of ${row.CustomerName}`)}
-        >
-          <FaEye className="text-white group-hover:scale-110 transition-transform" /> View
-        </button>
-      ),
-    },
+
   ];
-
-  const mockData = Array.from({ length: 15 }, (_, i) => ({
-    SrNo: i + 1,
-    RequestId: `R00${i + 1}`,
-    CustomerName: `User ${i + 1}`,
-    Category: ["Electricity", "Gas", "Loan", "Water", "Mobile"][i % 5],
-    BillNumber: `B00${i + 1}`,
-    Amount: (i + 1) * 100,
-    Plan: i % 2 === 0 ? "Active" : "Inactive",
-    Status: ["Success", "Pending", "Failed", "Initiated"][i % 4],
-    Date: `2023-10-${(i + 1).toString().padStart(2, "0")}`,
-  }));
-
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setData(mockData);
-      setLoading(false);
-    }, 1000);
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -200,7 +214,7 @@ const AdminReport = () => {
   const handleSearch = () => {
     setLoading(true);
     setTimeout(() => {
-      const filteredData = mockData.filter(
+      const filteredData = data.filter(
         (item) =>
           (!filters.fromDate || item.Date >= filters.fromDate) &&
           (!filters.toDate || item.Date <= filters.toDate) &&
@@ -215,7 +229,23 @@ const AdminReport = () => {
 
   const handleReset = () => {
     setFilters({ fromDate: "", toDate: "", category: "", status: "", billNumber: "" });
-    setData(mockData);
+    if (apiResponse?.data) {
+      const mappedData = apiResponse.data.map((item, index) => ({
+        SrNo: index + 1,
+         userName: item.u_name || "NA",
+        RequestId: item.request_id || "-",
+        CustomerName: item.user_name || "-",
+        Category: item.category || "-",
+        BillNumber: item.bill_number || "-",
+        Amount: item.respAmount || 0,
+        Plan: item.plan || "Inactive",
+        Status: item.txnStatus || "Pending",
+        Date: item.created_at
+          ? new Date(item.created_at).toLocaleDateString("en-GB")
+          : "-",
+      }));
+      setData(mappedData);
+    }
   };
 
   const exportExcel = () => {
@@ -270,9 +300,6 @@ const AdminReport = () => {
       "px-3 py-1 rounded-full bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg text-sm transition-all",
   };
 
-
-  
-
   return (
     <div className="p-8 min-h-screen bg-gradient-to-br from-teal-50 via-white to-orange-50 transition-all">
       {/* Header */}
@@ -322,14 +349,14 @@ const AdminReport = () => {
             <h2 className="text-2xl font-semibold text-gray-800">Latest Transactions</h2>
           </div>
 
-          {loading ? (
+          {loading || apiLoading ? (
             <TableSkeleton rows={rowsPerPage} columns={columns.length} />
           ) : (
             <Table
               columns={columns}
               data={data}
-              rowsPerPage={rowsPerPage}
-              isPaginationRequired={true}
+               isPaginationRequired={10}
+          rowsPerPage={10}
               {...tableStyles}
             />
           )}
