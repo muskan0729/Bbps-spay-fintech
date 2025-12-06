@@ -37,14 +37,9 @@ const EditModel = ({ user, onClose }) => (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
     <div className="bg-white w-80 p-6 rounded-xl shadow-xl text-center">
       <h2 className="text-lg font-semibold mb-4">Edit User</h2>
-      <p className="mb-4">
-        You can add your edit form here for user: {user.name}
-      </p>
+      <p className="mb-4">You can add your edit form here for user: {user.name}</p>
       <div className="flex justify-center gap-4">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-gray-300 rounded-lg"
-        >
+        <button onClick={onClose} className="px-4 py-2 bg-gray-300 rounded-lg">
           Close
         </button>
       </div>
@@ -56,17 +51,14 @@ const EditModel = ({ user, onClose }) => (
 const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  // GET current categories for the user
   const { data, isLoading, error, refetch } = useGet(
     userId ? `/user/${userId}/categories` : null
   );
 
-  // POST new categories for the user
   const { execute: postCategories, isLoading: isAdding } = usePost(
     `/user/${userId}/categories`
   );
 
-  // DELETE single category
   const { execute: removeCategory } = usePost(
     `/user/${userId}/categories/remove`
   );
@@ -103,7 +95,6 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
     "Water",
   ];
 
-  // Filter out already assigned categories
   const availableCategories = useMemo(
     () =>
       data?.categories
@@ -117,10 +108,10 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
 
     try {
       await postCategories({ categories: selectedCategories });
-      refetch(); // refresh categories list
-      setSelectedCategories([]); // reset selection
-      onClose(); // close modal
-      if (refreshUsers) refreshUsers(); // refresh users table in parent
+      refetch();
+      setSelectedCategories([]);
+      onClose();
+      refreshUsers?.();
       alert("Categories added successfully!");
     } catch (err) {
       console.error("Failed to add categories:", err);
@@ -133,8 +124,8 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
 
     try {
       await removeCategory({ category });
-      refetch(); // refresh categories list
-      if (refreshUsers) refreshUsers();
+      refetch();
+      refreshUsers?.();
       alert(`Category "${category}" removed successfully!`);
     } catch (err) {
       console.error("Failed to remove category:", err);
@@ -143,7 +134,7 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
   };
 
   const handleSelectChange = (e) => {
-    const options = Array.from(e.target.selectedOptions).map((o) => o.value);
+    const options = [...e.target.selectedOptions].map((o) => o.value);
     setSelectedCategories(options);
   };
 
@@ -206,7 +197,6 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
   );
 };
 
-
 // ------------------ MAIN USERS COMPONENT ------------------
 const Users = () => {
   const navigate = useNavigate();
@@ -218,16 +208,14 @@ const Users = () => {
   const [permissionsUser, setPermissionsUser] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const refresh = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
+  const refresh = () => setRefreshKey((prev) => prev + 1);
+
   const {
     data: merchantsData,
     loading: loadingMerchants,
     error,
-  } = useGet("/get-merchants");
-
   } = useGet(`/get-merchants?refresh=${refreshKey}`);
+
   const { execute: updateStatus } = usePost("/update-user-statuses");
   const { execute: deleteUser } = usePost(`/delete-merchant/${deleteId}`);
 
@@ -237,11 +225,12 @@ const Users = () => {
   const [tableData, setTableData] = useState([]);
   const [filters, setFilters] = useState({ name: "", email: "" });
 
-  // ----------------------------- TOGGLE STATUS -----------------------------
   const handleToggleStatus = async (item) => {
     const newStatus = item.account_status ? 0 : 1;
+
     try {
       await updateStatus({ user_id: item.id, account_status: newStatus });
+
       setOriginalData((prev) =>
         prev.map((u) =>
           u.id === item.id ? { ...u, account_status: newStatus } : u
@@ -252,7 +241,6 @@ const Users = () => {
     }
   };
 
-  // ----------------------------- TABLE COLUMNS -----------------------------
   const columns = [
     { label: "Actions", key: "actions" },
     { label: "User ID", key: "user_id" },
@@ -278,9 +266,6 @@ const Users = () => {
           />
           <div className="w-11 h-6 bg-red-400 rounded-full peer peer-checked:bg-green-500 transition-all duration-300"></div>
           <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-5"></div>
-          <span className="ml-3 text-sm font-medium">
-            {/* {item.account_status ? "Active" : "Inactive"} */}
-          </span>
         </label>
       ),
       amount: `₹ ${Number(item.merchant_bbps_wallet || 0).toFixed(2)}`,
@@ -295,6 +280,7 @@ const Users = () => {
           >
             <FontAwesomeIcon icon={faPen} />
           </button>
+
           <button
             className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             title="Delete"
@@ -302,6 +288,7 @@ const Users = () => {
           >
             <FontAwesomeIcon icon={faTrash} />
           </button>
+
           <button
             className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
             title="Permissions"
@@ -324,23 +311,17 @@ const Users = () => {
       ),
     }));
 
-  // ----------------------------- DELETE ACTIONS -----------------------------
   const handleDelete = (id) => {
     setDeleteId(id);
     setIsAlert(true);
   };
 
   const confirmDelete = async () => {
-    await deleteUser();
+    const res = await deleteUser();
     setIsAlert(false);
     setDeleteId(null);
-    const res = await deleteUser();
-    if (res?.status) {
-      setIsAlert(false);
-      setDeleteId(null);
 
-      refresh();
-    }
+    if (res?.status) refresh();
   };
 
   const cancelDelete = () => {
@@ -348,35 +329,39 @@ const Users = () => {
     setDeleteId(null);
   };
 
-  // ----------------------------- LOAD INITIAL DATA -----------------------------
   useEffect(() => {
     if (merchantsData?.status) {
       let finalData = [...merchantsData.data];
       const stored = getData("postSubmitData");
+
       if (stored?.newUser) {
         deleteData("postSubmitData");
         finalData.push(stored.newUser);
       }
+
       setOriginalData(finalData);
       setTableData(buildTableRows(finalData));
     }
   }, [merchantsData]);
 
-  // ----------------------------- FILTERS -----------------------------
   const handleFilterChange = (e) => {
     const { id, value } = e.target;
     setFilters((prev) => ({ ...prev, [id]: value }));
   };
+
   const applyFilters = () => {
     let filtered = [...originalData];
+
     if (filters.name)
       filtered = filtered.filter((item) =>
         item.name.toLowerCase().includes(filters.name.toLowerCase())
       );
+
     if (filters.email)
       filtered = filtered.filter((item) =>
         item.email.toLowerCase().includes(filters.email.toLowerCase())
       );
+
     setTableData(buildTableRows(filtered));
   };
 
@@ -397,9 +382,8 @@ const Users = () => {
     <>
       {/* FILTER SECTION */}
       <section className="mx-auto bg-white p-4 rounded-xl shadow-md border border-gray-200 mt-8 flex flex-col justify-between">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Filter Users
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Filter Users</h2>
+
         <div className="flex flex-wrap gap-4 justify-between items-end">
           <div className="flex flex-col flex-1 min-w-[180px]">
             <label htmlFor="name" className="text-gray-700 font-medium mb-2">
@@ -414,6 +398,7 @@ const Users = () => {
               className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
+
           <div className="flex flex-col flex-1 min-w-[180px]">
             <label htmlFor="email" className="text-gray-700 font-medium mb-2">
               Email:
@@ -427,6 +412,7 @@ const Users = () => {
               className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
+
           <button
             onClick={applyFilters}
             className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 mt-6"
@@ -452,6 +438,7 @@ const Users = () => {
                   Add Users
                 </button>
               </div>
+
               <Table
                 data={tableData}
                 columns={columns}
@@ -462,6 +449,7 @@ const Users = () => {
               />
             </>
           )}
+
           {error && <div className="text-red-500 mt-4">{error}</div>}
         </div>
       </section>
@@ -474,11 +462,11 @@ const Users = () => {
           onClose={() => setOpenTopUpModal(false)}
         />
       )}
+
       {/* DELETE CONFIRMATION BOX */}
       {isAlert && <ConformationBox onYes={confirmDelete} onNo={cancelDelete} />}
 
       {/* EDIT MODAL */}
-      {/* EDIT MODEL */}
       {selectedUser && (
         <EditModel user={selectedUser} onClose={() => setSelectedUser(null)} />
       )}
@@ -488,6 +476,7 @@ const Users = () => {
         <PermissionsModal
           userId={permissionsUser.id}
           onClose={() => setPermissionsUser(null)}
+          refreshUsers={refresh}
         />
       )}
     </>
