@@ -9,6 +9,7 @@ import AddUserPage from './pages/AddUserPage';
 import { CookiesProvider } from "react-cookie";
 import Demo from "./pages/demo";
 import { SchemeContextProvider } from "./contexts/SchemeContext";
+import UpdateUser from "./pages/UpdateUser";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
         {/* Manual routes */}
         <Route path="contact-us" element={<ContactUs />} />
         <Route path="addUser" element={<AddUserPage />} />
+        <Route path="UpdateUser" element={<UpdateUser/>}></Route>
       </Route>
     </Routes>
         </SchemeContextProvider>

@@ -42,17 +42,16 @@ const AddUserPage = () => {
   });
 
   const [directors, setDirectors] = useState(() => [
-  {
-    director_name: "",
-    director_pan_no: "",
-    director_aadhar_no: "",
-    director_gender: "",
-    director_dob: "",
-    user_pan_doc: null,
-    user_addhar_doc: null,
-  },
-]);
-
+    {
+      director_name: "",
+      director_pan_no: "",
+      director_aadhar_no: "",
+      director_gender: "",
+      director_dob: "",
+      user_pan_doc: null,
+      user_addhar_doc: null,
+    },
+  ]);
 
   const handleChange = (key, value) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -89,6 +88,34 @@ const AddUserPage = () => {
   const box = "bg-white p-6 rounded-xl shadow border border-gray-200 mb-8";
   const label = "font-semibold text-gray-700 mb-1 block";
 
+  const phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/;
+  const nameRegex = /^[A-Za-z ]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const textRegex = /^[A-Za-z]+$/;
+  const textNumberRegex = /^[A-Za-z0-9]+$/;
+  const numberRegex = /^[0-9]{4}$/;
+  const aadharRegex=/^[0-9]{12}$/;
+  const validationRules = {
+    name: { required: true, pattern: nameRegex },
+    mobile_no: { required: true, pattern: phoneRegex },
+    email: { required: true, pattern: emailRegex },
+    business_mcc: { required: true, pattern: numberRegex },
+    account_holder_name: { required: true, pattern: nameRegex },
+    bank_account_no: { required: true, pattern: textNumberRegex },
+    pin_code: { required: true, pattern: numberRegex },
+    city: { required: true, pattern: textRegex },
+    state: { required: true, pattern: textRegex },
+    district: { required: true, pattern: textRegex },
+    cin_llpin: { required: true, pattern: textNumberRegex },
+    company_pan_no: { required: true, pattern: textNumberRegex },
+    company_gst_no: { required: true, pattern: textNumberRegex },
+    website_url: { required: false },
+    ifsc_code: { required: false },
+    director_name: { required: true, pattern: nameRegex },
+    director_pan_no: { required: true, pattern: textNumberRegex },
+    director_aadhar_no: { required: true, pattern: aadharRegex },
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -109,21 +136,25 @@ const AddUserPage = () => {
 
     const res = await executeMember(fd);
     if (res?.success) {
-  alert(res.message || "Merchant registered successfully!");
-  navigate("/users");
-} else {
-  alert("Failed: " + (res?.message || JSON.stringify(res)));
-}
+      alert(res.message || "Merchant registered successfully!");
+      navigate("/users");
+    } else {
+      alert("Failed: " + (res?.message || JSON.stringify(res)));
+    }
   };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Registration Form</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">
+        Registration Form
+      </h1>
 
       <form onSubmit={handleSubmit}>
         {/* BUSINESS DETAILS */}
         <div className={box}>
-          <h2 className="text-xl font-bold text-blue-700 mb-4">Business Details</h2>
+          <h2 className="text-xl font-bold text-blue-700 mb-4">
+            Business Details
+          </h2>
 
           <div className={grid3}>
             {/* Name */}
@@ -133,6 +164,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.name}
                 onChange={(e) => handleChange("name", e.target.value)}
+                pattern={validationRules.name.pattern.source}
+                required={validationRules.name.required}
               />
             </div>
 
@@ -143,6 +176,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.mobile_no}
                 onChange={(e) => handleChange("mobile_no", e.target.value)}
+                pattern={validationRules.mobile_no.pattern.source}
+                required={validationRules.mobile_no.required}
               />
             </div>
 
@@ -153,6 +188,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.email}
                 onChange={(e) => handleChange("email", e.target.value)}
+                pattern={validationRules.email.pattern.source}
+                required={validationRules.email.required}
               />
             </div>
 
@@ -163,6 +200,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.business_mcc}
                 onChange={(e) => handleChange("business_mcc", e.target.value)}
+                pattern={validationRules.business_mcc.pattern.source}
+                required={validationRules.business_mcc.required}
               />
             </div>
 
@@ -173,6 +212,7 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.company_type}
                 onChange={(e) => handleChange("company_type", e.target.value)}
+                required
               >
                 <option value="">Select</option>
                 <option value="private">Private</option>
@@ -187,6 +227,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.company_pan_no}
                 onChange={(e) => handleChange("company_pan_no", e.target.value)}
+                pattern={validationRules.company_pan_no.pattern.source}
+                required={validationRules.company_pan_no.required}
               />
             </div>
 
@@ -196,7 +238,11 @@ const AddUserPage = () => {
               <input
                 className={input}
                 value={formData.company_gst_no}
-                onChange={(e) => handleChange("company_gst_no", e.target.value)}
+                onChange={(e) =>
+                  handleChange("company_gst_no", e.target.value)
+                }
+                pattern={validationRules.company_gst_no.pattern.source}
+                required={validationRules.company_gst_no.required}
               />
             </div>
 
@@ -207,6 +253,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.cin_llpin}
                 onChange={(e) => handleChange("cin_llpin", e.target.value)}
+                pattern={validationRules.cin_llpin.pattern.source}
+                required={validationRules.cin_llpin.required}
               />
             </div>
 
@@ -220,18 +268,18 @@ const AddUserPage = () => {
                 onChange={(e) =>
                   handleChange("date_of_incorporation", e.target.value)
                 }
+                required
               />
             </div>
-               {/* Website Url */}
+
+            {/* Website Url */}
             <div>
-              <label className={label}>Website Url *</label>
+              <label className={label}>Website Url</label>
               <input
                 type="text"
                 className={input}
                 value={formData.website_url}
-                onChange={(e) =>
-                  handleChange("website_url", e.target.value)
-                }
+                onChange={(e) => handleChange("website_url", e.target.value)}
               />
             </div>
           </div>
@@ -246,6 +294,7 @@ const AddUserPage = () => {
                 onChange={(e) =>
                   handleFileChange("company_pan_no_doc", e.target.files[0])
                 }
+                required
               />
             </div>
 
@@ -257,6 +306,7 @@ const AddUserPage = () => {
                 onChange={(e) =>
                   handleFileChange("company_gst_no_doc", e.target.files[0])
                 }
+                required
               />
             </div>
 
@@ -268,6 +318,7 @@ const AddUserPage = () => {
                 onChange={(e) =>
                   handleFileChange("cancel_cheque_doc", e.target.files[0])
                 }
+                required
               />
             </div>
           </div>
@@ -275,7 +326,9 @@ const AddUserPage = () => {
 
         {/* ACCOUNT DETAILS */}
         <div className={box}>
-          <h2 className="text-xl font-bold text-blue-700 mb-4">Account Details</h2>
+          <h2 className="text-xl font-bold text-blue-700 mb-4">
+            Account Details
+          </h2>
 
           <div className={grid3}>
             <div>
@@ -286,6 +339,8 @@ const AddUserPage = () => {
                 onChange={(e) =>
                   handleChange("account_holder_name", e.target.value)
                 }
+                pattern={validationRules.account_holder_name.pattern.source}
+                required={validationRules.account_holder_name.required}
               />
             </div>
 
@@ -297,11 +352,13 @@ const AddUserPage = () => {
                 onChange={(e) =>
                   handleChange("bank_account_no", e.target.value)
                 }
+                pattern={validationRules.bank_account_no.pattern.source}
+                required={validationRules.bank_account_no.required}
               />
             </div>
 
             <div>
-              <label className={label}>IFSC Code *</label>
+              <label className={label}>IFSC Code</label>
               <input
                 className={input}
                 value={formData.ifsc_code}
@@ -324,6 +381,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.city}
                 onChange={(e) => handleChange("city", e.target.value)}
+                pattern={validationRules.city.pattern.source}
+                required={validationRules.city.required}
               />
             </div>
 
@@ -333,6 +392,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.state}
                 onChange={(e) => handleChange("state", e.target.value)}
+                pattern={validationRules.state.pattern.source}
+                required={validationRules.state.required}
               />
             </div>
 
@@ -342,6 +403,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.district}
                 onChange={(e) => handleChange("district", e.target.value)}
+                pattern={validationRules.district.pattern.source}
+                required={validationRules.district.required}
               />
             </div>
 
@@ -351,6 +414,8 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.pin_code}
                 onChange={(e) => handleChange("pin_code", e.target.value)}
+                pattern={validationRules.pin_code.pattern.source}
+                required={validationRules.pin_code.required}
               />
             </div>
 
@@ -360,142 +425,152 @@ const AddUserPage = () => {
                 className={input}
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
+                required
               />
             </div>
           </div>
         </div>
 
         {/* DIRECTORS */}
-      {/* DIRECTOR SECTION */}
-<div className={box}>
-  <div className="flex justify-between items-center mb-4">
-    <h2 className="text-xl font-bold text-blue-700">Director Information</h2>
-    <button
-      type="button"
-      onClick={addDirector}
-      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-    >
-      + Add Director
-    </button>
-  </div>
+        <div className={box}>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-blue-700">
+              Director Information
+            </h2>
+            <button
+              type="button"
+              onClick={addDirector}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            >
+              + Add Director
+            </button>
+          </div>
 
-  {directors.map((d, i) => (
-    <div key={i} className="p-5 border rounded-xl bg-gray-50 mb-6 shadow-sm">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-gray-800 text-lg">
-          Director {i + 1}
-        </h3>
+          {directors.map((d, i) => (
+            <div
+              key={i}
+              className="p-5 border rounded-xl bg-gray-50 mb-6 shadow-sm"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-semibold text-gray-800 text-lg">
+                  Director {i + 1}
+                </h3>
 
-        {/* REMOVE BUTTON — disabled if only ONE director */}
-        <button
-          type="button"
-          onClick={() => removeDirector(i)}
-          disabled={directors.length === 1}
-          className={`px-4 py-1 rounded text-white ${
-            directors.length === 1
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-red-600 hover:bg-red-700"
-          }`}
-        >
-          Remove
-        </button>
-      </div>
+                <button
+                  type="button"
+                  onClick={() => removeDirector(i)}
+                  disabled={directors.length === 1}
+                  className={`px-4 py-1 rounded text-white ${
+                    directors.length === 1
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
+                >
+                  Remove
+                </button>
+              </div>
 
-      <div className={grid3}>
-        {/* NAME */}
-        <div>
-          <label className={label}>Director Name</label>
-          <input
-            className={input}
-            value={d.director_name}
-            onChange={(e) =>
-              handleDirectorChange(i, "director_name", e.target.value)
-            }
-          />
+              <div className={grid3}>
+                <div>
+                  <label className={label}>Director Name *</label>
+                  <input
+                    className={input}
+                    value={d.director_name}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "director_name", e.target.value)
+                    }
+                    pattern={validationRules.director_name.pattern.source}
+                    required={validationRules.director_name.required}
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Director PAN *</label>
+                  <input
+                    className={input}
+                    value={d.director_pan_no}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "director_pan_no", e.target.value)
+                    }
+                    pattern={validationRules.director_pan_no.pattern.source}
+                    required={validationRules.director_pan_no.required}
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Director Aadhaar *</label>
+                  <input
+                    className={input}
+                    value={d.director_aadhar_no}
+                    onChange={(e) =>
+                      handleDirectorChange(
+                        i,
+                        "director_aadhar_no",
+                        e.target.value
+                      )
+                    }
+                    pattern={validationRules.director_aadhar_no.pattern.source}
+                    required={validationRules.director_aadhar_no.required}
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Gender</label>
+                  <select
+                    className={input}
+                    value={d.director_gender}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "director_gender", e.target.value)
+                    }
+                  >
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={label}>Date of Birth</label>
+                  <input
+                    type="date"
+                    className={input}
+                    value={d.director_dob}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "director_dob", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Director PAN Document</label>
+                  <input
+                    type="file"
+                    className={file}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "user_pan_doc", e.target.files[0])
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Director Aadhaar Document</label>
+                  <input
+                    type="file"
+                    className={file}
+                    onChange={(e) =>
+                      handleDirectorChange(
+                        i,
+                        "user_addhar_doc",
+                        e.target.files[0]
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-
-        {/* PAN */}
-        <div>
-          <label className={label}>Director PAN</label>
-          <input
-            className={input}
-            value={d.director_pan_no}
-            onChange={(e) =>
-              handleDirectorChange(i, "director_pan_no", e.target.value)
-            }
-          />
-        </div>
-
-        {/* AADHAAR */}
-        <div>
-          <label className={label}>Director Aadhaar</label>
-          <input
-            className={input}
-            value={d.director_aadhar_no}
-            onChange={(e) =>
-              handleDirectorChange(i, "director_aadhar_no", e.target.value)
-            }
-          />
-        </div>
-
-        {/* GENDER */}
-        <div>
-          <label className={label}>Gender</label>
-          <select
-            className={input}
-            value={d.director_gender}
-            onChange={(e) =>
-              handleDirectorChange(i, "director_gender", e.target.value)
-            }
-          >
-            <option value="">Select</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        {/* DOB */}
-        <div>
-          <label className={label}>Date of Birth</label>
-          <input
-            type="date"
-            className={input}
-            value={d.director_dob}
-            onChange={(e) =>
-              handleDirectorChange(i, "director_dob", e.target.value)
-            }
-          />
-        </div>
-
-        {/* PAN DOC */}
-        <div>
-          <label className={label}>Director PAN Document</label>
-          <input
-            type="file"
-            className={file}
-            onChange={(e) =>
-              handleDirectorChange(i, "user_pan_doc", e.target.files[0])
-            }
-          />
-        </div>
-
-        {/* AADHAAR DOC */}
-        <div>
-          <label className={label}>Director Aadhaar Document</label>
-          <input
-            type="file"
-            className={file}
-            onChange={(e) =>
-              handleDirectorChange(i, "user_addhar_doc", e.target.files[0])
-            }
-          />
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
-
 
         {/* SUBMIT */}
         <button
