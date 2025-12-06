@@ -4,56 +4,210 @@ import { TopUpModal } from "../components/TopUpModal";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useGet } from "../hooks/useGet";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { usePost } from "../hooks/usePost";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPen, faTrash, faShieldAlt } from "@fortawesome/free-solid-svg-icons";
 import TableSkeleton from "../components/TableSkeleton";
 
-const ConformationBox = ({ onYes, onNo }) => {
+// ------------------ CONFIRMATION BOX ------------------
+const ConformationBox = ({ onYes, onNo }) => (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
+      <h2 className="text-lg font-semibold mb-4">Are you sure?</h2>
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={onYes}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Yes
+        </button>
+        <button
+          onClick={onNo}
+          className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
+        >
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// ------------------ EDIT MODAL ------------------
+const EditModel = ({ user, onClose }) => (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white w-80 p-6 rounded-xl shadow-xl text-center">
+      <h2 className="text-lg font-semibold mb-4">Edit User</h2>
+      <p className="mb-4">
+        You can add your edit form here for user: {user.name}
+      </p>
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 bg-gray-300 rounded-lg"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// ------------------ PERMISSIONS MODAL ------------------
+const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+  // GET current categories for the user
+  const { data, isLoading, error, refetch } = useGet(
+    userId ? `/user/${userId}/categories` : null
+  );
+
+  // POST new categories for the user
+  const { execute: postCategories, isLoading: isAdding } = usePost(
+    `/user/${userId}/categories`
+  );
+
+  // DELETE single category
+  const { execute: removeCategory } = usePost(
+    `/user/${userId}/categories/remove`
+  );
+
+  const allCategories = [
+    "Agent Collection",
+    "Broadband Postpaid",
+    "Cable TV",
+    "Clubs and Associations",
+    "Credit Card",
+    "Donation",
+    "DTH",
+    "eChallan",
+    "Education Fees",
+    "Electricity",
+    "EV Recharge",
+    "Fastag",
+    "Gas",
+    "Housing Society",
+    "Insurance",
+    "Landline Postpaid",
+    "Loan Repayment",
+    "LPG Gas",
+    "Mobile Postpaid",
+    "Mobile Prepaid",
+    "Municipal Services",
+    "Municipal Taxes",
+    "National Pension System",
+    "NCMC Recharge",
+    "Prepaid Meter",
+    "Recurring Deposit",
+    "Rental",
+    "Subscription",
+    "Water",
+  ];
+
+  // Filter out already assigned categories
+  const availableCategories = useMemo(
+    () =>
+      data?.categories
+        ? allCategories.filter((c) => !data.categories.includes(c))
+        : allCategories,
+    [data]
+  );
+
+  const handleAddCategories = async () => {
+    if (selectedCategories.length === 0) return;
+
+    try {
+      await postCategories({ categories: selectedCategories });
+      refetch(); // refresh categories list
+      setSelectedCategories([]); // reset selection
+      onClose(); // close modal
+      if (refreshUsers) refreshUsers(); // refresh users table in parent
+      alert("Categories added successfully!");
+    } catch (err) {
+      console.error("Failed to add categories:", err);
+      alert("Failed to add categories!");
+    }
+  };
+
+  const handleRemoveCategory = async (category) => {
+    if (!window.confirm(`Remove category "${category}"?`)) return;
+
+    try {
+      await removeCategory({ category });
+      refetch(); // refresh categories list
+      if (refreshUsers) refreshUsers();
+      alert(`Category "${category}" removed successfully!`);
+    } catch (err) {
+      console.error("Failed to remove category:", err);
+      alert("Failed to remove category!");
+    }
+  };
+
+  const handleSelectChange = (e) => {
+    const options = Array.from(e.target.selectedOptions).map((o) => o.value);
+    setSelectedCategories(options);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
-        <h2 className="text-lg font-semibold mb-4">Are you sure?</h2>
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={onYes}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      <div className="bg-white w-96 p-6 rounded-xl shadow-xl relative">
+        <h2 className="text-lg font-semibold mb-4">Manage Categories</h2>
+
+        {isLoading && <p>Loading categories...</p>}
+        {error && <p className="text-red-500">Failed to load categories</p>}
+
+        <ul className="mb-4 max-h-40 overflow-y-auto border p-2 rounded">
+          {data?.categories?.length === 0 && <li>No categories assigned</li>}
+          {data?.categories?.map((cat, idx) => (
+            <li
+              key={idx}
+              className="py-1 border-b last:border-b-0 flex justify-between items-center"
+            >
+              <span>{cat}</span>
+              <button
+                onClick={() => handleRemoveCategory(cat)}
+                className="text-red-500 font-bold hover:text-red-700 ml-2"
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div className="flex gap-2 mb-4">
+          <select
+            multiple
+            className="flex-1 border p-2 rounded h-32"
+            value={selectedCategories}
+            onChange={handleSelectChange}
           >
-            Yes
-          </button>
+            {availableCategories.map((cat, idx) => (
+              <option key={idx} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
           <button
-            onClick={onNo}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
+            className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700 transition-colors"
+            onClick={handleAddCategories}
+            disabled={isAdding || selectedCategories.length === 0}
           >
-            No
+            {isAdding ? "Adding..." : "Add"}
           </button>
         </div>
+
+        <button
+          className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+          onClick={onClose}
+        >
+          ✕
+        </button>
       </div>
     </div>
   );
 };
 
-const EditModel = ({ user, onClose }) => {
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-80 p-6 rounded-xl shadow-xl text-center">
-        <h2 className="text-lg font-semibold mb-4">Edit User</h2>
-        <p className="mb-4">
-          You can add your edit form here for user: {user.name}
-        </p>
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 rounded-lg"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
+// ------------------ MAIN USERS COMPONENT ------------------
 const Users = () => {
   const navigate = useNavigate();
   const { getData, deleteData } = useAuth();
@@ -61,6 +215,7 @@ const Users = () => {
   const [isAlert, setIsAlert] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [permissionsUser, setPermissionsUser] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const refresh = () => {
@@ -70,26 +225,23 @@ const Users = () => {
     data: merchantsData,
     loading: loadingMerchants,
     error,
+  } = useGet("/get-merchants");
+
   } = useGet(`/get-merchants?refresh=${refreshKey}`);
   const { execute: updateStatus } = usePost("/update-user-statuses");
+  const { execute: deleteUser } = usePost(`/delete-merchant/${deleteId}`);
+
   const [openTopUpModal, setOpenTopUpModal] = useState(false);
   const [topUpModalData, setTopUpModalData] = useState(null);
-
   const [originalData, setOriginalData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [filters, setFilters] = useState({ name: "", email: "" });
 
-  const endpoint = useMemo(() => `/delete-merchant/${deleteId}`, [deleteId]);
-  const { execute: deleteUser } = usePost(endpoint);
-
-  // -----------------------------
-  // TOGGLE ACCOUNT STATUS
-  // -----------------------------
+  // ----------------------------- TOGGLE STATUS -----------------------------
   const handleToggleStatus = async (item) => {
     const newStatus = item.account_status ? 0 : 1;
     try {
       await updateStatus({ user_id: item.id, account_status: newStatus });
-      // Update UI
       setOriginalData((prev) =>
         prev.map((u) =>
           u.id === item.id ? { ...u, account_status: newStatus } : u
@@ -100,9 +252,7 @@ const Users = () => {
     }
   };
 
-  // -----------------------------
-  // TABLE COLUMNS
-  // -----------------------------
+  // ----------------------------- TABLE COLUMNS -----------------------------
   const columns = [
     { label: "Actions", key: "actions" },
     { label: "User ID", key: "user_id" },
@@ -152,6 +302,13 @@ const Users = () => {
           >
             <FontAwesomeIcon icon={faTrash} />
           </button>
+          <button
+            className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            title="Permissions"
+            onClick={() => setPermissionsUser(item)}
+          >
+            <FontAwesomeIcon icon={faShieldAlt} />
+          </button>
         </div>
       ),
       top_up: (
@@ -167,15 +324,16 @@ const Users = () => {
       ),
     }));
 
-  // -----------------------------
-  // DELETE ACTIONS
-  // -----------------------------
+  // ----------------------------- DELETE ACTIONS -----------------------------
   const handleDelete = (id) => {
     setDeleteId(id);
     setIsAlert(true);
   };
 
   const confirmDelete = async () => {
+    await deleteUser();
+    setIsAlert(false);
+    setDeleteId(null);
     const res = await deleteUser();
     if (res?.status) {
       setIsAlert(false);
@@ -190,9 +348,7 @@ const Users = () => {
     setDeleteId(null);
   };
 
-  // -----------------------------
-  // LOAD INITIAL DATA
-  // -----------------------------
+  // ----------------------------- LOAD INITIAL DATA -----------------------------
   useEffect(() => {
     if (merchantsData?.status) {
       let finalData = [...merchantsData.data];
@@ -206,9 +362,7 @@ const Users = () => {
     }
   }, [merchantsData]);
 
-  // -----------------------------
-  // FILTERS
-  // -----------------------------
+  // ----------------------------- FILTERS -----------------------------
   const handleFilterChange = (e) => {
     const { id, value } = e.target;
     setFilters((prev) => ({ ...prev, [id]: value }));
@@ -322,9 +476,19 @@ const Users = () => {
       )}
       {/* DELETE CONFIRMATION BOX */}
       {isAlert && <ConformationBox onYes={confirmDelete} onNo={cancelDelete} />}
+
+      {/* EDIT MODAL */}
       {/* EDIT MODEL */}
       {selectedUser && (
         <EditModel user={selectedUser} onClose={() => setSelectedUser(null)} />
+      )}
+
+      {/* PERMISSIONS MODAL */}
+      {permissionsUser && (
+        <PermissionsModal
+          userId={permissionsUser.id}
+          onClose={() => setPermissionsUser(null)}
+        />
       )}
     </>
   );
