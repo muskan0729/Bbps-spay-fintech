@@ -9,7 +9,7 @@ const PlanDisplay = () => {
   const {selectedBiller} = getModalData("plandisplay") || {};
   const isOpen = isModalOpen("plandisplay");
 
-  const { execute } = usePost("/bbps/plan-pull-test/json");
+  const { execute } = usePost("/bbps/plan-pull/json");
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [response, setResponse] = useState(null);

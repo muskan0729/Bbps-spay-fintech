@@ -28,39 +28,53 @@ const Scheme = () => {
   const [operation, setOperation] = useState(null);
   const [value, setValue] = useState(null);
 
-  const columns = [
-    "action",
-    "id",
-    "name",
-    "commission_type",
-    "type",
-    "commission_value",
-    "status",
-    "gst_type",
-    "gst_value",
-    "created_at",
-    "updated_at",
-  ];
+const columns = [
+  { label: "Action", key: "action" },
+  { label: "ID", key: "id" },
+  { label: "Name", key: "name" },
+  { label: "Commission Type", key: "commission_type" },
+  { label: "Type", key: "type" },
+  { label: "Commission Value", key: "commission_value" },
+  { label: "Status", key: "status" },
+  { label: "GST Type", key: "gst_type" },
+  { label: "GST Value", key: "gst_value" },
+  { label: "Created At", key: "created_at" },
+  { label: "Updated At", key: "updated_at" },
+];
+
+
   const tstyle = {
     tableClass:
-      "min-w-full bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200 overflow-hidden text-gray-700",
+      "min-w-full bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200 overflow-hidden text-gray-700 text-center",
+
     headerClass:
-      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white text-sm font-semibold uppercase tracking-wide shadow-inner sticky top-0",
+      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white text-sm font-semibold uppercase tracking-wide shadow-inner sticky top-0 text-center",
+
     rowClass:
-      "bg-white even:bg-gray-50 hover:bg-indigo-50/60 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl mb-2 cursor-pointer",
-    cellClass:
-      "py-3 px-4 text-sm font-medium first:rounded-l-xl last:rounded-r-xl",
+      "bg-white even:bg-gray-50 hover:bg-indigo-50/60 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl mb-2 cursor-pointer text-center",
+
+    cellClass: "py-3 px-4 text-sm font-medium text-center",
+
     paginationClass:
-      "bg-white/60 shadow-inner rounded-lg px-4 py-2 text-gray-700 flex items-center justify-center gap-2 mt-4",
+      "bg-white/80 shadow-inner rounded-lg px-4 py-2 text-gray-700 flex items-center justify-center gap-3 mt-4 text-center",
   };
+
   //  Build table rows when response updates
   useEffect(() => {
     if (response?.data) {
       const withActionButton = response.data.map((d) => {
-        const { status, ...rest } = d; // remove status
+        const { created_at, updated_at, status, ...rest } = d; // remove status
 
         return {
           ...rest,
+          // created_at,
+          created_at: created_at
+            ? new Date(created_at).toLocaleString()
+            : "None",
+
+          updated_at: updated_at
+            ? new Date(updated_at).toLocaleString()
+            : "None",
           status:
             status === 0 ? (
               <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">

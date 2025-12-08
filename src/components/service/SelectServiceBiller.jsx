@@ -18,13 +18,13 @@ const SelectServiceBiller = () => {
   const { service } = getModalData("serviceSelecter") || {};
 
   const endpoint = useMemo(() => {
-    return service?.label ? `/get-billers-test/${service.label}` : null;
+    return service?.label ? `/get-billers/${service.label}` : null;
   }, [service?.label]);
 
   const { data, loading: apiLoading } = useGet(endpoint);
 
   const { data: billerResponse, execute: fetchBillerInfo } = usePost(
-    "/bbps/biller-info-test/json"
+    "/bbps/biller-info/json"
   );
 
   useEffect(() => {

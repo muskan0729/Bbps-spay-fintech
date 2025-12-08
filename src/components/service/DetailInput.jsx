@@ -24,7 +24,7 @@ const DetailInput = () => {
   const [billerFetchRequiremet, setBillerFetchRequiremet] = useState(false);
   const [resError, setResError] = useState();
   const { error, execute: fetchResponse } = usePost(
-    "/bbps/bill-process-test/json"
+    "/bbps/bill-process/json"
   );
 
   /* -------------------------------------------------------

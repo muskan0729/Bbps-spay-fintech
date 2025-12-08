@@ -44,26 +44,25 @@ const AdminReport = () => {
   }, []);
 
   // Map API response to table data
-useEffect(() => {
-  if (apiResponse) {
-    const mappedData = apiResponse.map((item, index) => ({
-      SrNo: index + 1,
+  useEffect(() => {
+    if (apiResponse) {
+      const mappedData = apiResponse.map((item, index) => ({
+        SrNo: index + 1,
         userName: item.u_name || "-",
-      RequestId: item.request_id || item.txnRefID || "N/A",
-      CustomerName: item.mobile_no || "N/A",
-      Category: item.category || "-",
-      BillNumber: item.txnRefID || item.request_id || "-",
-      Amount: Number(item.respAmount) || 0,
-      Status: item.responseReason || item.txnStatus || "Pending",
-      Date: item.created_at
-        ? new Date(item.created_at).toLocaleDateString("en-GB")
-        : "-",
-    }));
-    setData(mappedData);
-    setLoading(false);
-  }
-}, [apiResponse]);
-
+        RequestId: item.request_id || item.txnRefID || "N/A",
+        CustomerName: item.mobile_no || "N/A",
+        Category: item.category || "-",
+        BillNumber: item.txnRefID || item.request_id || "-",
+        Amount: Number(item.respAmount) || 0,
+        Status: item.responseReason || item.txnStatus || "Pending",
+        Date: item.created_at
+          ? new Date(item.created_at).toLocaleDateString("en-GB")
+          : "-",
+      }));
+      setData(mappedData);
+      setLoading(false);
+    }
+  }, [apiResponse]);
 
   const handlePlanToggle = (index) => {
     setData((prev) =>
@@ -96,13 +95,25 @@ useEffect(() => {
     const base =
       "px-1 py-1 text-xs font-semibold rounded-full flex items-center gap-2 transition-all duration-300";
     const styles = {
-      Successful: { bg: "bg-green-100", text: "text-green-800", color: "#10B981" },
+      Successful: {
+        bg: "bg-green-100",
+        text: "text-green-800",
+        color: "#10B981",
+      },
       Failed: { bg: "bg-red-100", text: "text-red-800", color: "#EF4444" },
-      Pending: { bg: "bg-yellow-100", text: "text-yellow-800", color: "#F59E0B" },
+      Pending: {
+        bg: "bg-yellow-100",
+        text: "text-yellow-800",
+        color: "#F59E0B",
+      },
       Initiated: { bg: "bg-cyan-100", text: "text-cyan-800", color: "#06B6D4" },
     };
 
-    const style = styles[status] || { bg: "bg-gray-100", text: "text-gray-600", color: "#9CA3AF" };
+    const style = styles[status] || {
+      bg: "bg-gray-100",
+      text: "text-gray-600",
+      color: "#9CA3AF",
+    };
     const [width, setWidth] = useState(0);
 
     useEffect(() => {
@@ -192,7 +203,7 @@ useEffect(() => {
         </span>
       ),
     },
-   
+
     { label: "Status", render: (row, i) => renderStatusLabel(row.Status, i) },
     {
       label: (
@@ -203,7 +214,6 @@ useEffect(() => {
       ),
       key: "Date",
     },
-
   ];
 
   const handleChange = (e) => {
@@ -228,11 +238,17 @@ useEffect(() => {
   };
 
   const handleReset = () => {
-    setFilters({ fromDate: "", toDate: "", category: "", status: "", billNumber: "" });
+    setFilters({
+      fromDate: "",
+      toDate: "",
+      category: "",
+      status: "",
+      billNumber: "",
+    });
     if (apiResponse?.data) {
       const mappedData = apiResponse.data.map((item, index) => ({
         SrNo: index + 1,
-         userName: item.u_name || "NA",
+        userName: item.u_name || "NA",
         RequestId: item.request_id || "-",
         CustomerName: item.user_name || "-",
         Category: item.category || "-",
@@ -288,12 +304,14 @@ useEffect(() => {
   const tableStyles = {
     tableWrapperClass:
       "overflow-x-auto rounded-3xl border border-gray-300 bg-white/95 shadow-xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl",
-    tableClass: "min-w-full text-base divide-y divide-gray-300 border border-gray-300",
+    tableClass:
+      "min-w-full text-base divide-y divide-gray-300 border border-gray-300",
     headerClass:
       "bg-gradient-to-r from-blue-500 to-teal-500 text-white font-semibold text-sm uppercase tracking-wider sticky top-0 shadow-md border-b border-gray-300",
     rowClass:
       "bg-gray-50 even:bg-gray-100 hover:bg-gradient-to-r hover:from-teal-50 hover:to-teal-100 hover:shadow-md transform hover:scale-[1.01] transition-all duration-300 border-b border-gray-200",
-    paginationClass: "flex justify-center items-center gap-2 py-3 border-t border-gray-200 mt-4 flex-wrap",
+    paginationClass:
+      "flex justify-center items-center gap-2 py-3 border-t border-gray-200 mt-4 flex-wrap",
     paginationBtnClass:
       "flex items-center gap-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-2.5 py-1.5 rounded-lg shadow-md hover:from-teal-600 hover:to-teal-700 disabled:opacity-40 text-sm",
     paginationActiveClass:
@@ -346,7 +364,9 @@ useEffect(() => {
         <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-300 p-6 transition-all duration-300 hover:shadow-3xl">
           <div className="flex items-center gap-3 mb-6">
             <FaClockRotateLeft className="text-teal-500 text-2xl animate-pulse" />
-            <h2 className="text-2xl font-semibold text-gray-800">Latest Transactions</h2>
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Latest Transactions
+            </h2>
           </div>
 
           {loading || apiLoading ? (
@@ -355,8 +375,8 @@ useEffect(() => {
             <Table
               columns={columns}
               data={data}
-               isPaginationRequired={10}
-          rowsPerPage={10}
+              isPaginationRequired={10}
+              rowsPerPage={10}
               {...tableStyles}
             />
           )}

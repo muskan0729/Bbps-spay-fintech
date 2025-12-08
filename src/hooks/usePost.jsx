@@ -4,13 +4,13 @@ import { useCookies } from "react-cookie";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export function usePost(endpoint) { 
+export function usePost(endpoint) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [cookie] = useCookies(["token"]);
 
-  const execute = async (body={}) => {
+  const execute = async (body = {}) => {
     setLoading(true);
     setError(null);
 
@@ -30,17 +30,17 @@ export function usePost(endpoint) {
             headers: { "Content-Type": "application/json" },
           }
         );
-        console.log(" here is response :",response);        
+        console.log(" here is response :", response);
         return response.data;
       }
 
       // ---------- BBPS RAW JSON REQUEST ----------
       if (
-        endpoint === "/bbps/biller-info-test/json" ||
-        endpoint === "/bbps/plan-pull-test/json"
+        endpoint === "/bbps/biller-info/json" ||
+        endpoint === "/bbps/plan-pull/json"
       ) {
         console.log(body);
-        
+
         response = await axios.post(`${BASE_URL}${endpoint}`, body, {
           headers: {
             "Content-Type": "text/plain",
@@ -51,22 +51,31 @@ export function usePost(endpoint) {
         return response;
       }
 
-      if(endpoint==="/delete-scheme"){
-        console.log("ID====>",body);
+      if (endpoint === "/delete-scheme") {
+        console.log("ID====>", body);
         console.log(`Bearer  token${cookie.token.slice(4)}`);
         console.log(`URL  ${BASE_URL}${endpoint}/${body}`);
-        
-        response=await axios.post(`${BASE_URL}${endpoint}/${body}`,{},{
-           headers: {
-            // "Content-Type": "text/plain",
-            Authorization: `Bearer ${cookie.token.slice(4)}`,
-          },
-        })    
-      return response   
+
+        response = await axios.post(
+          `${BASE_URL}${endpoint}/${body}`,
+          {},
+          {
+            headers: {
+              // "Content-Type": "text/plain",
+              Authorization: `Bearer ${cookie.token.slice(4)}`,
+            },
+          }
+        );
+        return response;
       }
 
       // ---------- DEFAULT POST (FOR FORMDATA) ----------
-      const isFormData = body instanceof FormData;
+      // const isFormData = body instanceof FormData;
+      const isFormData =
+        typeof FormData !== "undefined" && body instanceof FormData;
+
+      console.log("Line 70", isFormData);
+      console.log("Line 71", body);
 
       response = await axios.post(`${BASE_URL}${endpoint}`, body, {
         headers: {
@@ -74,7 +83,7 @@ export function usePost(endpoint) {
           ...(isFormData ? {} : { "Content-Type": "application/json" }), // ❗ Correct logic
         },
       });
-
+      console.log("Line 79", response.data);
       setData(response.data);
       return response.data;
     } catch (err) {

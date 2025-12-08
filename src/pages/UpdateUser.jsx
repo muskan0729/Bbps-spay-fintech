@@ -7,14 +7,13 @@ const UpdateUser = () => {
   const navigate = useNavigate();
   const data = useLocation();
   const { execute: executeMember, loading } = usePost(`/update-merchant`);
-  const [cookie]=useCookies();
+  const [cookie] = useCookies();
   const baseURL = "https://bbps.spay.live/";
 
   const [chequeImageUrl, setChequeImageUrl] = useState(null);
   const [panImageUrl, setPanImageUrl] = useState(null);
   const [gstImageUrl, setGstImageUrl] = useState(null);
   const [directorDocUrls, setDirectorDocUrls] = useState([]);
-
 
   const processFilePath = (filePath) => {
     if (!filePath || typeof filePath !== "string") return null;
@@ -126,14 +125,14 @@ const UpdateUser = () => {
 
   const initialDirectors = Array.isArray(data.state.item.director_info)
     ? data.state.item.director_info.map((dd) => ({
-        director_name: dd.director_name || "",
-        director_pan_no: dd.director_pan_no || "",
-        director_aadhar_no: dd.director_aadhar_no || "",
-        director_gender: dd.director_gender || "",
-        director_dob: formatDate(dd.director_dob),
-        user_pan_doc: dd.user_pan_doc,
-        user_addhar_doc: dd.user_addhar_doc,
-      }))
+      director_name: dd.director_name || "",
+      director_pan_no: dd.director_pan_no || "",
+      director_aadhar_no: dd.director_aadhar_no || "",
+      director_gender: dd.director_gender || "",
+      director_dob: formatDate(dd.director_dob),
+      user_pan_doc: dd.user_pan_doc,
+      user_addhar_doc: dd.user_addhar_doc,
+    }))
     : [];
 
   const [directors, setDirectors] = useState(initialDirectors);
@@ -217,7 +216,6 @@ const UpdateUser = () => {
 
     try {
       const res = await executeMember(fd);
-
       if (res) {
         alert("Merchant updated successfully!");
         navigate("/users");
@@ -226,7 +224,7 @@ const UpdateUser = () => {
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
+      // alert("Something went wrong");
     }
   };
 
@@ -235,9 +233,10 @@ const UpdateUser = () => {
   const grid3 = "grid grid-cols-1 md:grid-cols-3 gap-5";
   const box = "bg-white p-6 rounded-xl shadow border border-gray-200 mb-8";
   const label = "font-semibold text-gray-700 mb-1 block";
-
+  const onCancel = () => {
+    navigate("/users");
+  };
   return (
-
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Update Merchant</h1>
 
@@ -246,9 +245,28 @@ const UpdateUser = () => {
         {/* BUSINESS DETAILS SECTION        */}
         {/* =============================== */}
         <div className={box}>
-          <h2 className="text-xl font-bold text-blue-700 mb-4">
-            🏢 Business Details
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-blue-700">
+              🏢 Business Details
+            </h2>
+
+            <button
+              type="button"
+              onClick={onCancel}
+              className="
+      bg-gray-600 
+      hover:bg-gray-700 
+      text-white 
+      px-4 py-2 
+      rounded-lg 
+      shadow 
+      transition-all 
+      duration-200
+    "
+            >
+              Cancel
+            </button>
+          </div>
 
           {/* BUSINESS INPUTS */}
           <div className={grid3}>
@@ -545,11 +563,10 @@ const UpdateUser = () => {
                   type="button"
                   onClick={() => removeDirector(i)}
                   disabled={directors.length === 1}
-                  className={`px-4 py-1 rounded text-white ${
-                    directors.length === 1
+                  className={`px-4 py-1 rounded text-white ${directors.length === 1
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-red-600 hover:bg-red-700"
-                  }`}
+                    }`}
                 >
                   Remove
                 </button>

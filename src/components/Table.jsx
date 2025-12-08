@@ -19,11 +19,11 @@ const Table = ({
 console.log("from Table",data);
 
   const totalPages = Math.ceil(data.length / rowsPerPage) || 1;
-  console.log(totalPages);
+  // console.log(totalPages);
   
   const startIndex = (currentPage - 1) * rowsPerPage;
   
-  console.log(startIndex);
+  // console.log(startIndex);
   
   const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
 
