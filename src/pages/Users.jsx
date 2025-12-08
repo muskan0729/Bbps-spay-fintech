@@ -10,10 +10,12 @@ import { faPen, faTrash, faShieldAlt } from "@fortawesome/free-solid-svg-icons";
 import TableSkeleton from "../components/TableSkeleton";
 
 // ------------------ CONFIRMATION BOX ------------------
-const ConformationBox = ({ onYes, onNo }) => (
+const ConformationBox = ({ onYes, onNo, userName }) => (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
     <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
-      <h2 className="text-lg font-semibold mb-4">Are you sure?</h2>
+      <h2 className="text-lg font-semibold mb-4">
+        Are you sure? You Want to Delete {userName}`s records
+      </h2>
       <div className="flex justify-center gap-4">
         <button
           onClick={onYes}
@@ -37,7 +39,9 @@ const EditModel = ({ user, onClose }) => (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
     <div className="bg-white w-80 p-6 rounded-xl shadow-xl text-center">
       <h2 className="text-lg font-semibold mb-4">Edit User</h2>
-      <p className="mb-4">You can add your edit form here for user: {user.name}</p>
+      <p className="mb-4">
+        You can add your edit form here for user: {user.name}
+      </p>
       <div className="flex justify-center gap-4">
         <button onClick={onClose} className="px-4 py-2 bg-gray-300 rounded-lg">
           Close
@@ -207,7 +211,7 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [permissionsUser, setPermissionsUser] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-
+  const [deleteName, setDeleteName] = useState(null);
   const refresh = () => setRefreshKey((prev) => prev + 1);
 
   const {
@@ -224,6 +228,7 @@ const Users = () => {
   const [originalData, setOriginalData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [filters, setFilters] = useState({ name: "", email: "" });
+  const [clear, setClear] = useState(1);
 
   const handleToggleStatus = async (item) => {
     const newStatus = item.account_status ? 0 : 1;
@@ -236,6 +241,8 @@ const Users = () => {
           u.id === item.id ? { ...u, account_status: newStatus } : u
         )
       );
+      refresh();
+      clearFilters();
     } catch (err) {
       console.error("Status update failed:", err);
     }
@@ -284,7 +291,7 @@ const Users = () => {
           <button
             className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             title="Delete"
-            onClick={() => handleDelete(item.id)}
+            onClick={() => handleDelete(item.id, item.name)}
           >
             <FontAwesomeIcon icon={faTrash} />
           </button>
@@ -310,9 +317,14 @@ const Users = () => {
         </button>
       ),
     }));
+  const clearFilters = () => {
+    console.log("filter this is ");
+    setClear(clear + 1);
+  };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id, name) => {
     setDeleteId(id);
+    setDeleteName(name);
     setIsAlert(true);
   };
 
@@ -320,13 +332,14 @@ const Users = () => {
     const res = await deleteUser();
     setIsAlert(false);
     setDeleteId(null);
-
+    setDeleteName(null);
     if (res?.status) refresh();
   };
 
   const cancelDelete = () => {
     setIsAlert(false);
     setDeleteId(null);
+    setDeleteName(null);
   };
 
   useEffect(() => {
@@ -342,7 +355,7 @@ const Users = () => {
       setOriginalData(finalData);
       setTableData(buildTableRows(finalData));
     }
-  }, [merchantsData]);
+  }, [merchantsData, clear, refreshKey]);
 
   const handleFilterChange = (e) => {
     const { id, value } = e.target;
@@ -382,7 +395,9 @@ const Users = () => {
     <>
       {/* FILTER SECTION */}
       <section className="mx-auto bg-white p-4 rounded-xl shadow-md border border-gray-200 mt-8 flex flex-col justify-between">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Filter Users</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Filter Users
+        </h2>
 
         <div className="flex flex-wrap gap-4 justify-between items-end">
           <div className="flex flex-col flex-1 min-w-[180px]">
@@ -418,6 +433,13 @@ const Users = () => {
             className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 mt-6"
           >
             Search
+          </button>
+
+          <button
+            onClick={clearFilters}
+            className="px-6 py-2 bg-gray-400 text-white font-medium rounded-lg hover:bg-gray-500 transition-all duration-300 mt-6"
+          >
+            Clear
           </button>
         </div>
       </section>
@@ -460,11 +482,12 @@ const Users = () => {
           data={topUpModalData}
           isOpen={openTopUpModal}
           onClose={() => setOpenTopUpModal(false)}
+          refresh={refresh}
         />
       )}
 
       {/* DELETE CONFIRMATION BOX */}
-      {isAlert && <ConformationBox onYes={confirmDelete} onNo={cancelDelete} />}
+      {isAlert && <ConformationBox onYes={confirmDelete} onNo={cancelDelete} userName={deleteName}/>}
 
       {/* EDIT MODAL */}
       {selectedUser && (

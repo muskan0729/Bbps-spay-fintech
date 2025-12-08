@@ -19,7 +19,7 @@ const DetailConfirmation = () => {
   const [formValues, setFormValues] = useState({ amount: "" });
   const [userData, setUserData] = useState({});
   const { error, execute: fetchPayment } = usePost(
-    "/bbps/bill-payment-test/json"
+    "/bbps/bill-payment/json"
   );
   const [resError, setResError] = useState();
 

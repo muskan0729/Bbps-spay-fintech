@@ -15,7 +15,6 @@ const LoginPage = () => {
 
     useEffect(()=>{
       setErrorMsg(error?.message)
-      console.log("hyiuyu" ,error);
     },[error])
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -114,5 +113,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-
-

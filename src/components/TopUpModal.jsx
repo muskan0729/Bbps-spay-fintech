@@ -73,7 +73,7 @@ export const TopUpModalWrapper = ({
 };
 
 // ==================== TopUpModal Component ====================
-export const TopUpModal = ({ data, isOpen, onClose }) => {
+export const TopUpModal = ({ data, isOpen, onClose,refresh }) => {
   const dataForModal = data || {};
   const { execute: topUp } = usePost("/add-money-to-merchant-wallet");
   const [remark, setRemark] = useState("");
@@ -93,7 +93,8 @@ export const TopUpModal = ({ data, isOpen, onClose }) => {
 const response=await topUp(body);;
     console.log("Data submitted from modal:", body);
     if (response){
-        console.log(response);   
+        console.log(response);  
+        refresh(); 
         closeModal();
     } 
   };

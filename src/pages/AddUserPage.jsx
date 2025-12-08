@@ -143,6 +143,9 @@ const AddUserPage = () => {
     }
   };
 
+  const onCancel=()=>{
+    navigate("/users");  
+  }
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">
@@ -570,14 +573,37 @@ const AddUserPage = () => {
           ))}
         </div>
 
-        {/* SUBMIT */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg rounded-lg"
-        >
-          {loading ? "Submitting..." : "Submit"}
-        </button>
+        {/* ACTION BUTTONS */}
+        <div className="flex items-center gap-4 mt-6">
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`
+      px-6 py-3 text-lg rounded-lg font-medium
+      transition-all duration-200 
+      bg-blue-600 text-white shadow 
+      hover:bg-blue-700  
+      disabled:bg-blue-300 disabled:cursor-not-allowed
+    `}
+          >
+            {loading ? "Submitting..." : "Submit"}
+          </button>
+
+          {/* Cancel */}
+          <button
+            type="button" // ← IMPORTANT: so it doesn't submit form
+            className="
+      px-6 py-3 text-lg rounded-lg font-medium
+      bg-gray-500 text-white shadow 
+      hover:bg-gray-600 
+      transition-all duration-200
+    "
+            onClick={onCancel} // optional: you can pass a function
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );
