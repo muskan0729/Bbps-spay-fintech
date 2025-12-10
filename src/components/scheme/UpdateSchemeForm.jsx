@@ -63,7 +63,7 @@ const UpdateSchemeForm = ({ value, refresh }) => {
       value: b.blr_id,
       label: b.blr_name,
     })) || [];
-  console.log(" billerOptions ",billerOptions);
+  console.log(" billerOptions ", billerOptions);
 
   // Close modal
   const closeModal = () => setIsModelOpen(false);
@@ -91,101 +91,120 @@ const UpdateSchemeForm = ({ value, refresh }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg p-6 max-w-6xl w-full relative">
-        <h2 className="text-xl font-bold mb-4">Update Scheme</h2>
+      <div className="bg-white rounded-lg shadow-xl p-6 max-w-6xl w-full relative h-[80vh] flex flex-col">
+        {/* HEADER */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Update Scheme</h2>
 
-        <button
-          onClick={closeModal}
-          className="absolute top-3 right-3 text-gray-700 text-2xl"
-        >
-          &times;
-        </button>
+          <button
+            onClick={closeModal}
+            className="text-gray-700 hover:text-black text-3xl font-bold leading-none"
+          >
+            &times;
+          </button>
+        </div>
 
+        {/* READONLY INPUT */}
         <input
           type="text"
           value={value.name}
           readOnly
-          className="w-full border rounded px-3 py-2 mb-4 bg-gray-100 text-gray-700 cursor-not-allowed hover:bg-gray-200 transition-colors"
+          className="w-full border rounded px-3 py-2 mb-4 bg-gray-100 text-gray-700 cursor-not-allowed hover:bg-gray-200 transition"
         />
 
-        <table className="w-full text-sm border">
-          <thead>
-            <tr className="bg-blue-500 text-white">
-              <th className="p-2">Merchant</th>
-              <th className="p-2">Biller</th>
-              <th className="p-2">Type</th>
-              <th className="p-2">Amount</th>
-              <th className="p-2">GST</th>
-              <th className="p-2">Status</th>
-            </tr>
-          </thead>
+        {/* SCROLLABLE AREA */}
+        <div className="flex-1 overflow-y-auto pr-2">
+          <table className="w-full text-sm border rounded-md overflow-hidden ">
+            <thead>
+              <tr className="bg-blue-500 text-white">
+                <th className="p-2">Merchant</th>
+                <th className="p-2">Biller</th>
+                <th className="p-2">Type</th>
+                <th className="p-2">Amount</th>
+                <th className="p-2">GST</th>
+                <th className="p-2">Status</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr className="p-2">
-              <td className="p-2">
-                <Select
-                  isMulti
-                  options={merchantOptions}
-                  value={merchantValue}
-                  onChange={setMerchantValue}
-                />
-              </td>
+            <tbody>
+              <tr className="border-b">
+                <td className="p-2">
+                 <Select
+  isMulti
+  options={merchantOptions}
+  value={merchantValue}
+  onChange={setMerchantValue}
+  menuPortalTarget={document.body}
+  styles={{
+    menuPortal: (base) => ({ ...base, zIndex: 9999 })
+  }}
+/>
 
-              <td className="p-2">
-                <Select
-                  isMulti
-                  options={billerOptions}
-                  value={billerValue}
-                  onChange={setBillerValue}
-                />
-              </td>
+                </td>
 
-              <td className="p-2">
-                <select
-                  className="border w-full px-2 py-1"
-                  value={commissionType}
-                  onChange={(e) => setCommissionType(e.target.value)}
-                >
-                  <option value="flat">Flat</option>
-                  <option value="percent">Percent</option>
-                </select>
-              </td>
+                <td className="p-2">
+<Select
+  isMulti
+  options={billerOptions}
+  value={billerValue}
+  onChange={setBillerValue}
+  menuPortalTarget={document.body}
+  styles={{
+    menuPortal: (base) => ({ ...base, zIndex: 9999 })
+  }}
+/>
 
-              <td className="p-2">
-                <input
-                  type="text"
-                  value={chargeValue}
-                  onChange={(e) => setChargeValue(e.target.value)}
-                  className="border px-2 py-1 w-full"
-                />
-              </td>
+                </td>
 
-              <td className="p-2">
-                <input
-                  type="text"
-                  value={chargeGSTValue}
-                  onChange={(e) => setChargeGSTValue(e.target.value)}
-                  className="border px-2 py-1 w-full"
-                />
-              </td>
+                <td className="p-2">
+                  <select
+                    className="border w-full px-2 py-1 rounded"
+                    value={commissionType}
+                    onChange={(e) => setCommissionType(e.target.value)}
+                  >
+                    <option value="flat">Flat</option>
+                    <option value="percent">Percent</option>
+                  </select>
+                </td>
 
-              <td className="p-2 text-center">
-                <input
-                  type="checkbox"
-                  checked={status}
-                  onChange={(e) => setStatus(e.target.checked)}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <td className="p-2">
+                  <input
+                    type="text"
+                    value={chargeValue}
+                    onChange={(e) => setChargeValue(e.target.value)}
+                    className="border px-2 py-1 w-full rounded"
+                  />
+                </td>
 
-        <button
-          onClick={handleSubmit}
-          className="mt-4 w-full bg-blue-600 py-2 rounded text-white"
-        >
-          Update
-        </button>
+                <td className="p-2">
+                  <input
+                    type="text"
+                    value={chargeGSTValue}
+                    onChange={(e) => setChargeGSTValue(e.target.value)}
+                    className="border px-2 py-1 w-full rounded"
+                  />
+                </td>
+
+                <td className="p-2 text-center">
+                  <input
+                    type="checkbox"
+                    checked={status}
+                    onChange={(e) => setStatus(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Small Button */}
+          <button
+            onClick={handleSubmit}
+            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition w-fit"
+          >
+            Update
+          </button>
+        </div>
       </div>
     </div>
   );

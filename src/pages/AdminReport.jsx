@@ -6,15 +6,6 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import SearchBar from "../components/SearchBar";
 import logo from "../images/logo.png";
-import {
-  FaEye,
-  FaRupeeSign,
-  FaUserAlt,
-  FaClipboardList,
-  FaCheckCircle,
-} from "react-icons/fa";
-import { MdCategory } from "react-icons/md";
-import { BsCalendarDate } from "react-icons/bs";
 import { FaClockRotateLeft } from "react-icons/fa6";
 import { usePost } from "../hooks/usePost";
 
@@ -26,18 +17,17 @@ const AdminReport = () => {
     status: "",
     billNumber: "",
   });
+  const [rawData, setRawData] = useState([]); // ✅ Keep original data
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const rowsPerPage = 5;
 
-  // ⭐ usePost hook
   const {
     execute: fetchPayments,
     data: apiResponse,
     isLoading: apiLoading,
   } = usePost(`/bbps/all-bill-payments-test/json`);
 
-  console.log("apidemores0", apiResponse);
   useEffect(() => {
     setLoading(true);
     fetchPayments();
@@ -54,166 +44,41 @@ const AdminReport = () => {
         Category: item.category || "-",
         BillNumber: item.txnRefID || item.request_id || "-",
         Amount: Number(item.respAmount) || 0,
-        Status: item.responseReason || item.txnStatus || "Pending",
+        Status: item.responseReason || "Pending", // ✅ keep as string
         Date: item.created_at
           ? new Date(item.created_at).toLocaleDateString("en-GB")
           : "-",
       }));
+      setRawData(mappedData); // store original
       setData(mappedData);
       setLoading(false);
     }
   }, [apiResponse]);
 
-  const handlePlanToggle = (index) => {
-    setData((prev) =>
-      prev.map((item, i) =>
-        i === index
-          ? { ...item, Plan: item.Plan === "Active" ? "Inactive" : "Active" }
-          : item
-      )
-    );
-  };
-
-  const renderPlanLabel = (plan, index) => (
-    <div
-      className={`relative inline-flex items-center w-14 h-6 rounded-full cursor-pointer transition-all duration-300 ${
-        plan === "Active"
-          ? "bg-gradient-to-r from-green-400 to-green-600"
-          : "bg-gray-300"
-      } hover:shadow-lg`}
-      onClick={() => handlePlanToggle(index)}
-    >
-      <div
-        className={`absolute top-[2px] left-[2px] w-5 h-5 rounded-full bg-white shadow transform transition-transform duration-300 ${
-          plan === "Active" ? "translate-x-7" : "translate-x-0"
-        }`}
-      />
-    </div>
-  );
-
-  const renderStatusLabel = (status, index) => {
-    const base =
-      "px-1 py-1 text-xs font-semibold rounded-full flex items-center gap-2 transition-all duration-300";
-    const styles = {
-      Successful: {
-        bg: "bg-green-100",
-        text: "text-green-800",
-        color: "#10B981",
-      },
-      Failed: { bg: "bg-red-100", text: "text-red-800", color: "#EF4444" },
-      Pending: {
-        bg: "bg-yellow-100",
-        text: "text-yellow-800",
-        color: "#F59E0B",
-      },
-      Initiated: { bg: "bg-cyan-100", text: "text-cyan-800", color: "#06B6D4" },
-    };
-
-    const style = styles[status] || {
-      bg: "bg-gray-100",
-      text: "text-gray-600",
-      color: "#9CA3AF",
-    };
-    const [width, setWidth] = useState(0);
-
-    useEffect(() => {
-      const targetWidth = Math.floor(Math.random() * 30) + 20;
-      const timeout = setTimeout(() => setWidth(targetWidth), 100);
-      return () => clearTimeout(timeout);
-    }, [status, index]);
-
-    return (
-      <span className={`${base} ${style.bg} ${style.text} relative group`}>
-        {status}
-        <span
-          className="absolute bottom-0 left-0 h-1 rounded-full transition-all duration-700 ease-out group-hover:opacity-100 opacity-80"
-          style={{ width: `${width}px`, backgroundColor: style.color }}
-        />
-      </span>
-    );
-  };
-
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 2,
-    }).format(amount);
-
   const columns = [
+    { label: "Sr No", key: "SrNo" },
+    { label: "User Name", key: "userName" },
+    { label: "Request ID", key: "RequestId" },
+    { label: "Customer", key: "CustomerName" },
+    { label: "Category", key: "Category" },
+    { label: "Transaction ID", key: "BillNumber" },
+    { label: "Amount", key: "Amount" },
     {
-      label: (
-        <div className="flex items-center gap-1">
-          <FaClipboardList className="text-gray-700 text-base" />
-          <span>Sr No</span>
-        </div>
-      ),
-      key: "SrNo",
-    },
-    {
-      label: (
-        <div className="flex items-center gap-1">
-          <FaClipboardList className="text-gray-700 text-base" />
-          <span>User Name</span>
-        </div>
-      ),
-      key: "userName",
-    },
-    {
-      label: (
-        <div className="flex items-center gap-1">
-          <FaCheckCircle className="text-gray-700 text-base" />
-          <span>Request ID</span>
-        </div>
-      ),
-      key: "RequestId",
-    },
-    {
-      label: (
-        <div className="flex items-center gap-1">
-          <FaUserAlt className="text-gray-700 text-base" />
-          <span>Customer</span>
-        </div>
-      ),
-      key: "CustomerName",
-    },
-    {
-      label: (
-        <div className="flex items-center gap-1">
-          <MdCategory className="text-gray-700 text-base" />
-          <span>Category</span>
-        </div>
-      ),
-      key: "Category",
-    },
-    "BillNumber",
-    {
-      label: (
-        <div className="flex items-center gap-1">
-          <FaRupeeSign className="text-gray-700 text-base" />
-          <span>Amount</span>
-        </div>
-      ),
+      label: "Status",
+      key: "Status",
       render: (row) => (
         <span
-          className="font-semibold text-white bg-gradient-to-r from-blue-700 to-blue-900 px-3 py-1 rounded-lg inline-block shadow-md"
-          title={formatCurrency(row.Amount)}
+          className={
+            row.Status === "Successful"
+              ? "bg-green-200 text-green-800 px-2 py-1 rounded-full"
+              : "bg-red-200 text-red-800 px-2 py-1 rounded-full"
+          }
         >
-          {formatCurrency(row.Amount)}
+          {row.Status}
         </span>
       ),
     },
-
-    { label: "Status", render: (row, i) => renderStatusLabel(row.Status, i) },
-    {
-      label: (
-        <div className="flex items-center gap-1">
-          <BsCalendarDate className="text-gray-700 text-base" />
-          <span>Date</span>
-        </div>
-      ),
-      key: "Date",
-    },
+    { label: "Date", key: "Date" },
   ];
 
   const handleChange = (e) => {
@@ -224,14 +89,22 @@ const AdminReport = () => {
   const handleSearch = () => {
     setLoading(true);
     setTimeout(() => {
-      const filteredData = data.filter(
-        (item) =>
-          (!filters.fromDate || item.Date >= filters.fromDate) &&
-          (!filters.toDate || item.Date <= filters.toDate) &&
+      const filteredData = rawData.filter((item) => {
+        const itemDate =
+          item.Date !== "-"
+            ? new Date(item.Date.split("/").reverse().join("-"))
+            : null;
+        const fromDate = filters.fromDate ? new Date(filters.fromDate) : null;
+        const toDate = filters.toDate ? new Date(filters.toDate) : null;
+
+        return (
+          (!fromDate || (itemDate && itemDate >= fromDate)) &&
+          (!toDate || (itemDate && itemDate <= toDate)) &&
           (!filters.category || item.Category === filters.category) &&
           (!filters.status || item.Status === filters.status) &&
           (!filters.billNumber || item.BillNumber.includes(filters.billNumber))
-      );
+        );
+      });
       setData(filteredData);
       setLoading(false);
     }, 500);
@@ -245,23 +118,7 @@ const AdminReport = () => {
       status: "",
       billNumber: "",
     });
-    if (apiResponse?.data) {
-      const mappedData = apiResponse.data.map((item, index) => ({
-        SrNo: index + 1,
-        userName: item.u_name || "NA",
-        RequestId: item.request_id || "-",
-        CustomerName: item.user_name || "-",
-        Category: item.category || "-",
-        BillNumber: item.bill_number || "-",
-        Amount: item.respAmount || 0,
-        Plan: item.plan || "Inactive",
-        Status: item.txnStatus || "Pending",
-        Date: item.created_at
-          ? new Date(item.created_at).toLocaleDateString("en-GB")
-          : "-",
-      }));
-      setData(mappedData);
-    }
+    setData(rawData); // ✅ reset to original data
   };
 
   const exportExcel = () => {
@@ -275,17 +132,19 @@ const AdminReport = () => {
   const exportPDF = () => {
     if (!data.length) return alert("No data to export.");
     const doc = new jsPDF();
+
     const tableColumn = [
-      "Sr. No.",
-      "Request Id",
-      "Customer Name",
-      "Category",
-      "Bill Number",
-      "Amount",
-      "Plan",
-      "Status",
-      "Date",
+      { label: "Sr. No.", key: "sr_no" },
+      { label: "Request Id", key: "request_id" },
+      { label: "Customer Name", key: "customer_name" },
+      { label: "Category", key: "category" },
+      { label: "Bill Number", key: "bill_number" },
+      { label: "Amount", key: "amount" },
+      { label: "Plan", key: "plan" },
+      { label: "Status", key: "status" },
+      { label: "Date", key: "date" },
     ];
+
     const tableRows = data.map((item, index) => [
       index + 1,
       item.RequestId,
@@ -303,19 +162,21 @@ const AdminReport = () => {
 
   const tableStyles = {
     tableWrapperClass:
-      "overflow-x-auto rounded-3xl border border-gray-300 bg-white/95 shadow-xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl",
+      "overflow-x-auto rounded-3xl border border-gray-200 bg-white/90 backdrop-blur-xl shadow-xl transition-all duration-300 hover:shadow-2xl",
     tableClass:
-      "min-w-full text-base divide-y divide-gray-300 border border-gray-300",
+      "min-w-full bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200 overflow-hidden text-gray-700",
     headerClass:
-      "bg-gradient-to-r from-blue-500 to-teal-500 text-white font-semibold text-sm uppercase tracking-wider sticky top-0 shadow-md border-b border-gray-300",
+      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white text-sm font-semibold uppercase tracking-wide shadow-inner sticky top-0 text-center",
     rowClass:
-      "bg-gray-50 even:bg-gray-100 hover:bg-gradient-to-r hover:from-teal-50 hover:to-teal-100 hover:shadow-md transform hover:scale-[1.01] transition-all duration-300 border-b border-gray-200",
+      "bg-white even:bg-gray-50 hover:bg-indigo-50/60 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl mb-2 cursor-pointer",
+    cellClass:
+      "py-3 px-4 text-sm font-medium first:rounded-l-xl last:rounded-r-xl text-center",
     paginationClass:
-      "flex justify-center items-center gap-2 py-3 border-t border-gray-200 mt-4 flex-wrap",
+      "bg-blue-50/80 shadow-inner rounded-lg px-4 py-2 text-blue-700 flex items-center justify-center gap-2 mt-4",
     paginationBtnClass:
-      "flex items-center gap-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-2.5 py-1.5 rounded-lg shadow-md hover:from-teal-600 hover:to-teal-700 disabled:opacity-40 text-sm",
+      "flex items-center gap-1 bg-blue-500 text-white px-2.5 py-1.5 rounded-lg shadow-md hover:bg-blue-600 disabled:opacity-40 text-sm transition-all",
     paginationActiveClass:
-      "px-3 py-1 rounded-full bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg text-sm transition-all",
+      "px-3 py-1 rounded-full bg-blue-700 text-white shadow-lg text-sm transition-all",
   };
 
   return (
@@ -347,15 +208,45 @@ const AdminReport = () => {
             name: "category",
             label: "Category",
             type: "select",
-            options: ["Electricity", "Gas", "Loan", "Water", "Mobile"],
+            options: [
+              "Agent Collection",
+              "Broadband Postpaid",
+              "Cable TV",
+              "Clubs and Associations",
+              "Credit Card",
+              "Donation",
+              "DTH",
+              "eChallan",
+              "Education Fees",
+              "Electricity",
+              "EV Recharge",
+              "Fastag",
+              "Gas",
+              "Housing Society",
+              "Insurance",
+              "Landline Postpaid",
+              "Loan Repayment",
+              "LPG Gas",
+              "Mobile Postpaid",
+              "Mobile Prepaid",
+              "Municipal Services",
+              "Municipal Taxes",
+              "National Pension System",
+              "NCMC Recharge",
+              "Prepaid Meter",
+              "Recurring Deposit",
+              "Rental",
+              "Subscription",
+              "Water",
+            ],
           },
           {
             name: "status",
             label: "Status",
             type: "select",
-            options: ["Failed", "Initiated", "Pending", "Success"],
+            options: ["Failed", "Initiated", "Pending", "Successful"],
           },
-          { name: "billNumber", label: "Bill Number", type: "text" },
+          { name: "billNumber", label: "Transaction ID", type: "text" },
         ]}
       />
 
