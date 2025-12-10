@@ -9,32 +9,43 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faShieldAlt } from "@fortawesome/free-solid-svg-icons";
 import TableSkeleton from "../components/TableSkeleton";
 
-// ------------------ CONFIRMATION BOX ------------------
+/* ------------------ CONFIRMATION BOX ------------------ */
 const ConformationBox = ({ onYes, onNo, userName }) => (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
-      <h2 className="text-lg font-semibold mb-4">
-        Are you sure? You Want to Delete {userName}`s records
-      </h2>
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={onYes}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-        >
-          Yes
-        </button>
-        <button
-          onClick={onNo}
-          className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
-        >
-          No
-        </button>
-      </div>
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+  <div className="bg-white rounded-2xl shadow-2xl w-80 text-center p-6">
+    
+    {/* Header */}
+    <h2 className="text-xl font-semibold text-gray-800 mb-2">
+      Are you sure?
+    </h2>
+
+    {/* Message */}
+    <p className="text-gray-600 mb-6">
+      You want to delete <span className="font-semibold text-red-600">{userName}</span>'s records.
+    </p>
+
+    {/* Buttons */}
+    <div className="flex justify-center gap-4">
+      <button
+        onClick={onYes}
+        className="px-5 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition-colors"
+      >
+        Yes
+      </button>
+      <button
+        onClick={onNo}
+        className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg shadow hover:bg-gray-300 transition-colors"
+      >
+        No
+      </button>
     </div>
+
   </div>
+</div>
+
 );
 
-// ------------------ EDIT MODAL ------------------
+/* ------------------ EDIT MODAL ------------------ */
 const EditModel = ({ user, onClose }) => (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
     <div className="bg-white w-80 p-6 rounded-xl shadow-xl text-center">
@@ -51,7 +62,7 @@ const EditModel = ({ user, onClose }) => (
   </div>
 );
 
-// ------------------ PERMISSIONS MODAL ------------------
+/* ------------------ PERMISSIONS MODAL ------------------ */
 const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
   const [selectedCategories, setSelectedCategories] = useState([]);
 
@@ -118,7 +129,6 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
       refreshUsers?.();
       alert("Categories added successfully!");
     } catch (err) {
-      console.error("Failed to add categories:", err);
       alert("Failed to add categories!");
     }
   };
@@ -131,15 +141,7 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
       refetch();
       refreshUsers?.();
       alert(`Category "${category}" removed successfully!`);
-    } catch (err) {
-      console.error("Failed to remove category:", err);
-      alert("Failed to remove category!");
-    }
-  };
-
-  const handleSelectChange = (e) => {
-    const options = [...e.target.selectedOptions].map((o) => o.value);
-    setSelectedCategories(options);
+    } catch {}
   };
 
   return (
@@ -148,19 +150,18 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
         <h2 className="text-lg font-semibold mb-4">Manage Categories</h2>
 
         {isLoading && <p>Loading categories...</p>}
-        {error && <p className="text-red-500">Failed to load categories</p>}
+        {error && <p className="text-red-500">Error loading categories</p>}
 
         <ul className="mb-4 max-h-40 overflow-y-auto border p-2 rounded">
-          {data?.categories?.length === 0 && <li>No categories assigned</li>}
-          {data?.categories?.map((cat, idx) => (
+          {data?.categories?.map((cat, i) => (
             <li
-              key={idx}
-              className="py-1 border-b last:border-b-0 flex justify-between items-center"
+              key={i}
+              className="py-1 border-b last:border-b-0 flex justify-between"
             >
               <span>{cat}</span>
               <button
                 onClick={() => handleRemoveCategory(cat)}
-                className="text-red-500 font-bold hover:text-red-700 ml-2"
+                className="text-red-500 font-bold"
               >
                 ×
               </button>
@@ -173,16 +174,21 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
             multiple
             className="flex-1 border p-2 rounded h-32"
             value={selectedCategories}
-            onChange={handleSelectChange}
+            onChange={(e) =>
+              setSelectedCategories(
+                [...e.target.selectedOptions].map((o) => o.value)
+              )
+            }
           >
-            {availableCategories.map((cat, idx) => (
-              <option key={idx} value={cat}>
+            {availableCategories.map((cat, i) => (
+              <option key={i} value={cat}>
                 {cat}
               </option>
             ))}
           </select>
+
           <button
-            className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700 transition-colors"
+            className="bg-blue-600 text-white px-4 rounded"
             onClick={handleAddCategories}
             disabled={isAdding || selectedCategories.length === 0}
           >
@@ -191,7 +197,7 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
         </div>
 
         <button
-          className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+          className="absolute top-2 right-2 text-gray-700"
           onClick={onClose}
         >
           ✕
@@ -201,18 +207,24 @@ const PermissionsModal = ({ userId, onClose, refreshUsers }) => {
   );
 };
 
-// ------------------ MAIN USERS COMPONENT ------------------
+/* ------------------ MAIN USERS COMPONENT ------------------ */
+
 const Users = () => {
   const navigate = useNavigate();
   const { getData, deleteData } = useAuth();
 
   const [isAlert, setIsAlert] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [permissionsUser, setPermissionsUser] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [deleteName, setDeleteName] = useState(null);
-  const refresh = () => setRefreshKey((prev) => prev + 1);
+  const [permissionsUser, setPermissionsUser] = useState(null);
+
+  const [originalData, setOriginalData] = useState([]);
+  const [tableData, setTableData] = useState([]);
+
+  const [filters, setFilters] = useState({ name: "", email: "" });
+
+  const [refreshKey, setRefreshKey] = useState(0);
+  const refresh = () => setRefreshKey((p) => p + 1);
 
   const {
     data: merchantsData,
@@ -222,15 +234,8 @@ const Users = () => {
 
   const { execute: updateStatus } = usePost("/update-user-statuses");
   const { execute: deleteUser } = usePost(`/delete-merchant/${deleteId}`);
-
-  const [openTopUpModal, setOpenTopUpModal] = useState(false);
-  const [topUpModalData, setTopUpModalData] = useState(null);
-  const [originalData, setOriginalData] = useState([]);
-  const [tableData, setTableData] = useState([]);
-  const [filters, setFilters] = useState({ name: "", email: "" });
-  const [clear, setClear] = useState(1);
-
-  const handleToggleStatus = async (item) => {
+// --------------------------------STATUS UPDATE---------------------
+const handleToggleStatus = async (item) => {
     const newStatus = item.account_status ? 0 : 1;
 
     try {
@@ -241,22 +246,15 @@ const Users = () => {
           u.id === item.id ? { ...u, account_status: newStatus } : u
         )
       );
-      refresh();
+      
       clearFilters();
+      refresh();
     } catch (err) {
       console.error("Status update failed:", err);
     }
   };
 
-  const columns = [
-    { label: "Actions", key: "actions" },
-    { label: "User ID", key: "user_id" },
-    { label: "Name", key: "name" },
-    { label: "Email", key: "email" },
-    { label: "Amount", key: "amount" },
-    { label: "Top Up", key: "top_up" },
-    { label: "Account Status", key: "account_status" },
-  ];
+  /* ------------------ BUILD TABLE ROWS ------------------ */
 
   const buildTableRows = (data) =>
     data.map((item, index) => ({
@@ -279,26 +277,21 @@ const Users = () => {
       actions: (
         <div className="flex items-center gap-3">
           <button
-            className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            title="Edit"
-            onClick={() => {
-              navigate("/UpdateUser", { state: { item } });
-            }}
+            className="p-2 bg-blue-600 text-white rounded-md"
+            onClick={() => navigate("/UpdateUser", { state: { item } })}
           >
             <FontAwesomeIcon icon={faPen} />
           </button>
 
           <button
-            className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-            title="Delete"
+            className="p-2 bg-red-600 text-white rounded-md"
             onClick={() => handleDelete(item.id, item.name)}
           >
             <FontAwesomeIcon icon={faTrash} />
           </button>
 
           <button
-            className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-            title="Permissions"
+            className="p-2 bg-green-600 text-white rounded-md"
             onClick={() => setPermissionsUser(item)}
           >
             <FontAwesomeIcon icon={faShieldAlt} />
@@ -308,19 +301,59 @@ const Users = () => {
       top_up: (
         <button
           onClick={() => {
-            setTopUpModalData({ merchantId: item.id });
             setOpenTopUpModal(true);
+            setTopUpModalData({ merchantId: item.id });
           }}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+          className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded"
         >
           Top Up
         </button>
       ),
     }));
-  const clearFilters = () => {
-    console.log("filter this is ");
-    setClear(clear + 1);
+
+  /* ------------------ FILTER INPUT HANDLER ------------------ */
+  const handleFilterChange = (e) => {
+    const { id, value } = e.target;
+    setFilters((prev) => ({ ...prev, [id]: value }));
   };
+
+  /* ------------------ FILTERING LOGIC ------------------ */
+  const filteredUsers = useMemo(() => {
+    return originalData.filter((u) => {
+      const matchName = filters.name
+        ? u.name.toLowerCase().includes(filters.name.toLowerCase())
+        : true;
+
+      const matchEmail = filters.email
+        ? u.email.toLowerCase().includes(filters.email.toLowerCase())
+        : true;
+
+      return matchName && matchEmail;
+    });
+  }, [filters, originalData]);
+
+  /* ------------------ BUILD TABLE WHEN FILTER CHANGES ------------------ */
+  useEffect(() => {
+    setTableData(buildTableRows(filteredUsers));
+  }, [filteredUsers]);
+
+  /* ------------------ ON LOAD ------------------ */
+  useEffect(() => {
+    if (merchantsData?.status) {
+      let finalData = [...merchantsData.data];
+
+      const stored = getData("postSubmitData");
+      if (stored?.newUser) {
+        deleteData("postSubmitData");
+        finalData.push(stored.newUser);
+      }
+
+      setOriginalData(finalData);
+      setTableData(buildTableRows(finalData));
+    }
+  }, [merchantsData]);
+
+  /* ------------------ DELETE HANDLERS ------------------ */
 
   const handleDelete = (id, name) => {
     setDeleteId(id);
@@ -331,62 +364,22 @@ const Users = () => {
   const confirmDelete = async () => {
     const res = await deleteUser();
     setIsAlert(false);
-    setDeleteId(null);
-    setDeleteName(null);
     if (res?.status) refresh();
   };
 
-  const cancelDelete = () => {
-    setIsAlert(false);
-    setDeleteId(null);
-    setDeleteName(null);
-  };
-
-  useEffect(() => {
-    if (merchantsData?.status) {
-      let finalData = [...merchantsData.data];
-      const stored = getData("postSubmitData");
-
-      if (stored?.newUser) {
-        deleteData("postSubmitData");
-        finalData.push(stored.newUser);
-      }
-
-      setOriginalData(finalData);
-      setTableData(buildTableRows(finalData));
-    }
-  }, [merchantsData, clear, refreshKey]);
-
-  const handleFilterChange = (e) => {
-    const { id, value } = e.target;
-    setFilters((prev) => ({ ...prev, [id]: value }));
-  };
-
-  const applyFilters = () => {
-    let filtered = [...originalData];
-
-    if (filters.name)
-      filtered = filtered.filter((item) =>
-        item.name.toLowerCase().includes(filters.name.toLowerCase())
-      );
-
-    if (filters.email)
-      filtered = filtered.filter((item) =>
-        item.email.toLowerCase().includes(filters.email.toLowerCase())
-      );
-
-    setTableData(buildTableRows(filtered));
-  };
-
+  /* ------------------ CLEAR FILTERS ------------------ */
+  const clearFilters = () => setFilters({ name: "", email: "" });
+  
+  /* ------------------ STYLES ------------------ */
   const tstyle = {
     tableClass:
       "min-w-full bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200 overflow-hidden text-gray-700",
     headerClass:
-      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white text-sm font-semibold uppercase tracking-wide shadow-inner sticky top-0",
+      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white text-sm font-semibold uppercase tracking-wide shadow-inner sticky top-0 text-center",
     rowClass:
       "bg-white even:bg-gray-50 hover:bg-indigo-50/60 transition-all duration-300 shadow-sm hover:shadow-md rounded-xl mb-2 cursor-pointer",
     cellClass:
-      "py-3 px-4 text-sm font-medium first:rounded-l-xl last:rounded-r-xl",
+      "py-3 px-4 text-sm font-medium first:rounded-l-xl last:rounded-r-xl text-center",
     paginationClass:
       "bg-white/60 shadow-inner rounded-lg px-4 py-2 text-gray-700 flex items-center justify-center gap-2 mt-4",
   };
@@ -394,50 +387,37 @@ const Users = () => {
   return (
     <>
       {/* FILTER SECTION */}
-      <section className="mx-auto bg-white p-4 rounded-xl shadow-md border border-gray-200 mt-8 flex flex-col justify-between">
+      <section className="mx-auto bg-white p-4 rounded-xl shadow-md mt-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Filter Users
         </h2>
 
         <div className="flex flex-wrap gap-4 justify-between items-end">
           <div className="flex flex-col flex-1 min-w-[180px]">
-            <label htmlFor="name" className="text-gray-700 font-medium mb-2">
-              Name:
-            </label>
+            <label className="mb-2">Name</label>
             <input
-              type="text"
               id="name"
-              placeholder="Enter Name"
               value={filters.name}
               onChange={handleFilterChange}
-              className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="p-2 rounded"
+              placeholder="Enter name"
             />
           </div>
 
           <div className="flex flex-col flex-1 min-w-[180px]">
-            <label htmlFor="email" className="text-gray-700 font-medium mb-2">
-              Email:
-            </label>
+            <label className="mb-2">Email</label>
             <input
-              type="email"
               id="email"
-              placeholder="Enter Email"
               value={filters.email}
               onChange={handleFilterChange}
-              className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="p-2 rounded"
+              placeholder="Enter email"
             />
           </div>
 
           <button
-            onClick={applyFilters}
-            className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 mt-6"
-          >
-            Search
-          </button>
-
-          <button
             onClick={clearFilters}
-            className="px-6 py-2 bg-gray-400 text-white font-medium rounded-lg hover:bg-gray-500 transition-all duration-300 mt-6"
+            className="px-6 py-2 bg-gray-500 text-white rounded-lg mt-6"
           >
             Clear
           </button>
@@ -446,7 +426,7 @@ const Users = () => {
 
       {/* USERS LIST */}
       <section>
-        <div className="mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-200 mt-8">
+        <div className="mx-auto bg-white p-6 rounded-xl shadow-md mt-8">
           {loadingMerchants ? (
             <TableSkeleton />
           ) : (
@@ -455,7 +435,7 @@ const Users = () => {
                 <span className="font-semibold">All Users List</span>
                 <button
                   onClick={() => navigate("/addUser")}
-                  className="bg-green-800 text-white rounded-lg px-3 py-2 h-10"
+                  className="bg-green-800 text-white rounded-lg px-3 py-2"
                 >
                   Add Users
                 </button>
@@ -463,7 +443,15 @@ const Users = () => {
 
               <Table
                 data={tableData}
-                columns={columns}
+                columns={[
+                  { label: "Actions", key: "actions" },
+                  { label: "User ID", key: "user_id" },
+                  { label: "Name", key: "name" },
+                  { label: "Email", key: "email" },
+                  { label: "Amount", key: "amount" },
+                  { label: "Top Up", key: "top_up" },
+                  { label: "Account Status", key: "account_status" },
+                ]}
                 currentPage={1}
                 rowsPerPage={10}
                 isPaginationRequired={true}
@@ -476,25 +464,15 @@ const Users = () => {
         </div>
       </section>
 
-      {/* TOPUP MODAL */}
-      {openTopUpModal && (
-        <TopUpModal
-          data={topUpModalData}
-          isOpen={openTopUpModal}
-          onClose={() => setOpenTopUpModal(false)}
-          refresh={refresh}
+      {/* DELETE CONFIRMATION */}
+      {isAlert && (
+        <ConformationBox
+          onYes={confirmDelete}
+          onNo={() => setIsAlert(false)}
+          userName={deleteName}
         />
       )}
 
-      {/* DELETE CONFIRMATION BOX */}
-      {isAlert && <ConformationBox onYes={confirmDelete} onNo={cancelDelete} userName={deleteName}/>}
-
-      {/* EDIT MODAL */}
-      {selectedUser && (
-        <EditModel user={selectedUser} onClose={() => setSelectedUser(null)} />
-      )}
-
-      {/* PERMISSIONS MODAL */}
       {permissionsUser && (
         <PermissionsModal
           userId={permissionsUser.id}

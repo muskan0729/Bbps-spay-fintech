@@ -81,7 +81,7 @@ console.log("from Table",data);
             {columns.map((col, idx) => (
               <th
                 key={typeof col === "string" ? col : col.key || idx}
-                className="px-3 sm:px-4 py-2 text-left text-sm font-semibold uppercase tracking-wide whitespace-nowrap"
+                className="px-3 sm:px-4 py-2 "
               >
                 {getColumnLabel(col)}
               </th>
@@ -103,7 +103,7 @@ console.log("from Table",data);
             <tr>
               <td
                 colSpan={columns.length}
-                className="text-center py-6 text-gray-500 text-sm"
+                // className="text-center py-6 text-gray-500 text-sm"
               >
                 No data found
               </td>

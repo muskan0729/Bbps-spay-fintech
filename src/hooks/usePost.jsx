@@ -74,8 +74,8 @@ export function usePost(endpoint) {
       const isFormData =
         typeof FormData !== "undefined" && body instanceof FormData;
 
-      console.log("Line 70", isFormData);
-      console.log("Line 71", body);
+      // console.log("Line 77", isFormData);
+      // console.log("Line 78", body);
 
       response = await axios.post(`${BASE_URL}${endpoint}`, body, {
         headers: {
@@ -83,7 +83,7 @@ export function usePost(endpoint) {
           ...(isFormData ? {} : { "Content-Type": "application/json" }), // ❗ Correct logic
         },
       });
-      console.log("Line 79", response.data);
+      console.log("Line 86", response.data);
       setData(response.data);
       return response.data;
     } catch (err) {
