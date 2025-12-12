@@ -79,7 +79,7 @@ export const navItems = [
   },
   {
     icon: faCircleExclamation,
-    label: "Check Complaint",
+    label: "Check Transaction Status",
     path: "/checktransactionstatus",
     roles: ["admin"],
     component: CheckTransactionStatus,

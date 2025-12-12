@@ -7,7 +7,7 @@ import SchemeOperationModal from "../components/SchemeOperationModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import TableSkeleton from "../components/TableSkeleton";
-
+import {ServicesAuthContext} from "../contexts/ServicesAuthContext"
 const Scheme = () => {
   const { isModelOpen, setIsModelOpen } = useContext(SchemeContext);
 
@@ -28,20 +28,19 @@ const Scheme = () => {
   const [operation, setOperation] = useState(null);
   const [value, setValue] = useState(null);
 
-const columns = [
-  { label: "Action", key: "action" },
-  { label: "ID", key: "id" },
-  { label: "Name", key: "name" },
-  { label: "Commission Type", key: "commission_type" },
-  { label: "Type", key: "type" },
-  { label: "Commission Value", key: "commission_value" },
-  { label: "Status", key: "status" },
-  { label: "GST Type", key: "gst_type" },
-  { label: "GST Value", key: "gst_value" },
-  { label: "Created At", key: "created_at" },
-  { label: "Updated At", key: "updated_at" },
-];
-
+  const columns = [
+    { label: "Action", key: "action" },
+    { label: "ID", key: "id" },
+    { label: "Name", key: "name" },
+    { label: "Commission Type", key: "commission_type" },
+    { label: "Type", key: "type" },
+    { label: "Commission Value", key: "commission_value" },
+    { label: "Status", key: "status" },
+    { label: "GST Type", key: "gst_type" },
+    { label: "GST Value", key: "gst_value" },
+    { label: "Created At", key: "created_at" },
+    { label: "Updated At", key: "updated_at" },
+  ];
 
   const tstyle = {
     tableClass:
@@ -156,11 +155,13 @@ const columns = [
 
       {/* 🔥 Pass refresh to modal → child */}
       {isModelOpen && (
-        <SchemeOperationModal
-          operation={operation}
-          value={value}
-          refresh={refresh}
-        />
+        <ServicesAuthContext>
+          <SchemeOperationModal
+            operation={operation}
+            value={value}
+            refresh={refresh}
+          />
+        </ServicesAuthContext>
       )}
     </>
   );

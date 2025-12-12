@@ -37,7 +37,9 @@ export function usePost(endpoint) {
       // ---------- BBPS RAW JSON REQUEST ----------
       if (
         endpoint === "/bbps/biller-info/json" ||
-        endpoint === "/bbps/plan-pull/json"
+        endpoint === "/bbps/plan-pull/json" ||
+        endpoint === "/bbps/plan-pull-test/json" ||
+        endpoint === "/bbps/biller-info-test/json"
       ) {
         console.log(body);
 
@@ -83,14 +85,14 @@ export function usePost(endpoint) {
           ...(isFormData ? {} : { "Content-Type": "application/json" }), // ❗ Correct logic
         },
       });
-      console.log("Line 86", response.data);
+      console.log("Line 88", response.data);
       setData(response.data);
       return response.data;
     } catch (err) {
       const errData = err.response?.data || "Something went wrong...";
       setError(errData);
-      console.error(err);
-      throw err;
+      // console.log("this is error from hook jgfjg",err);
+      // throw err;
     } finally {
       setLoading(false);
     }

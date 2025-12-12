@@ -19,6 +19,7 @@ export function useGet(endpoint) {
     try {
       if (!byID) {
         // Normal fetch
+        console.log(`url::${BASE_URL}${endpoint}`);
         const response = await axios.get(`${BASE_URL}${endpoint}`, {
           headers: {
             Authorization: `Bearer ${cookie.token}`,

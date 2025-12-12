@@ -1,18 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ServicesModalWrapper } from "../ServicesModalWrapper";
 import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
 import { usePost } from "../../hooks/usePost";
+import { useServicesContext } from "../../contexts/ServicesAuthContext";
 
 const PlanDisplay = () => {
   const { isModalOpen, getModalData, openModal, closeModal } = useModal();
   const {selectedBiller} = getModalData("plandisplay") || {};
   const isOpen = isModalOpen("plandisplay");
+  const {forWhat}=useServicesContext();
+  
+  const testEnv=useMemo(()=>{
+    return forWhat
+  },[forWhat]);
 
-  const { execute } = usePost("/bbps/plan-pull/json");
+  const { execute } = usePost(`/bbps/plan-pull${testEnv}/json`);
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [response, setResponse] = useState(null);
+
 
   useEffect(() => {
     const fetchPlans = async () => {

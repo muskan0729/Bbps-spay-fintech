@@ -1,22 +1,28 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { ServicesModalWrapper } from "../ServicesModalWrapper";
 import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
-
+import { useServicesContext } from "../../contexts/ServicesAuthContext";
 const PaymentConfirmation = () => {
   const { isModalOpen, getModalData, closeModal } = useModal();
   const { lastModal, serviceId } = getModalData("lastModal") || {};
   const isOpen = isModalOpen("lastModal");
-
+  const {forWhat}=useServicesContext();
   const printRef = useRef();
+    const testEnv=useMemo(()=>{
+      return forWhat
+    },[forWhat]);
+    const [flat,setFlat]=useState({});
 
   /* ---------------- FORMAT RESPONSE ---------------- */
   const formatResponse = (data) => {
     if (!data?.response) return [];
 
     const resp = data.response;
+    // console.log(resp);
 
-    const flat = {
+    if (resp.responseReason!=="FAILURE") {
+    setFlat( {
       ResponseCode: resp.responseCode,
       ResponseReason: resp.responseReason,
       TransactionRefId: resp.txnRefId,
@@ -31,8 +37,17 @@ const PaymentConfirmation = () => {
 
       ApprovalRefNumber: resp.approvalRefNumber,
       RequestId: resp.requestId,
-    };
+    });
+   
+    }else{
+       setFlat({
+      ResponseCode: resp.responseCode,
+      ResponseReason: resp.responseReason,
+      errorMesssaage:resp.vErrorRootVO.error[0].errorMessage
 
+      })
+    }
+   
     // Add input params safely
     const inputParams =
       resp.inputParams?.input?.map((i) => ({

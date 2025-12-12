@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ServicesModalWrapper } from "../ServicesModalWrapper";
 import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
 import { usePost } from "../../hooks/usePost";
+import { useServicesContext } from "../../contexts/ServicesAuthContext";
 
 const DetailConfirmation = () => {
   const { isModalOpen, getModalData, closeModal, openModal } = useModal();
-
+  const { forWhat } = useServicesContext();
   // Fallback for modal data
   const modalData = getModalData("finalData") || {};
   const { data = {}, custData = {}, selectedBiller = {} } = modalData;
 
+  const testEnv = useMemo(() => {
+    return forWhat;
+  }, [forWhat]);
   const [input, setInput] = useState([]);
   const [addInfo, setAddInfo] = useState([]);
   const [billerRes, setBillerRes] = useState({});
@@ -18,18 +22,32 @@ const DetailConfirmation = () => {
   const [userDataRequire, setUserDataRequire] = useState(false);
   const [formValues, setFormValues] = useState({ amount: "" });
   const [userData, setUserData] = useState({});
+  const [isDisplay,setIsDisplay]=useState(false);
   const { error, execute: fetchPayment } = usePost(
-    "/bbps/bill-payment/json"
+    `/bbps/bill-payment${testEnv}/json`
   );
   const [resError, setResError] = useState();
 
   /* ---------------- LOAD RESPONSE FIELDS ---------------- */
   useEffect(() => {
-    if (error) {
-      setResError(error.message || "Something went wrong");
-      console.log("API Error (hook):", error);
+    if (error?.errors) {
+      let a = error?.errors;
+      let msg = Object.values(a)[0][0];
+      console.log("ERROR HANDELING ", a);
+     
+      setResError(msg);
     }
+
+    // if (error?.message) {
+    //   setResError(error.message || "Something went wrong");
+    //   console.log("API Error (hook):", error);
+    // }
   }, [error]);
+  useEffect(()=>{
+     setIsDisplay(true);
+     setTimeout(()=>(setIsDisplay(false)),[3000])
+  },[resError])
+
 
   useEffect(() => {
     if (!selectedBiller) return;
@@ -91,6 +109,9 @@ const DetailConfirmation = () => {
     console.log("🔥 Final Payment Payload:", finalMergedData);
 
     const response = await fetchPayment(finalMergedData);
+    if (!response) {
+      return;
+    }
     console.log("API Response:", response);
 
     // 1️⃣ Generic API error
@@ -105,6 +126,19 @@ const DetailConfirmation = () => {
       const messages = Object.values(response.errors).flat().join(", ");
       setResError(messages);
       console.log("Validation Error:", messages);
+      return;
+    }
+
+    // FORM BBPS ERROR
+    if (response?.response.vErrorRootVO) {
+      console.log(
+        "this is hththt",
+        response?.response.vErrorRootVO.error[0].errorMessage
+      );
+      setResError(response?.response.vErrorRootVO.error[0].errorMessage);
+
+      // set
+      closeModal("finalData");
       return;
     }
 
@@ -146,7 +180,7 @@ const DetailConfirmation = () => {
           )}
 
           {/* Show API Error */}
-          {resError && <div className="text-red-500 mt-2">{resError}</div>}
+          {isDisplay && resError && <div className="text-red-500 mt-2">{resError}</div>}
 
           {/* User Required Input Fields */}
           <div className="mt-5 bg-gray-50 p-4 rounded-lg shadow-sm border">

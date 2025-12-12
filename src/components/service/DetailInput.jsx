@@ -3,10 +3,16 @@ import { ServicesModalWrapper } from "../ServicesModalWrapper";
 import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
 import { usePost } from "../../hooks/usePost";
+import { useServicesContext } from "../../contexts/ServicesAuthContext";
+import { useMemo } from "react";
 
 const DetailInput = () => {
   const { isModalOpen, getModalData, openModal, closeModal } = useModal();
+  const { forWhat } = useServicesContext();
 
+  const testEnv = useMemo(() => {
+    return forWhat;
+  }, [forWhat]);
   // Modal data
   const { selectedBiller } = getModalData("details") || {};
   const isOpen = isModalOpen("details");
@@ -20,23 +26,37 @@ const DetailInput = () => {
   const [custEmail, setCustEmail] = useState("");
   const [custAdd, setCustAdd] = useState("");
   const [custPan, setCustPan] = useState("");
-
+  // const [disable,setDisable]=useState();
   const [billerFetchRequiremet, setBillerFetchRequiremet] = useState(false);
   const [resError, setResError] = useState();
   const { error, execute: fetchResponse } = usePost(
-    "/bbps/bill-process/json"
+    `/bbps/bill-process${testEnv}/json`
   );
 
   /* -------------------------------------------------------
      LOAD selectedBiller PARAMS
   ------------------------------------------------------- */
   useEffect(() => {
+    if (error?.result.message) {
+      setResError(error.result.message);
+    }
 
-    setResError(error);  // sync UI error
-    console.log("line 35", error?.result?.message);
-
-  }, [resError]);
-
+    if (error?.result?.errors) {
+      let a = error?.result?.errors;
+      let msg = Object.values(a)[0][0];
+      console.log(msg);
+      setResError(msg);
+    }
+    if (error?.result?.decryptedResponse) {
+      setResError(
+        error?.result?.decryptedResponse.errorInfo.error[0].errorMessage
+      ); // sync UI error
+      console.log(
+        "line 45",
+        error?.result?.decryptedResponse.errorInfo.error[0].errorMessage
+      );
+    }
+  }, [error]);
 
   // const checkError=useCallback(async()=>{
   //   await setResError(error);
@@ -72,6 +92,7 @@ const DetailInput = () => {
   ------------------------------------------------------- */
   const handleSubmit = async (close) => {
     // 1️⃣ Merge mandatory UI fields into formValues dynamically
+    // setDisable(!true)
 
     const extendedFormValues = {
       ...formValues,
@@ -108,6 +129,10 @@ const DetailInput = () => {
     // setResError(null);
     const response = await fetchResponse(requestBody.data);
 
+    if (!response) {
+      console.log("UNDEFINED ::::::;-----", response);
+      return;
+    }
     // const response = await fetchResponse(requestBody.data);
     // checkError();
     const res = response?.result;
@@ -121,8 +146,10 @@ const DetailInput = () => {
 
     // Otherwise, success shape
     const decrypted = res?.decryptedResponse;
+    console.log("Line 12999999999999999", decrypted);
+
     if (!decrypted || decrypted.responseCode !== "000") {
-      console.log("API Error:", decrypted?.responseReason || "Unknown error");
+      console.log("API Error:", decrypted || "Unknown error");
       setResError(decrypted?.responseReason || "Unknown error");
       return;
     }
@@ -252,8 +279,8 @@ const DetailInput = () => {
       onClose={() => closeModal("details")}
       renderHeader={
         <>
-          <img src={placeholderImg} alt="Logo" className="h-7" />
-          <span className="font-semibold ml-2">
+          <img src={placeholderImg} alt="Logo" className="h-6" />
+          <span className="font-semibold ml-2 text-sm">
             Details for {selectedBiller?.billerName}
           </span>
         </>
@@ -262,33 +289,37 @@ const DetailInput = () => {
         <>
           {selectedBiller ? (
             <>
-              {inputMapper()}
-              {billerFetchRequiremet && mandatoryInputs()}
-              <div className="text-red-500">
-                {resError && resError?.result?.message}
+              <div className="space-y-2"> {inputMapper()} </div>
+
+              {billerFetchRequiremet && (
+                <div className="mt-2 space-y-2">{mandatoryInputs()}</div>
+              )}
+
+              <div className="text-red-500 text-sm mt-1">
+                {resError && <>{resError}</>}
               </div>
             </>
           ) : (
-            <p>Loading...</p>
+            <p className="text-sm">Loading...</p>
           )}
         </>
       }
       renderFooter={(close) => (
-        <>
+        <div className="flex justify-end space-x-2 mt-2">
           <button
             onClick={() => handleSubmit(close)}
-            className="px-4 py-2 bg-blue-600 text-white rounded mr-2"
+            className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm"
           >
             Submit
           </button>
 
           <button
             onClick={close}
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            className="px-3 py-1.5 bg-gray-300 rounded hover:bg-gray-400 text-sm"
           >
             Cancel
           </button>
-        </>
+        </div>
       )}
     />
   );

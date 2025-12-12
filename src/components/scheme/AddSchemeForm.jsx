@@ -4,14 +4,13 @@ import { SchemeContext } from "../../contexts/SchemeContext";
 import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
 import Select from "react-select";
-// import {}
+import { useServicesContext } from "../../contexts/ServicesAuthContext";
+
 const AddSchemeForm = ({ refresh }) => {
   const { setIsModelOpen } = useContext(SchemeContext);
-
   const { data: merchentData } = useGet("/get-merchants");
   // const { data: billerData } = useGet("/get-biller-name-and-category");
   const { execute } = usePost("/create-scheme");
-
   const [schemeName, setSchemeName] = useState("");
   const [merchentValue, setMerchentValue] = useState([]);
   const [billerValue, setBillerValue] = useState([]);
@@ -22,9 +21,11 @@ const AddSchemeForm = ({ refresh }) => {
   const [isError, setIsError] = useState("");
   const [category, setCategory] = useState("");
   const [billerData, setBillerData] = useState([]);
+const {forWhat}=useServicesContext();
 
   const endpoint = useMemo(() => {
-    return category ? `/get-billers-test/${category}` : null;
+    // console.log(`endpoint  ::=> /get-billers${forWhat}/${category}`);
+    return category ? `/get-billers${forWhat}/${category}` : null;
   }, [category]);
 
   const { data: serviceByCategory } = useGet(endpoint);
@@ -98,126 +99,117 @@ const AddSchemeForm = ({ refresh }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm  p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl p-6 relative h-[85vh] flex flex-col">
-  {/* Header */}
-  <div className="flex justify-between items-center mb-4">
-    <h2 className="text-xl font-semibold">Add Scheme</h2>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Add Scheme</h2>
+          <button
+            onClick={closeModal}
+            className="text-gray-600 hover:text-gray-900 text-3xl font-bold"
+          >
+            &times;
+          </button>
+        </div>
 
-    <button
-      onClick={closeModal}
-      className="text-gray-600 hover:text-gray-900 text-3xl font-bold"
-    >
-      &times;
-    </button>
-  </div>
+        <span className="text-red-500 text-sm mb-2">{isError}</span>
 
-  <span className="text-red-500 text-sm mb-2">{isError}</span>
+        {/* Category */}
+        <div className="flex flex-col gap-2 w-64 mb-4">
+          <label className="text-gray-700 font-semibold">Select Category</label>
+          <select
+            onChange={(e) => {
+              setSchemeName(e.target.value);
+              setCategory(e.target.value);
+            }}
+            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800"
+            value={category}
+          >
+            <option value="">Select Category</option>
+            {servicesList.map((s) => (
+              <option key={s.label} value={s.label}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
 
-  {/* Category */}
-  <div className="flex flex-col gap-2 w-64 mb-4">
-    <label className="text-gray-700 font-semibold">Select Category</label>
-    <select
-      onChange={(e) => {
-        setSchemeName(e.target.value);
-        setCategory(e.target.value);
-      }}
-      className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800"
-      value={category}
-    >
-      <option value="">Select Category</option>
-      {servicesList.map((s) => (
-        <option key={s.label} value={s.label}>
-          {s.label}
-        </option>
-      ))}
-    </select>
-  </div>
+        <h3 className="text-lg font-semibold mb-2">Commission Fee</h3>
 
-  {/* Commission Table */}
-  <h3 className="text-lg font-semibold mb-2">Commission Fee</h3>
+        {/* Scrollable */}
+        <div className="overflow-y-auto pr-2 flex-1">
+          {/* Card Layout Instead of Table */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Merchant */}
+            <div className="bg-gray-50 border p-4 rounded-md shadow-sm">
+              <label className="font-semibold block mb-2">Merchant</label>
+              <Select
+                options={merchentOptions}
+                isMulti
+                value={merchentValue}
+                onChange={setMerchentValue}
+                placeholder="Select Merchants"
+              />
+            </div>
 
-  {/* Scrollable area */}
-  <div className="overflow-y-auto pr-2 flex-1">
+            {/* Biller */}
+            <div className="bg-gray-50 border p-4 rounded-md shadow-sm">
+              <label className="font-semibold block mb-2">Biller</label>
+              <Select
+                options={billerOptions}
+                isMulti
+                value={billerValue}
+                onChange={setBillerValue}
+                placeholder="Select Billers"
+              />
+            </div>
 
-    <table className="w-full rounded-md text-sm border-collapse">
-      <thead>
-        <tr className="bg-blue-300 text-left">
-          <th className="p-2">Merchant</th>
-          <th className="p-2">Biller</th>
-          <th className="p-2">Type</th>
-          <th className="p-2">Amount / %</th>
-          <th className="p-2">GST Value</th>
-        </tr>
-      </thead>
+            {/* Commission Type */}
+            <div className="bg-gray-50 border p-4 rounded-md shadow-sm">
+              <label className="font-semibold block mb-2">Type</label>
+              <select
+                className="w-full border rounded px-2 py-1"
+                onChange={(e) => setCommissionType(e.target.value)}
+              >
+                <option value="">Select</option>
+                <option value="flat">Flat</option>
+                <option value="percent">Percent</option>
+              </select>
+            </div>
 
-      <tbody>
-        <tr className="border-b">
-          <td className="p-2">
-            <Select
-              options={merchentOptions}
-              isMulti
-              value={merchentValue}
-              onChange={setMerchentValue}
-              placeholder="Select Merchants"
-            />
-          </td>
+            {/* Value */}
+            <div className="bg-gray-50 border p-4 rounded-md shadow-sm">
+              <label className="font-semibold block mb-2">Amount / %</label>
+              <input
+                type="text"
+                placeholder="Enter value"
+                className="w-full border rounded px-2 py-1"
+                onChange={(e) => setChargeValue(e.target.value)}
+              />
+            </div>
 
-          <td className="p-2">
-            <Select
-              options={billerOptions}
-              isMulti
-              value={billerValue}
-              onChange={setBillerValue}
-              placeholder="Select Billers"
-            />
-          </td>
+            {/* GST */}
+            <div className="bg-gray-50 border p-4 rounded-md shadow-sm">
+              <label className="font-semibold block mb-2">GST Value</label>
+              <input
+                type="text"
+                placeholder="Enter GST"
+                className="w-full border rounded px-2 py-1"
+                onChange={(e) => setChargeGSTValue(e.target.value)}
+              />
+            </div>
+          </div>
 
-          <td className="p-2">
-            <select
-              className="w-full border rounded px-2 py-1"
-              onChange={(e) => setCommissionType(e.target.value)}
-            >
-              <option value="">Select</option>
-              <option value="flat">Flat</option>
-              <option value="percent">Percent</option>
-            </select>
-          </td>
-
-          <td className="p-2">
-            <input
-              type="text"
-              placeholder="Enter value"
-              className="w-full border rounded px-2 py-1"
-              onChange={(e) => setChargeValue(e.target.value)}
-            />
-          </td>
-
-          <td className="p-2">
-            <input
-              type="text"
-              placeholder="Enter GST"
-              className="w-full border rounded px-2 py-1"
-              onChange={(e) => setChargeGSTValue(e.target.value)}
-            />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    {/* Small Button */}
-    <button
-      className="mt-4 px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition w-fit"
-      onClick={handleSubmit}
-    >
-      Submit
-    </button>
-
-  </div>
-</div>
-
+          {/* Submit */}
+          <button
+            className="mt-4 px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition w-fit"
+            onClick={handleSubmit}
+          >
+            Submit
+          </button>
+        </div>
+      </div>
     </div>
-
   );
 };
 
