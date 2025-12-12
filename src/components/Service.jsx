@@ -1,14 +1,36 @@
 // src/components/ServiceGrid.jsx
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faUserTie, faWifi, faTv, faPeopleGroup, faCreditCard, faSatelliteDish,
-  faCarCrash, faGraduationCap, faBolt, faChargingStation, faRoad, faFire,
-  faBuilding, faShieldHalved, faPhone, faMoneyBillWave, faGasPump,
-  faMobileScreenButton, faLandmark, faFileInvoice, faUser, faTrain,
-  faPlug, faDroplet, faIndianRupeeSign, faHouse, faRotate,
-  faHandHoldingDollar, faReceipt,
+  faUserTie,
+  faWifi,
+  faTv,
+  faPeopleGroup,
+  faCreditCard,
+  faSatelliteDish,
+  faCarCrash,
+  faGraduationCap,
+  faBolt,
+  faChargingStation,
+  faRoad,
+  faFire,
+  faBuilding,
+  faShieldHalved,
+  faPhone,
+  faMoneyBillWave,
+  faGasPump,
+  faMobileScreenButton,
+  faLandmark,
+  faFileInvoice,
+  faUser,
+  faTrain,
+  faPlug,
+  faDroplet,
+  faIndianRupeeSign,
+  faHouse,
+  faRotate,
+  faHandHoldingDollar,
+  faReceipt,
 } from "@fortawesome/free-solid-svg-icons";
-
 import { ModalProvider, useModal } from "../contexts/ServicesModalContext";
 import SelectServiceBiller from "./service/SelectServiceBiller";
 import PaymentConfirmation from "./service/PaymentConfirmation";
@@ -18,7 +40,9 @@ import PlanDisplay from "./service/PlanDisplay";
 import placeholderImg from "../images/logo.png";
 import { useGet } from "../hooks/useGet";
 import { useCookies } from "react-cookie";
-
+import {
+  ServicesAuthContext,useServicesContext
+} from "../contexts/ServicesAuthContext";
 // --- Services List ---
 const servicesList = [
   { icon: faUserTie, label: "Agent Collection" },
@@ -51,7 +75,6 @@ const servicesList = [
   { icon: faRotate, label: "Subscription" },
   { icon: faDroplet, label: "Water" },
 ];
-
 // --- ServiceIcon Component ---
 const ServiceIcon = ({ item }) => {
   const { openModal } = useModal();
@@ -73,7 +96,6 @@ const ServiceIcon = ({ item }) => {
     </li>
   );
 };
-
 // --- Main Grid and Modals Wrapper Component ---
 const ServiceGridContent = () => {
   const { isModalOpen } = useModal();
@@ -87,7 +109,9 @@ const ServiceGridContent = () => {
   // ✅ Filter services only once here
   const filteredServices =
     data?.status && data.categories
-      ? servicesList.filter((service) => data.categories.includes(service.label))
+      ? servicesList.filter((service) =>
+          data.categories.includes(service.label)
+        )
       : [];
 
   return (
@@ -114,12 +138,13 @@ const ServiceGridContent = () => {
     </div>
   );
 };
-
 // --- Main Export Component (Context Encapsulation) ---
 export const ServiceGrid = () => {
   return (
-    <ModalProvider>
-      <ServiceGridContent />
-    </ModalProvider>
+    <ServicesAuthContext>
+      <ModalProvider>
+        <ServiceGridContent />
+      </ModalProvider>
+    </ServicesAuthContext>
   );
 };

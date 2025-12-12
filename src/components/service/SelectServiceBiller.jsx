@@ -4,9 +4,17 @@ import { useModal } from "../../contexts/ServicesModalContext";
 import placeholderImg from "../../images/Spaylogo.jpg";
 import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
+import { useServicesContext } from "../../contexts/ServicesAuthContext";
 
 const SelectServiceBiller = () => {
+  const { forWhat } = useServicesContext();
   const { isModalOpen, getModalData, openModal, closeModal } = useModal();
+
+  const testEnv = useMemo(() => {
+    console.log("this is ", forWhat);
+    return forWhat;
+  }, [forWhat]);
+  // console.log(testEnv);
 
   const [selectedBillerId, setSelectedBillerId] = useState("");
   const [selectedBillerData, setSelectedBillerData] = useState(null);
@@ -18,13 +26,13 @@ const SelectServiceBiller = () => {
   const { service } = getModalData("serviceSelecter") || {};
 
   const endpoint = useMemo(() => {
-    return service?.label ? `/get-billers/${service.label}` : null;
+    return service?.label ? `/get-billers${testEnv}/${service.label}` : null;
   }, [service?.label]);
 
   const { data, loading: apiLoading } = useGet(endpoint);
 
   const { data: billerResponse, execute: fetchBillerInfo } = usePost(
-    "/bbps/biller-info/json"
+    `/bbps/biller-info${testEnv}/json`
   );
 
   useEffect(() => {
@@ -92,7 +100,6 @@ const SelectServiceBiller = () => {
           </span>
         </>
       }
-      
       renderMiddle={
         data && data.length > 0 ? (
           <div className="relative w-full mt-3">
@@ -144,7 +151,6 @@ const SelectServiceBiller = () => {
           <div>No Biller Available</div>
         )
       }
-
       renderFooter={(close) => (
         <>
           <button
