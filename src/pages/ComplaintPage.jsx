@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import Table from "../components/Table";
 import {
   FaClipboardList,
@@ -10,12 +10,19 @@ import {
 } from "react-icons/fa";
 import { MdMiscellaneousServices } from "react-icons/md";
 import { BsCheck2Circle } from "react-icons/bs";
-import { useAdmin } from "../contexts/AdminContext";
-import BharatConnectLogo from "../images/logo.png";
+import { useAuth } from "../contexts/AuthContext";
+import BharatConnectLogo from "../images/logo.png"
+import { usePost } from "../hooks/usePost";
+import { toast, Toaster } from "react-hot-toast";
 
 const ComplaintPage = () => {
-  const { isAdmin } = useAdmin();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const role = isAdmin ? "admin" : "merchant";
+//production
+// const { execute: fetchPayment } = usePost("/bbps/complaint-register/json");
+//testing
+const { execute: fetchPayment } = usePost("/bbps/complaint-register/json");
 
   const [formData, setFormData] = useState({
     complaintType: "",
@@ -24,18 +31,48 @@ const ComplaintPage = () => {
     complaintDisposition: "",
     complaintDescription: "",
     serviceComplaint: "",
+    billerId: "", // <-- added
   });
 
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
-  const [data] = useState([
-    { ComplaintID: "CC0125270014750", TxnReferenceID: "CC015270BAAG00021064", ComplaintType: "Transaction", ParticipationType: "BILLER", BillerID: "OTME00005XXZ43", ComplaintReason: "-", ComplaintDisposition: "Transaction Successful, account not updated", ComplaintStatus: "ASSIGNED" },
-    { ComplaintID: "CC0125270014751", TxnReferenceID: "CC015270BAAG00021065", ComplaintType: "Service", ParticipationType: "AGENT", BillerID: "OTME00006YYZ12", ComplaintReason: "Service not working properly", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
-    { ComplaintID: "CC0125270014752", TxnReferenceID: "CC015270BAAG00021066", ComplaintType: "Transaction", ParticipationType: "AGENT", BillerID: "OTME00007ZZZ34", ComplaintReason: "-", ComplaintDisposition: "Resolved", ComplaintStatus: "Resolved" },
-    { ComplaintID: "CC0125270014753", TxnReferenceID: "CC015270BAAG00021067", ComplaintType: "Service", ParticipationType: "BILLER", BillerID: "OTME00008AAA12", ComplaintReason: "Delay in service", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
-    { ComplaintID: "CC0125270014754", TxnReferenceID: "CC015270BAAG00021068", ComplaintType: "Transaction", ParticipationType: "BILLER", BillerID: "OTME00009BBB23", ComplaintReason: "-", ComplaintDisposition: "Transaction Successful, account not updated", ComplaintStatus: "ASSIGNED" },
-    { ComplaintID: "CC0125270014755", TxnReferenceID: "CC015270BAAG00021069", ComplaintType: "Service", ParticipationType: "AGENT", BillerID: "OTME00010CCC34", ComplaintReason: "Incorrect info displayed", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
-  ]);
+  const { execute: fetchComplaints } = usePost("/bbps/all-complaints-test/json");
+const [data, setData] = useState([]);
+
+useEffect(() => {
+  const loadComplaints = async () => {
+    try {
+      const response = await fetchComplaints(); // call API once
+      const apiData = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+      const mapped = apiData.map((item) => ({
+        ComplaintID: item.register_complaint_id,
+        TxnReferenceID: item.txn_ref_id,
+        ComplaintType: item.complaint_type,
+        ParticipationType: item.participation_type,
+        BillerID: item.biller_id,
+        ComplaintReason: item.complaint_desc,
+        ComplaintDisposition: item.complaint_disposition,
+        ComplaintStatus: item.complaint_status.replace(/_/g, " "),
+      }));
+      setData(mapped);
+    } catch (error) {
+      console.error("Error loading complaint data:", error);
+    }
+  };
+
+  loadComplaints();
+}, []); // empty dependency array ensures one-time fetch
+
+
+
+  // const [data] = useState([
+  //   { ComplaintID: "CC0125270014750", TxnReferenceID: "CC015270BAAG00021064", ComplaintType: "Transaction", ParticipationType: "BILLER", BillerID: "OTME00005XXZ43", ComplaintReason: "-", ComplaintDisposition: "Transaction Successful, account not updated", ComplaintStatus: "ASSIGNED" },
+  //   { ComplaintID: "CC0125270014751", TxnReferenceID: "CC015270BAAG00021065", ComplaintType: "Service", ParticipationType: "AGENT", BillerID: "OTME00006YYZ12", ComplaintReason: "Service not working properly", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
+  //   { ComplaintID: "CC0125270014752", TxnReferenceID: "CC015270BAAG00021066", ComplaintType: "Transaction", ParticipationType: "AGENT", BillerID: "OTME00007ZZZ34", ComplaintReason: "-", ComplaintDisposition: "Resolved", ComplaintStatus: "Resolved" },
+  //   { ComplaintID: "CC0125270014753", TxnReferenceID: "CC015270BAAG00021067", ComplaintType: "Service", ParticipationType: "BILLER", BillerID: "OTME00008AAA12", ComplaintReason: "Delay in service", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
+  //   { ComplaintID: "CC0125270014754", TxnReferenceID: "CC015270BAAG00021068", ComplaintType: "Transaction", ParticipationType: "BILLER", BillerID: "OTME00009BBB23", ComplaintReason: "-", ComplaintDisposition: "Transaction Successful, account not updated", ComplaintStatus: "ASSIGNED" },
+  //   { ComplaintID: "CC0125270014755", TxnReferenceID: "CC015270BAAG00021069", ComplaintType: "Service", ParticipationType: "AGENT", BillerID: "OTME00010CCC34", ComplaintReason: "Incorrect info displayed", ComplaintDisposition: "IN REVIEW", ComplaintStatus: "Pending" },
+  // ]);
 
 
   const handleChange = (e) => {
@@ -43,68 +80,120 @@ const ComplaintPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert("Complaint submitted successfully!");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    complaintType: formData.complaintType === "transaction" ? "Transaction" : "Service",
+    participationType: formData.participationType.toUpperCase(),
+    agentId: formData.participationType === "agent" ? user?.id || "" : "",
+    billerId: formData.participationType === "biller" ? user?.id || "" : "",
+    servReason: formData.serviceComplaint || "",
+    complainDesc: formData.complaintDescription,
+    txnRefId: formData.transactionId || "",
+    complaintDisposition: formData.complaintDisposition,
   };
+
+  try {
+  
+    const response = await fetchPayment(payload);  // ✅ using your hook
+
+  
+    toast.success("Complaint submitted successfully!");
+  } catch (error) {
+    console.error("API Error:", error);
+    toast.error("Failed to submit complaint! Check console.");
+  }
+};
+
+
 
   const handleViewDetails = (row) => setSelectedComplaint(row);
   const handleCloseModal = () => setSelectedComplaint(null);
 
-  // Badge renderers
+  /// ✅ Complaint Status (keep slightly bold for importance)
   const renderStatusLabel = (status) => {
-    const base = "px-3 py-1.5 text-sm font-semibold rounded-full shadow-sm transition-all duration-300";
+    const base =
+      "px-3 py-1 text-xs font-semibold rounded-full shadow-sm border transition-all duration-300";
     const styles = {
-      ASSIGNED: "bg-gradient-to-r from-green-700 to-green-800 text-white shadow-green-600/40 hover:shadow-green-700/60",
-      Pending: "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-yellow-400/40 hover:shadow-yellow-500/60",
-      Resolved: "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-300/40 hover:shadow-blue-400/60",
+      ASSIGNED:
+        "bg-green-100 text-green-800 border-green-300 hover:bg-green-200",
+      Pending:
+        "bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200",
+      Resolved:
+        "bg-sky-100 text-sky-800 border-sky-300 hover:bg-sky-200",
     };
-    return <span className={`${base} ${styles[status] || "bg-gray-200 text-gray-800"}`}>{status}</span>;
+    return (
+      <span className={`${base} ${styles[status] || "bg-gray-100 text-gray-700 border-gray-300"}`}>
+        {status}
+      </span>
+    );
   };
 
+  // ✅ Participation Type — soft pastel tones for readability
   const renderParticipationType = (type) => {
-    const base = "px-2 py-1 text-sm font-semibold rounded-full shadow-sm transition-all duration-300";
-    const styles = {
-      BILLER: "bg-purple-600 text-white shadow-purple-400/40 hover:shadow-purple-500/60",
-      AGENT: "bg-orange-600 text-white shadow-orange-400/40 hover:shadow-orange-500/60",
-    };
-    return <span className={`${base} ${styles[type] || "bg-gray-200 text-gray-800"}`}>{type}</span>;
-  };
-
-  const renderComplaintType = (type) => {
-    const base = "px-2 py-1 text-sm font-semibold rounded-full shadow-sm transition-all duration-300";
-    const styles = {
-      Transaction: "bg-blue-600 text-white shadow-blue-400/40 hover:shadow-blue-500/60",
-      Service: "bg-green-700 text-white shadow-green-500/40 hover:shadow-green-600/60",
-    };
-    return <span className={`${base} ${styles[type] || "bg-gray-200 text-gray-800"}`}>{type}</span>;
-  };
-
-  const columns = [
-    { label: "Complaint ID", key: "ComplaintID" },
-    { label: "Txn Reference ID", key: "TxnReferenceID" },
-    { label: "Complaint Type", key: "ComplaintType", render: (row) => renderComplaintType(row.ComplaintType) },
-    { label: "Participation Type", key: "ParticipationType", render: (row) => renderParticipationType(row.ParticipationType) },
-    { label: "Biller ID", key: "BillerID" },
-    { label: "Complaint Reason", key: "ComplaintReason" },
-    { label: "Disposition", key: "ComplaintDisposition" },
-    { label: "Status", key: "ComplaintStatus", render: (row) => renderStatusLabel(row.ComplaintStatus) },
-    {
-      key: "action", label: "Action", render: (row) => (
-        <button
-          onClick={() => handleViewDetails(row)}
-          title="View Complaint Details"
-          className="bg-blue-100 text-blue-600 p-2 rounded-md hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-sm"
-        >
-          <FaEye size={16} />
-        </button>
-      )
+      if (!type) {
+    return <span>-</span>;
     }
-  ];
+    const base =
+      "px-2 py-1 text-xs font-semibold rounded-full border shadow-sm transition-all duration-300";
+    const styles = {
+      BILLER:
+        "bg-violet-100 text-violet-800 border-violet-300 hover:bg-violet-200",
+      AGENT:
+        "bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200",
+    };
+    return (
+      <span className={`${base} ${styles[type] || "bg-gray-100 text-gray-700 border-gray-300"}`}>
+        {type}
+      </span>
+    );
+  };
+
+  // ✅ Complaint Type — softer blue/green pastel tones
+  const renderComplaintType = (type) => {
+    const base =
+      "px-2 py-1 text-xs font-semibold rounded-full border shadow-sm transition-all duration-300";
+    const styles = {
+      Transaction:
+        "bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200",
+      Service:
+        "bg-green-100 text-green-800 border-green-300 hover:bg-green-200",
+    };
+    return (
+      <span className={`${base} ${styles[type] || "bg-gray-100 text-gray-700 border-gray-300"}`}>
+        {type}
+      </span>
+    );
+  };
+
+
+const columns = [
+  { label: "Complaint ID", key: "ComplaintID" },
+  { label: "Txn Reference ID", key: "TxnReferenceID" },
+  { label: "Complaint Type", key: "ComplaintType", render: (row) => renderComplaintType(row.ComplaintType) },
+  { label: "Participation Type", key: "ParticipationType", render: (row) => renderParticipationType(row.ParticipationType) },
+  { label: "Biller ID", key: "BillerID" },
+  { label: "Complaint Reason", key: "ComplaintReason" },
+  { label: "Disposition", key: "ComplaintDisposition" },
+  { label: "Status", key: "ComplaintStatus", render: (row) => renderStatusLabel(row.ComplaintStatus) },
+  {
+    key: "action", label: "Action",
+    render: (row) => (
+      <button
+        onClick={() => handleViewDetails(row)}
+        className="bg-blue-100 text-blue-600 p-2 rounded-md hover:bg-blue-500 hover:text-white"
+      >
+        <FaEye size={16} />
+      </button>
+    )
+  }
+];
+
 
   return (
     <div className="p-6 sm:p-8 bg-gradient-to-br from-blue-50 via-gray-100 to-blue-100 min-h-screen font-sans">
-
+      <Toaster position="top-right" reverseOrder={false} />
       {/* Merchant Form */}
       {role === "merchant" && (
         <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto mb-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -209,7 +298,7 @@ const ComplaintPage = () => {
                   className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-700 transition"
                 >
                   <option value="">Select Disposition</option>
-                  <option value="pending">Pending</option>
+                  <option value="Bill Paid but Amount not adjusted or still showing due amount">Bill Paid but Amount not adjusted or still showing due amount</option>
                   <option value="in_review">In Review</option>
                   <option value="resolved">Resolved</option>
                 </select>

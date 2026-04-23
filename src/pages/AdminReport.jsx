@@ -6,6 +6,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import SearchBar from "../components/SearchBar";
 import logo from "../images/logo.png";
+import { FaClockRotateLeft } from "react-icons/fa6";
+import { usePost } from "../hooks/usePost";
 
 const AdminReport = () => {
   const [filters, setFilters] = useState({
@@ -15,91 +17,70 @@ const AdminReport = () => {
     status: "",
     billNumber: "",
   });
+
+  const [rawData, setRawData] = useState([]);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const rowsPerPage = 5;
 
-
-
-// Toggle plan handler
-const handlePlanToggle = (index) => {
-  setData(prev =>
-    prev.map((item, i) =>
-      i === index
-        ? { ...item, Plan: item.Plan === "Active" ? "Inactive" : "Active" }
-        : item
-    )
-  );
-};
-
-
-const renderPlanLabel = (plan, index) => {
-  return (
-    <div
-      className={`relative inline-flex items-center w-16 h-6 sm:w-20 sm:h-8 rounded-full cursor-pointer transition-colors duration-300
-        ${plan === "Active" ? "bg-green-500" : "bg-gray-300"}`}
-      onClick={() => handlePlanToggle(index)}
-    >
-      {/* Sliding Circle */}
-      <div
-        className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 sm:w-7 sm:h-7 rounded-full shadow-md transform transition-transform duration-300
-          ${plan === "Active" ? "translate-x-10 sm:translate-x-12" : "translate-x-0"}`}
-      ></div>
-
-      {/* Labels inside switch */}
-      <div className="flex justify-between w-full px-1 sm:px-2 text-[0.55rem] sm:text-xs font-semibold text-white select-none pointer-events-none">
-        <span className={`${plan === "Active" ? "opacity-100" : "opacity-50"}`}>Active</span>
-        <span className={`${plan === "Active" ? "opacity-50" : "opacity-100"}`}>Inactive</span>
-      </div>
-    </div>
-  );
-};
-
-
-
-
-// Update columns to pass index
-const columns = [
-  "SrNo",
-  "RequestId",
-  "CustomerName",
-  "Category",
-  "BillNumber",
-  { label: "Amount", render: (row) => <span className="font-semibold text-gray-800">{formatCurrency(row.Amount)}</span> },
-  { label: "Plan", render: (row, rowIndex) => renderPlanLabel(row.Plan, rowIndex) },
-  { label: "Status", render: (row) => renderStatusLabel(row.Status) },
-  "Date",
-  { key: "action", label: "Action", render: (row) => (
-    <button
-      className="bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-600 shadow-md transition"
-      onClick={() => alert(`View details of ${row.CustomerName}`)}
-    >
-      View
-    </button>
-  ) },
-];
-
-  // Mock Data
-  const mockData = Array.from({ length: 15 }, (_, i) => ({
-    SrNo: i + 1,
-    RequestId: `R00${i + 1}`,
-    CustomerName: `User ${i + 1}`,
-    Category: ["Electricity", "Gas", "Loan", "Water", "Mobile"][i % 5],
-    BillNumber: `B00${i + 1}`,
-    Amount: (i + 1) * 100,
-    Plan: i % 2 === 0 ? "Active" : "Inactive",
-    Status: ["Success", "Pending", "Failed", "Initiated"][i % 4],
-    Date: `2023-10-${(i + 1).toString().padStart(2, "0")}`,
-  }));
+  const {
+    execute: fetchPayments,
+    data: apiResponse,
+    isLoading: apiLoading,
+  } = usePost(`/bbps/all-bill-payments/json`);
 
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
-      setData(mockData);
-      setLoading(false);
-    }, 1000);
+    fetchPayments();
   }, []);
 
+  /* ---------------- MAP API DATA ---------------- */
+  useEffect(() => {
+    if (apiResponse) {
+      const mappedData = apiResponse.map((item, index) => ({
+        SrNo: index + 1,
+        userId: item.user_id || "-",
+        CustomerName: item.mobile_no || "N/A",
+        Category: item.category || "-",
+        BillNumber: item.txnRefID || item.request_id || "-",
+        Status: item.txnStatus === "000" ? "Successful" : "Failed",
+        Date: item.created_at
+          ? new Date(item.created_at).toLocaleDateString("en-GB")
+          : "-",
+      }));
+
+      setRawData(mappedData);
+      setData(mappedData);
+      setLoading(false);
+    }
+  }, [apiResponse]);
+
+  /* ---------------- TABLE COLUMNS ---------------- */
+  const columns = [
+    { label: "Sr No", key: "SrNo" },
+    { label: "User Id", key: "userId" },
+    { label: "Customer", key: "CustomerName" },
+    { label: "Category", key: "Category" },
+    { label: "Transaction ID", key: "BillNumber" },
+    {
+      label: "Status",
+      key: "Status",
+      render: (row) => (
+        <span
+          className={
+            row.Status === "Successful"
+              ? "bg-green-200 text-green-800 px-2 py-1 rounded-full"
+              : "bg-red-200 text-red-800 px-2 py-1 rounded-full"
+          }
+        >
+          {row.Status}
+        </span>
+      ),
+    },
+    { label: "Date", key: "Date" },
+  ];
+
+  /* ---------------- FILTERS ---------------- */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilters({ ...filters, [name]: value });
@@ -108,15 +89,24 @@ const columns = [
   const handleSearch = () => {
     setLoading(true);
     setTimeout(() => {
-      const filteredData = mockData.filter(item => {
+      const filteredData = rawData.filter((item) => {
+        const itemDate =
+          item.Date !== "-"
+            ? new Date(item.Date.split("/").reverse().join("-"))
+            : null;
+
+        const fromDate = filters.fromDate ? new Date(filters.fromDate) : null;
+        const toDate = filters.toDate ? new Date(filters.toDate) : null;
+
         return (
-          (!filters.fromDate || item.Date >= filters.fromDate) &&
-          (!filters.toDate || item.Date <= filters.toDate) &&
+          (!fromDate || (itemDate && itemDate >= fromDate)) &&
+          (!toDate || (itemDate && itemDate <= toDate)) &&
           (!filters.category || item.Category === filters.category) &&
           (!filters.status || item.Status === filters.status) &&
           (!filters.billNumber || item.BillNumber.includes(filters.billNumber))
         );
       });
+
       setData(filteredData);
       setLoading(false);
     }, 500);
@@ -130,84 +120,98 @@ const columns = [
       status: "",
       billNumber: "",
     });
-    setData(mockData);
+    setData(rawData);
   };
 
-  // Export Excel
+  /* ---------------- EXPORT EXCEL ---------------- */
   const exportExcel = () => {
     if (!data.length) return alert("No data to export.");
+
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Admin Report");
     XLSX.writeFile(wb, "Admin_Report.xlsx");
   };
 
-  // Export PDF
+  /* ---------------- EXPORT PDF ---------------- */
   const exportPDF = () => {
     if (!data.length) return alert("No data to export.");
-    const doc = new jsPDF();
-    const tableColumn = ["Sr. No.", "Request Id", "Customer Name", "Category", "Bill Number", "Amount", "Plan", "Status", "Date"];
-    const tableRows = data.map((item, index) => [
-      index + 1,
-      item.RequestId,
+
+    const doc = new jsPDF("l", "mm", "a4");
+
+    doc.setFontSize(16);
+    doc.text("Admin Transaction Report", 14, 15);
+
+    const tableColumns = [
+      "Sr No",
+      "User Id",
+      "Customer",
+      "Category",
+      "Transaction ID",
+      "Status",
+      "Date",
+    ];
+
+    const tableRows = data.map((item) => [
+      item.SrNo,
+      item.userId,
       item.CustomerName,
       item.Category,
       item.BillNumber,
-      item.Amount,
-      item.Plan,
       item.Status,
       item.Date,
     ]);
 
-    autoTable(doc, { head: [tableColumn], body: tableRows });
+    autoTable(doc, {
+      startY: 25,
+      head: [tableColumns],
+      body: tableRows,
+      theme: "grid",
+      styles: {
+        fontSize: 9,
+        cellPadding: 3,
+        halign: "center",
+      },
+      headStyles: {
+        fillColor: [37, 99, 235],
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      columnStyles: {
+        0: { cellWidth: 15 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 30 },
+        4: { cellWidth: 45 },
+        5: { cellWidth: 25 },
+        6: { cellWidth: 30 },
+      },
+    });
+
     doc.save("Admin_Report.pdf");
   };
 
-  // Styled Status Labels
-  const renderStatusLabel = (status) => {
-    const base = "px-3 py-1.5 text-sm font-semibold rounded-full shadow-sm transition-all duration-300";
-    const styles = {
-      Success: "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-300/40 hover:shadow-green-400/60",
-      Failed: "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-300/40 hover:shadow-red-400/60",
-      Pending: "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-yellow-300/40 hover:shadow-yellow-400/60",
-      Initiated: "bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-sky-300/40 hover:shadow-sky-400/60",
-    };
-    return <span className={`${base} ${styles[status] || ""}`}>{status}</span>;
-  };
-
- 
-
-  // Currency Formatter
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 2,
-    }).format(amount);
-
-  
-  // Table Styles
+  /* ---------------- STYLES ---------------- */
   const tableStyles = {
-    tableWrapperClass:
-      "overflow-x-auto rounded-2xl shadow-lg border border-gray-200 bg-white/90 backdrop-blur-sm transition-all duration-300 hover:shadow-xl",
-    tableClass: "min-w-full divide-y divide-gray-200",
+    tableClass:
+      "min-w-full bg-white rounded-2xl shadow-xl border border-gray-200 text-gray-700",
     headerClass:
-      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white font-semibold text-sm uppercase tracking-wider sticky top-0 shadow-inner",
-    rowClass: "bg-white even:bg-gray-50 hover:bg-sky-50 transition-all duration-300 cursor-pointer",
-    paginationClass: "flex justify-center items-center flex-wrap gap-3 py-4 border-t border-gray-200",
-    paginationBtnClass: "px-3 py-1 rounded-lg text-gray-700 hover:bg-blue-100 transition-all duration-200",
-    paginationActiveClass: "px-3 py-1 rounded-lg bg-blue-600 text-white shadow-md transition-all duration-200",
+      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white text-sm font-semibold uppercase text-center",
+    rowClass: "bg-white even:bg-gray-50 hover:bg-indigo-50 transition-all",
+    cellClass: "py-3 px-4 text-sm font-medium text-center",
+    paginationClass: "mt-4 flex justify-center",
   };
 
+  /* ---------------- RENDER ---------------- */
   return (
-    <div className="p-8 bg-gradient-to-br from-blue-50 via-gray-100 to-blue-100 min-h-screen transition-all">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-extrabold text-gray-800">Transaction History</h1>
-        <img src={logo} alt="Bharat Connect Logo" className="w-36 h-auto object-contain drop-shadow-lg" />
+    <div className="p-8 min-h-screen bg-gradient-to-br from-teal-50 via-white to-orange-50">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-extrabold text-gray-800">
+          Transaction History
+        </h1>
+        <img src={logo} alt="Logo" className="w-40" />
       </div>
 
-      {/* Filters */}
       <SearchBar
         filters={filters}
         handleChange={handleChange}
@@ -218,29 +222,63 @@ const columns = [
         filterFields={[
           { name: "fromDate", label: "From Date", type: "date" },
           { name: "toDate", label: "To Date", type: "date" },
-          { name: "category", label: "Category", type: "select", options: ["Electricity", "Gas", "Loan", "Water", "Mobile"] },
-          { name: "status", label: "Status", type: "select", options: ["Failed", "Initiated", "Pending", "Success"] },
-          { name: "billNumber", label: "Bill Number", type: "text" },
+          {
+            name: "category",
+            label: "Category",
+            type: "select",
+            options: [
+              "Agent Collection",
+              "Broadband Postpaid",
+              "Cable TV",
+              "Clubs and Associations",
+              "Credit Card",
+              "Donation",
+              "DTH",
+              "eChallan",
+              "Education Fees",
+              "Electricity",
+              "EV Recharge",
+              "Fastag",
+              "Gas",
+              "Housing Society",
+              "Insurance",
+              "Landline Postpaid",
+              "Loan Repayment",
+              "LPG Gas",
+              "Mobile Postpaid",
+              "Mobile Prepaid",
+              "Municipal Services",
+              "Municipal Taxes",
+              "National Pension System",
+              "NCMC Recharge",
+              "Prepaid Meter",
+              "Recurring Deposit",
+              "Rental",
+              "Subscription",
+              "Water",
+            ],
+          },
+          {
+            name: "status",
+            label: "Status",
+            type: "select",
+            options: ["Failed", "Successful"],
+          },
+          { name: "billNumber", label: "Transaction ID", type: "text" },
         ]}
       />
 
-      {/* Table */}
-      <div className="mt-6">
-        <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Latest Transactions</h2>
-          {loading ? (
-            <TableSkeleton rows={rowsPerPage} columns={columns.length} />
-          ) : (
-            <Table
-              columns={columns}
-              data={data}
-              rowsPerPage={rowsPerPage}
-              isPaginationRequired={true}
-              {...tableStyles}
-            />
-          )}
-        </div>
-      </div>
+      {loading || apiLoading ? (
+        <TableSkeleton rows={rowsPerPage} columns={columns.length} />
+      ) : (
+        <Table
+          columns={columns}
+          data={data}
+          rowsPerPage={10}
+          isPaginationRequired
+          {...tableStyles}
+        />
+      )}
     </div>
   );
 };

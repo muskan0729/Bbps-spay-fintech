@@ -1,31 +1,85 @@
-import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
-import { Layout } from './components/Layout';
+import ContactUs from "./pages/ContactUs";
+import { Layout } from "./components/Layout";
 import { navItems } from "./components/Sidebar";
-import { AdminContextProvider } from "./contexts/AdminContext";
+import AddUserPage from "./pages/AddUserPage";
+import { CookiesProvider } from "react-cookie";
+import { SchemeContextProvider } from "./contexts/SchemeContext";
+import UpdateUser from "./pages/UpdateUser";
+import RedirectGuard from "./components/RedirectGuard";
+import RegisterUser from "./pages/RegisterUser";
+import UserRegristrationPage from "./pages/OrganizationRegristrationPage";
+import UserRegristration from "./pages/UserRegristration";
+import UserInstruction from "./pages/UserInstruction";
+import UserRegProtectedRoute from "./components/UserRegProtectedRoute";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
+    <SchemeContextProvider>
+      <CookiesProvider>
+        <Routes>
+          {/* Public Route */}
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterUser />} />
 
-      <Route
-        element={
-          <AdminContextProvider>
-            <Layout />
-          </AdminContextProvider>
-        }
-      >
-        {navItems.map((item) => (
+          <Route element={<UserRegProtectedRoute isAllowed={true} />}>
+            <Route
+              path="/register-organization"
+              element={<UserRegristrationPage />}
+            />
+            <Route path="/register-user" element={<UserRegristration />} />
+            <Route path="/user-instruction" element={<UserInstruction />} />
+          </Route>
+
+          {/* Protected Layout Wrapper */}
           <Route
-            key={item.path}
-            path={item.path.substring(1)}
-            element={<item.component />}
-          />
-        ))}
-      </Route>
-    </Routes>
+            element={
+              <RedirectGuard>
+                <Layout />
+              </RedirectGuard>
+            }
+          >
+            {/* Dynamic sidebar routes */}
+            {navItems.map((item) => (
+              <Route
+                key={item.path}
+                path={item.path.substring(1)}
+                element={<item.component />}
+              />
+            ))}
+
+            {/* Manual protected routes */}
+            <Route
+              path="contact-us"
+              element={
+                <RedirectGuard>
+                  <ContactUs />
+                </RedirectGuard>
+              }
+            />
+
+            <Route
+              path="addUser"
+              element={
+                <RedirectGuard requiredRole={1}>
+                  <AddUserPage />
+                </RedirectGuard>
+              }
+            />
+
+            <Route
+              path="updateUser"
+              element={
+                <RedirectGuard requiredRole={1}>
+                  <UpdateUser />
+                </RedirectGuard>
+              }
+            />
+          </Route>
+        </Routes>
+      </CookiesProvider>
+    </SchemeContextProvider>
   );
 }
 
