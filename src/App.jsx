@@ -1,29 +1,86 @@
-import { useState } from "react";
-import { Header } from "./components/Header";
-import { Sidebar } from "./components/Sidebar";
-import AdminReport from './pages/AdminReport'; 
-import Dashboard from "./pages/Dashboard";
+import { Routes, Route } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import ContactUs from "./pages/ContactUs";
+import { Layout } from "./components/Layout";
+import { navItems } from "./components/Sidebar";
+import AddUserPage from "./pages/AddUserPage";
+import { CookiesProvider } from "react-cookie";
+import { SchemeContextProvider } from "./contexts/SchemeContext";
+import UpdateUser from "./pages/UpdateUser";
+import RedirectGuard from "./components/RedirectGuard";
+import RegisterUser from "./pages/RegisterUser";
+import UserRegristrationPage from "./pages/OrganizationRegristrationPage";
+import UserRegristration from "./pages/UserRegristration";
+import UserInstruction from "./pages/UserInstruction";
+import UserRegProtectedRoute from "./components/UserRegProtectedRoute";
 
 function App() {
-	const [count, setCount] = useState(0);
+  return (
+    <SchemeContextProvider>
+      <CookiesProvider>
+        <Routes>
+          {/* Public Route */}
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterUser />} />
 
-	return (
-		<>
-			<div className="flex flex-col h-screen">
-				<Header />
+          <Route element={<UserRegProtectedRoute isAllowed={true} />}>
+            <Route
+              path="/register-organization"
+              element={<UserRegristrationPage />}
+            />
+            <Route path="/register-user" element={<UserRegristration />} />
+            <Route path="/user-instruction" element={<UserInstruction />} />
+          </Route>
 
-				<div className="flex grow overflow-hidden">
-					<Sidebar />
-					<main className="flex-1 p-8 overflow-y-auto">
-            <Dashboard/>
-					</main>
-				</div>
+          {/* Protected Layout Wrapper */}
+          <Route
+            element={
+              <RedirectGuard>
+                <Layout />
+              </RedirectGuard>
+            }
+          >
+            {/* Dynamic sidebar routes */}
+            {navItems.map((item) => (
+              <Route
+                key={item.path}
+                path={item.path.substring(1)}
+                element={<item.component />}
+              />
+            ))}
 
-			</div>
-			      {/* Render the AdminReport component */}
-      <AdminReport />
-		</>
-	);
+            {/* Manual protected routes */}
+            <Route
+              path="contact-us"
+              element={
+                <RedirectGuard>
+                  <ContactUs />
+                </RedirectGuard>
+              }
+            />
+
+            <Route
+              path="addUser"
+              element={
+                <RedirectGuard requiredRole={1}>
+                  <AddUserPage />
+                </RedirectGuard>
+              }
+            />
+
+            <Route
+              path="updateUser"
+              element={
+                <RedirectGuard requiredRole={1}>
+                  <UpdateUser />
+                </RedirectGuard>
+              }
+            />
+          </Route>
+        </Routes>
+      </CookiesProvider>
+    </SchemeContextProvider>
+  );
 }
 
 export default App;

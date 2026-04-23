@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Table from "../components/Table";
+import TableSkeleton from "../components/TableSkeleton";
 import * as XLSX from "xlsx";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';  
-import { FaFileExcel, FaFilePdf } from "react-icons/fa";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import SearchBar from "../components/SearchBar";
+import logo from "../images/logo.png";
+import { FaClockRotateLeft } from "react-icons/fa6";
+import { usePost } from "../hooks/usePost";
 
 const AdminReport = () => {
   const [filters, setFilters] = useState({
@@ -15,140 +18,265 @@ const AdminReport = () => {
     billNumber: "",
   });
 
+  const [rawData, setRawData] = useState([]);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
 
-  const mockData = [
-    { requestId: "R001", customerName: "John Doe", category: "Electricity", billNumber: "B001", amount: 100, plan: "Basic", status: "Paid", date: "2023-10-01" },
-    { requestId: "R002", customerName: "Jane Smith", category: "Water", billNumber: "B002", amount: 150, plan: "Premium", status: "Pending", date: "2023-10-02" },
-    // More mock data...
-  ];
+  const {
+    execute: fetchPayments,
+    data: apiResponse,
+    isLoading: apiLoading,
+  } = usePost(`/bbps/all-bill-payments/json`);
 
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
-      setData(mockData);
-      setLoading(false);
-    }, 1000);
+    fetchPayments();
   }, []);
 
+  /* ---------------- MAP API DATA ---------------- */
+  useEffect(() => {
+    if (apiResponse) {
+      const mappedData = apiResponse.map((item, index) => ({
+        SrNo: index + 1,
+        userId: item.user_id || "-",
+        CustomerName: item.mobile_no || "N/A",
+        Category: item.category || "-",
+        BillNumber: item.txnRefID || item.request_id || "-",
+        Status: item.txnStatus === "000" ? "Successful" : "Failed",
+        Date: item.created_at
+          ? new Date(item.created_at).toLocaleDateString("en-GB")
+          : "-",
+      }));
+
+      setRawData(mappedData);
+      setData(mappedData);
+      setLoading(false);
+    }
+  }, [apiResponse]);
+
+  /* ---------------- TABLE COLUMNS ---------------- */
+  const columns = [
+    { label: "Sr No", key: "SrNo" },
+    { label: "User Id", key: "userId" },
+    { label: "Customer", key: "CustomerName" },
+    { label: "Category", key: "Category" },
+    { label: "Transaction ID", key: "BillNumber" },
+    {
+      label: "Status",
+      key: "Status",
+      render: (row) => (
+        <span
+          className={
+            row.Status === "Successful"
+              ? "bg-green-200 text-green-800 px-2 py-1 rounded-full"
+              : "bg-red-200 text-red-800 px-2 py-1 rounded-full"
+          }
+        >
+          {row.Status}
+        </span>
+      ),
+    },
+    { label: "Date", key: "Date" },
+  ];
+
+  /* ---------------- FILTERS ---------------- */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilters({ ...filters, [name]: value });
   };
 
   const handleSearch = () => {
-    setCurrentPage(1);
     setLoading(true);
     setTimeout(() => {
-      const filteredData = mockData.filter(item => {
+      const filteredData = rawData.filter((item) => {
+        const itemDate =
+          item.Date !== "-"
+            ? new Date(item.Date.split("/").reverse().join("-"))
+            : null;
+
+        const fromDate = filters.fromDate ? new Date(filters.fromDate) : null;
+        const toDate = filters.toDate ? new Date(filters.toDate) : null;
+
         return (
-          (!filters.fromDate || item.date >= filters.fromDate) &&
-          (!filters.toDate || item.date <= filters.toDate) &&
-          (!filters.category || item.category === filters.category) &&
-          (!filters.status || item.status === filters.status) &&
-          (!filters.billNumber || item.billNumber.includes(filters.billNumber))
+          (!fromDate || (itemDate && itemDate >= fromDate)) &&
+          (!toDate || (itemDate && itemDate <= toDate)) &&
+          (!filters.category || item.Category === filters.category) &&
+          (!filters.status || item.Status === filters.status) &&
+          (!filters.billNumber || item.BillNumber.includes(filters.billNumber))
         );
       });
+
       setData(filteredData);
       setLoading(false);
     }, 500);
   };
 
+  const handleReset = () => {
+    setFilters({
+      fromDate: "",
+      toDate: "",
+      category: "",
+      status: "",
+      billNumber: "",
+    });
+    setData(rawData);
+  };
+
+  /* ---------------- EXPORT EXCEL ---------------- */
   const exportExcel = () => {
-    if (data.length === 0) {
-      alert("No data to export.");
-      return;
-    }
+    if (!data.length) return alert("No data to export.");
+
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Report");
-    XLSX.writeFile(wb, "BBPS_Report.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Admin Report");
+    XLSX.writeFile(wb, "Admin_Report.xlsx");
   };
 
+  /* ---------------- EXPORT PDF ---------------- */
   const exportPDF = () => {
-    if (data.length === 0) {
-      alert("No data to export.");
-      return;
-    }
+    if (!data.length) return alert("No data to export.");
 
-    const doc = new jsPDF();
-    const tableColumn = ["Sr. No.", "Request Id", "Customer Name", "Category", "Bill Number", "Amount", "Plan", "Status", "Date"];
-    const tableRows = data.map((item, index) => [
-      index + 1,
-      item.requestId,
-      item.customerName,
-      item.category,
-      item.billNumber,
-      item.amount,
-      item.plan,
-      item.status,
-      item.date,
+    const doc = new jsPDF("l", "mm", "a4");
+
+    doc.setFontSize(16);
+    doc.text("Admin Transaction Report", 14, 15);
+
+    const tableColumns = [
+      "Sr No",
+      "User Id",
+      "Customer",
+      "Category",
+      "Transaction ID",
+      "Status",
+      "Date",
+    ];
+
+    const tableRows = data.map((item) => [
+      item.SrNo,
+      item.userId,
+      item.CustomerName,
+      item.Category,
+      item.BillNumber,
+      item.Status,
+      item.Date,
     ]);
-    doc.autoTable({ head: [tableColumn], body: tableRows });
-    doc.save("BBPS_Report.pdf");
+
+    autoTable(doc, {
+      startY: 25,
+      head: [tableColumns],
+      body: tableRows,
+      theme: "grid",
+      styles: {
+        fontSize: 9,
+        cellPadding: 3,
+        halign: "center",
+      },
+      headStyles: {
+        fillColor: [37, 99, 235],
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      columnStyles: {
+        0: { cellWidth: 15 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 30 },
+        4: { cellWidth: 45 },
+        5: { cellWidth: 25 },
+        6: { cellWidth: 30 },
+      },
+    });
+
+    doc.save("Admin_Report.pdf");
   };
 
-  const columns = [
-    { key: "sr", label: "Sr. No.", render: (_, i) => i + 1 },
-    { key: "requestId", label: "Request Id" },
-    { key: "customerName", label: "Customer Name" },
-    { key: "category", label: "Category" },
-    { key: "billNumber", label: "Bill Number" },
-    { key: "amount", label: "Amount" },
-    { key: "plan", label: "Plan" },
-    { key: "status", label: "Status" },
-    { key: "date", label: "Date" },
-  ];
+  /* ---------------- STYLES ---------------- */
+  const tableStyles = {
+    tableClass:
+      "min-w-full bg-white rounded-2xl shadow-xl border border-gray-200 text-gray-700",
+    headerClass:
+      "bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white text-sm font-semibold uppercase text-center",
+    rowClass: "bg-white even:bg-gray-50 hover:bg-indigo-50 transition-all",
+    cellClass: "py-3 px-4 text-sm font-medium text-center",
+    paginationClass: "mt-4 flex justify-center",
+  };
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
-
+  /* ---------------- RENDER ---------------- */
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-center">Admin Report</h1>
+    <div className="p-8 min-h-screen bg-gradient-to-br from-teal-50 via-white to-orange-50">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-extrabold text-gray-800">
+          Transaction History
+        </h1>
+        <img src={logo} alt="Logo" className="w-40" />
+      </div>
 
       <SearchBar
         filters={filters}
         handleChange={handleChange}
         handleSearch={handleSearch}
+        handleReset={handleReset}
         exportExcel={exportExcel}
         exportPDF={exportPDF}
         filterFields={[
           { name: "fromDate", label: "From Date", type: "date" },
           { name: "toDate", label: "To Date", type: "date" },
-          { 
-            name: "category", 
-            label: "Category", 
-            type: "select", 
-            options: ["Dishtv", "Gas", "Loan", "Mobile"] 
+          {
+            name: "category",
+            label: "Category",
+            type: "select",
+            options: [
+              "Agent Collection",
+              "Broadband Postpaid",
+              "Cable TV",
+              "Clubs and Associations",
+              "Credit Card",
+              "Donation",
+              "DTH",
+              "eChallan",
+              "Education Fees",
+              "Electricity",
+              "EV Recharge",
+              "Fastag",
+              "Gas",
+              "Housing Society",
+              "Insurance",
+              "Landline Postpaid",
+              "Loan Repayment",
+              "LPG Gas",
+              "Mobile Postpaid",
+              "Mobile Prepaid",
+              "Municipal Services",
+              "Municipal Taxes",
+              "National Pension System",
+              "NCMC Recharge",
+              "Prepaid Meter",
+              "Recurring Deposit",
+              "Rental",
+              "Subscription",
+              "Water",
+            ],
           },
-          { 
-            name: "status", 
-            label: "Status", 
-            type: "select", 
-            options: ["Failed", "Initiated", "Pending", "Success"] 
+          {
+            name: "status",
+            label: "Status",
+            type: "select",
+            options: ["Failed", "Successful"],
           },
-          { name: "billNumber", label: "Bill Number", type: "text" },
+          { name: "billNumber", label: "Transaction ID", type: "text" },
         ]}
       />
 
-      {loading ? (
-        <div className="text-center text-lg text-gray-500">Loading...</div>
+      {loading || apiLoading ? (
+        <TableSkeleton rows={rowsPerPage} columns={columns.length} />
       ) : (
         <Table
           columns={columns}
           data={data}
-          currentPage={currentPage}
-          rowsPerPage={rowsPerPage}
-          paginationHandler={(action) => {
-            setCurrentPage((prevPage) => {
-              if (action === "prev") return Math.max(prevPage - 1, 1);
-              if (action === "next") return Math.min(prevPage + 1, totalPages);
-            });
-          }}
+          rowsPerPage={10}
+          isPaginationRequired
+          {...tableStyles}
         />
       )}
     </div>

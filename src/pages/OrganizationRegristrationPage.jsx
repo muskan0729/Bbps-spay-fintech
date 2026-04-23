@@ -1,0 +1,624 @@
+import { useState } from "react";
+import { useNavigate ,useLocation} from "react-router-dom";
+import { usePost } from "../hooks/usePost";
+
+const OrganizationRegristrationPage = () => {
+  const navigate = useNavigate();
+  const location=useLocation();
+  // const {
+  //   name = "",
+  //   email = "",
+  //   phone = "",
+  //   option = "",
+  // } = location.state || {};
+  const { execute: executeMember, loading } = usePost("/self-merchant-onboard-process");
+  // const loading = false;
+  const [formData, setFormData] = useState({
+    // BUSINESS DETAILS
+    name: "",
+    mobile_no: "",
+    email: "",  
+    business_mcc: "",
+    company_type: "",
+    company_pan_no: "",
+    company_gst_no: "",
+    cin_llpin: "",
+    date_of_incorporation: "",
+
+    // ACCOUNT DETAILS
+    account_holder_name: "",
+    bank_account_no: "",
+    ifsc_code: "",
+
+    // LOCATION DETAILS
+    city: "",
+    state: "",
+    district: "",
+    pin_code: "",
+    address: "",
+
+    // OTHER FIELDS
+    website_url: "",
+    description: "",
+  });
+
+  const [companyDocs, setCompanyDocs] = useState({
+    company_pan_no_doc: null,
+    company_gst_no_doc: null,
+    cancel_cheque_doc: null,
+  });
+
+  const [directors, setDirectors] = useState(() => [
+    {
+      director_name: "",
+      director_pan_no: "",
+      director_aadhar_no: "",
+      director_gender: "",
+      director_dob: "",
+      user_pan_doc: null,
+      user_addhar_doc: null,
+    },
+  ]);
+
+  const handleChange = (key, value) =>
+    setFormData((prev) => ({ ...prev, [key]: value }));
+
+  const handleFileChange = (key, file) =>
+    setCompanyDocs((prev) => ({ ...prev, [key]: file }));
+
+  const handleDirectorChange = (i, key, val) => {
+    const copy = [...directors];
+    copy[i][key] = val;
+    setDirectors(copy);
+  };
+
+  const addDirector = () =>
+    setDirectors((prev) => [
+      ...prev,
+      {
+        director_name: "",
+        director_pan_no: "",
+        director_aadhar_no: "",
+        director_gender: "",
+        director_dob: "",
+        user_pan_doc: null,
+        user_addhar_doc: null,
+      },
+    ]);
+
+  const removeDirector = (i) =>
+    setDirectors((prev) => prev.filter((_, x) => x !== i));
+
+  const input = "w-full px-3 py-2 border rounded-lg border-gray-300";
+  const file = "w-full px-3 py-3 border rounded-lg bg-white border-gray-300";
+  const grid3 = "grid grid-cols-1 md:grid-cols-3 gap-5";
+  const box = "bg-white p-6 rounded-xl shadow border border-gray-200 mb-8";
+  const label = "font-semibold text-gray-700 mb-1 block";
+
+  const phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/;
+  const nameRegex = /^[A-Za-z ]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const textRegex = /^[A-Za-z]+$/;
+  const textNumberRegex = /^[A-Za-z0-9]+$/;
+  const numberRegex = /^[0-9]{4}$/;
+  const aadharRegex = /^[0-9]{12}$/;
+  const validationRules = {
+    name: { required: true, pattern: nameRegex },
+    mobile_no: { required: true, pattern: phoneRegex },
+    email: { required: true, pattern: emailRegex },
+    business_mcc: { required: true, pattern: numberRegex },
+    account_holder_name: { required: true, pattern: nameRegex },
+    bank_account_no: { required: true, pattern: textNumberRegex },
+    pin_code: { required: true, pattern: numberRegex },
+    city: { required: true, pattern: textRegex },
+    state: { required: true, pattern: textRegex },
+    district: { required: true, pattern: textRegex },
+    cin_llpin: { required: true, pattern: textNumberRegex },
+    company_pan_no: { required: true, pattern: textNumberRegex },
+    company_gst_no: { required: true, pattern: textNumberRegex },
+    website_url: { required: false },
+    ifsc_code: { required: false },
+    director_name: { required: true, pattern: nameRegex },
+    director_pan_no: { required: true, pattern: textNumberRegex },
+    director_aadhar_no: { required: true, pattern: aadharRegex },
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const fd = new FormData();
+    Object.keys(formData).forEach((k) => fd.append(k, formData[k]));
+
+    Object.keys(companyDocs).forEach((k) => {
+      if (companyDocs[k]) fd.append(k, companyDocs[k]);
+    });
+
+    directors.forEach((d, i) => {
+      Object.entries(d).forEach(([k, v]) => {
+        if (v) fd.append(`director_info[${i}][${k}]`, v);
+      });
+    });
+
+    fd.append("scheme_id", "");
+
+
+
+
+    const res = await executeMember(fd);
+    if (res?.success) {
+      alert(res.message || "Merchant registered successfully! we will lwt you know with in 24-48 hrs");
+      navigate("/");
+    } else {
+      alert("Failed: " + (res?.message || JSON.stringify(res)));
+    }
+  };
+
+  const onCancel = () => {
+    navigate("/register");
+  };
+  return (
+    <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">
+        Registration Form
+      </h1>
+
+      <form onSubmit={handleSubmit}>
+        {/* BUSINESS DETAILS */}
+        <div className={box}>
+          <h2 className="text-xl font-bold text-blue-700 mb-4">
+            Business Details
+          </h2>
+
+          <div className={grid3}>
+            {/* Name */}
+            <div>
+              <label className={label}>Business Name *</label>
+              <input
+                className={input}
+                value={formData.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                pattern={validationRules.name.pattern.source}
+                required={validationRules.name.required}
+              />
+            </div>
+
+            {/* Mobile */}
+            <div>
+              <label className={label}>Mobile *</label>
+              <input
+                className={input}
+                type="number"
+                value={formData.mobile_no}
+                onChange={(e) => handleChange("mobile_no", e.target.value)}
+                pattern={validationRules.mobile_no.pattern.source}
+                required={validationRules.mobile_no.required}
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className={label}>Business Email *</label>
+              <input
+              type="email"
+                className={input}
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                pattern={validationRules.email.pattern.source}
+                required={validationRules.email.required}
+              />
+            </div>
+
+            {/* MCC */}
+            <div>
+              <label className={label}>Business MCC *</label>
+              <input
+                className={input}
+                value={formData.business_mcc}
+                onChange={(e) => handleChange("business_mcc", e.target.value)}
+                pattern={validationRules.business_mcc.pattern.source}
+                required={validationRules.business_mcc.required}
+              />
+            </div>
+
+            {/* Company Type */}
+            <div>
+              <label className={label}>Company Type *</label>
+              <select
+                className={input}
+                value={formData.company_type}
+                onChange={(e) => handleChange("company_type", e.target.value)}
+                required
+              >
+                <option value="">Select</option>
+                <option value="private">Private</option>
+                <option value="public">Public</option>
+              </select>
+            </div>
+
+            {/* Company PAN */}
+            <div>
+              <label className={label}>Company PAN *</label>
+              <input
+                className={input}
+                value={formData.company_pan_no}
+                onChange={(e) => handleChange("company_pan_no", e.target.value)}
+                pattern={validationRules.company_pan_no.pattern.source}
+                required={validationRules.company_pan_no.required}
+              />
+            </div>
+
+            {/* GST */}
+            <div>
+              <label className={label}>GST Number *</label>
+              <input
+                className={input}
+                value={formData.company_gst_no}
+                onChange={(e) => handleChange("company_gst_no", e.target.value)}
+                pattern={validationRules.company_gst_no.pattern.source}
+                required={validationRules.company_gst_no.required}
+              />
+            </div>
+
+            {/* CIN */}
+            <div>
+              <label className={label}>CIN / LLPIN *</label>
+              <input
+                className={input}
+                value={formData.cin_llpin}
+                onChange={(e) => handleChange("cin_llpin", e.target.value)}
+                pattern={validationRules.cin_llpin.pattern.source}
+                required={validationRules.cin_llpin.required}
+              />
+            </div>
+
+            {/* Date of Incorporation */}
+            <div>
+              <label className={label}>Date of Incorporation *</label>
+              <input
+                type="date"
+                className={input}
+                value={formData.date_of_incorporation}
+                onChange={(e) =>
+                  handleChange("date_of_incorporation", e.target.value)
+                }
+                required
+              />
+            </div>
+
+            {/* Website Url */}
+            <div>
+              <label className={label}>Website Url</label>
+              <input
+                type="text"
+                className={input}
+                value={formData.website_url}
+                onChange={(e) => handleChange("website_url", e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* FILE uploads */}
+          <div className={`${grid3} mt-6`}>
+            <div>
+              <label className={label}>Company PAN Document *</label>
+              <input
+                type="file"
+                className={file}
+                onChange={(e) =>
+                  handleFileChange("company_pan_no_doc", e.target.files[0])
+                }
+                required
+              />
+            </div>
+
+            <div>
+              <label className={label}>Company GST Document *</label>
+              <input
+                type="file"
+                className={file}
+                onChange={(e) =>
+                  handleFileChange("company_gst_no_doc", e.target.files[0])
+                }
+                required
+              />
+            </div>
+
+            <div>
+              <label className={label}>Cancel Cheque *</label>
+              <input
+                type="file"
+                className={file}
+                onChange={(e) =>
+                  handleFileChange("cancel_cheque_doc", e.target.files[0])
+                }
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ACCOUNT DETAILS */}
+        <div className={box}>
+          <h2 className="text-xl font-bold text-blue-700 mb-4">
+            Account Details
+          </h2>
+
+          <div className={grid3}>
+            <div>
+              <label className={label}>Account Holder Name *</label>
+              <input
+                className={input}
+                value={formData.account_holder_name}
+                onChange={(e) =>
+                  handleChange("account_holder_name", e.target.value)
+                }
+                pattern={validationRules.account_holder_name.pattern.source}
+                required={validationRules.account_holder_name.required}
+              />
+            </div>
+
+            <div>
+              <label className={label}>Bank Account No *</label>
+              <input
+                className={input}
+                value={formData.bank_account_no}
+                onChange={(e) =>
+                  handleChange("bank_account_no", e.target.value)
+                }
+                pattern={validationRules.bank_account_no.pattern.source}
+                required={validationRules.bank_account_no.required}
+              />
+            </div>
+
+            <div>
+              <label className={label}>IFSC Code</label>
+              <input
+                className={input}
+                value={formData.ifsc_code}
+                onChange={(e) => handleChange("ifsc_code", e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* LOCATION DETAILS */}
+        <div className={box}>
+          <h2 className="text-xl font-bold text-blue-700 mb-4">
+            Location Details
+          </h2>
+
+          <div className={grid3}>
+            <div>
+              <label className={label}>City *</label>
+              <input
+                className={input}
+                value={formData.city}
+                onChange={(e) => handleChange("city", e.target.value)}
+                pattern={validationRules.city.pattern.source}
+                required={validationRules.city.required}
+              />
+            </div>
+
+            <div>
+              <label className={label}>State *</label>
+              <input
+                className={input}
+                value={formData.state}
+                onChange={(e) => handleChange("state", e.target.value)}
+                pattern={validationRules.state.pattern.source}
+                required={validationRules.state.required}
+              />
+            </div>
+
+            <div>
+              <label className={label}>District *</label>
+              <input
+                className={input}
+                value={formData.district}
+                onChange={(e) => handleChange("district", e.target.value)}
+                pattern={validationRules.district.pattern.source}
+                required={validationRules.district.required}
+              />
+            </div>
+
+            <div>
+              <label className={label}>Pincode *</label>
+              <input
+                className={input}
+                value={formData.pin_code}
+                onChange={(e) => handleChange("pin_code", e.target.value)}
+                pattern={validationRules.pin_code.pattern.source}
+                required={validationRules.pin_code.required}
+              />
+            </div>
+
+            <div className="md:col-span-3">
+              <label className={label}>Address *</label>
+              <input
+                className={input}
+                value={formData.address}
+                onChange={(e) => handleChange("address", e.target.value)}
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* DIRECTORS */}
+        <div className={box}>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-blue-700">
+              Director Information
+            </h2>
+            <button
+              type="button"
+              onClick={addDirector}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            >
+              + Add Director
+            </button>
+          </div>
+
+          {directors.map((d, i) => (
+            <div
+              key={i}
+              className="p-5 border rounded-xl bg-gray-50 mb-6 shadow-sm"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-semibold text-gray-800 text-lg">
+                  Director {i + 1}
+                </h3>
+
+                <button
+                  type="button"
+                  onClick={() => removeDirector(i)}
+                  disabled={directors.length === 1}
+                  className={`px-4 py-1 rounded text-white ${
+                    directors.length === 1
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
+                >
+                  Remove
+                </button>
+              </div>
+
+              <div className={grid3}>
+                <div>
+                  <label className={label}>Director Name *</label>
+                  <input
+                    className={input}
+                    value={d.director_name}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "director_name", e.target.value)
+                    }
+                    pattern={validationRules.director_name.pattern.source}
+                    required={validationRules.director_name.required}
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Director PAN *</label>
+                  <input
+                    className={input}
+                    value={d.director_pan_no}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "director_pan_no", e.target.value)
+                    }
+                    pattern={validationRules.director_pan_no.pattern.source}
+                    required={validationRules.director_pan_no.required}
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Director Aadhaar *</label>
+                  <input
+                    className={input}
+                    value={d.director_aadhar_no}
+                    onChange={(e) =>
+                      handleDirectorChange(
+                        i,
+                        "director_aadhar_no",
+                        e.target.value
+                      )
+                    }
+                    pattern={validationRules.director_aadhar_no.pattern.source}
+                    required={validationRules.director_aadhar_no.required}
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Gender</label>
+                  <select
+                    className={input}
+                    value={d.director_gender}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "director_gender", e.target.value)
+                    }
+                  >
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={label}>Date of Birth</label>
+                  <input
+                    type="date"
+                    className={input}
+                    value={d.director_dob}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "director_dob", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Director PAN Document</label>
+                  <input
+                    type="file"
+                    className={file}
+                    onChange={(e) =>
+                      handleDirectorChange(i, "user_pan_doc", e.target.files[0])
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className={label}>Director Aadhaar Document</label>
+                  <input
+                    type="file"
+                    className={file}
+                    onChange={(e) =>
+                      handleDirectorChange(
+                        i,
+                        "user_addhar_doc",
+                        e.target.files[0]
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ACTION BUTTONS */}
+        <div className="flex items-center gap-4 mt-6">
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`
+      px-6 py-3 text-lg rounded-lg font-medium
+      transition-all duration-200 
+      bg-blue-600 text-white shadow 
+      hover:bg-blue-700  
+      disabled:bg-blue-300 disabled:cursor-not-allowed
+    `}
+          >
+            {loading ? "Submitting..." : "Submit"}
+          </button>
+
+          {/* Cancel */}
+          <button
+            type="button" // ← IMPORTANT: so it doesn't submit form
+            className="
+      px-6 py-3 text-lg rounded-lg font-medium
+      bg-gray-500 text-white shadow 
+      hover:bg-gray-600 
+      transition-all duration-200
+    "
+            onClick={onCancel} // optional: you can pass a function
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default OrganizationRegristrationPage;

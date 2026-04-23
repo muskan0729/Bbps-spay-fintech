@@ -1,44 +1,83 @@
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWallet, faCaretDown } from "@fortawesome/free-solid-svg-icons";
-import avatarImg from "../images/3135715.png";
-import spayImg from "../images/Spaylogo.jpg";
+import { useNavigate } from "react-router-dom";
+import avatarImg from "../images/avatars/1.png";
+import logo from "../images/Spaylogo.jpg";
+import profilePic from "../images/avatars/1.png";
+// import spayImg from "../images/placeholder.jpeg";
+// import logo from  "../images/placeholder.jpeg"
+// import profilePic from  "../images/placeholder.jpeg";
 
-export const Header = () => {
-	return (
-		<header className="sticky top-0 py-1 z-75 bg-white shadow-xl border-b border-blue-100">
-			<div className="mx-auto px-3">
-				<div className="flex justify-between items-center h-16">
-					<div className="relative h-15 flex items-center justify-center">
-						<img
-							src={spayImg}
-							alt="User avatar"
-							className="w-full h-full object-cover"
-						/>
-					</div>
 
-					{/* Right side - Avatar */}
-					<div className="flex items-center space-x-2">
-						<div className="text-amber-900">
-							<FontAwesomeIcon icon={faWallet} />
-						</div>
-						<span className="text-gray-700 font-bold">
-							₹ 5,000/-
-						</span>
-						<div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden">
-							<img
-								src={avatarImg}
-								alt="User avatar"
-								className="w-full h-full object-cover rounded-full"
-							/>
-						</div>
-						<div>
-							<button className="text-blue-500 hover:text-blue-700 font-bold">
-								<FontAwesomeIcon icon={faCaretDown} />
-							</button>
-						</div>
-					</div>
-				</div>
+import { NotificationBell } from "./NotificationBell";
+import { ProfileSidebar } from "./ProfileSidebar";
+
+export const Header = ({isMobile=false,setIsMobileSidebarOpen}) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  return (
+    <header className="sticky top-0 py-1 z-50 bg-white shadow-xl border-b border-blue-100">
+      <div className="mx-auto px-3">
+        <div className="flex justify-between items-center h-16">
+          {/* Left - Logo */}
+          <div className="relative h-15 flex items-center justify-center cursor-pointer"
+			onClick={() => {
+				if(isMobile) setIsMobileSidebarOpen(true)
+				else navigate("/dashboard"); // navigate to dashboard
+			}}>
+            <img
+            //   src={spayImg}
+              src={logo}
+              alt="User avatar"
+              className="w-full h-full object-cover "
+            />
+          </div>
+
+          {/* Right side - Wallet, Notifications, Avatar, Button */}
+          <div className="flex items-center space-x-3">
+            {/* <div className="text-amber-900">
+              <FontAwesomeIcon icon={faWallet} />
+            </div>
+            <span className="text-gray-700 font-bold">₹ 5,000/-</span> */}
+            {/* <NotificationBell /> */}
+
+			<button
+			onClick={() => setIsSidebarOpen(true)}
+			className="flex items-center space-x-2 cursor-pointer focus:outline-none">
+			<div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-blue-100 hover:shadow-md transition">
+				<img
+				src={profilePic}
+				alt="User avatar"
+				className="w-full h-full object-cover rounded-full"
+				/>
 			</div>
-		</header>
+			<FontAwesomeIcon
+				icon={faCaretDown}
+				className="text-blue-500 hover:text-blue-700"
+			/>
+			</button>
+			
+          </div>
+        </div>
+      </div>
+
+
+		{/* Overlay behind sidebar */}
+		{/* {isSidebarOpen && (
+		<div
+			className="fixed top-0 left-0 h-full w-[100%] bg-black bg-opacity-40 z-40"
+			onClick={() => setIsSidebarOpen(false)}
+		></div>
+		)} */}
+
+		{/* Sidebar Component */}
+		<ProfileSidebar
+			isOpen={isSidebarOpen}
+			onClose={() => setIsSidebarOpen(false)}
+		/>
+
+	 	</header>
 	);
 };
